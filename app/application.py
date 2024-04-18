@@ -7,7 +7,7 @@ import uvicorn
 
 from routers.default import router as default_router
 from routers.health import router as health_router
-from routers.addressing import router as example_router
+from routers.addresses import router as example_router
 from config import get_config
 
 

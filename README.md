@@ -30,3 +30,17 @@ export NEW_GID=$(id -g)
 When you're ready, build the application with: make container-build.
 
 Run make up to start the application.
+
+## Models
+
+Database schema:
+```mermaid
+erDiagram
+    endpoints {
+        string provider_id
+        string data_domain
+        string endpoint
+        string request_type
+        json parameters
+    }
+```

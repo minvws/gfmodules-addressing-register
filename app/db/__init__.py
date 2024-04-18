@@ -3,7 +3,7 @@ import pkgutil
 
 """
 This file is used to import all submodules of a module, recursively, including subpackages. This is needed since
-we dynamically load the repository classes and we need to import them in order to use them.
+we dynamically load the repositories classes and we need to import them in order to use them.
 """
 
 
@@ -23,4 +23,4 @@ def import_submodules(package_name: str) -> None:
             importlib.import_module(full_module_name)
 
 
-import_submodules('app.db.repository')
+import_submodules("app.db.repositories")
