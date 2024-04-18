@@ -3,15 +3,15 @@ from typing import Any
 from sqlalchemy import Engine
 from sqlalchemy.orm import Session
 
-from db.decorator import repository_registry
-from db.models import Base
+from app.db.decorator import repository_registry
+from app.db.models.base import Base
 
 
 class DbSession:
     def __init__(self, engine: Engine) -> None:
         self.session = Session(engine)
 
-    def get_repository(self, model_class: Any) -> Any|None:
+    def get_repository(self, model_class: Any) -> Any | None:
         """
         Returns an instantiated repository for the given model class
 
@@ -57,4 +57,3 @@ class DbSession:
         :return:
         """
         self.session.rollback()
-

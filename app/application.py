@@ -7,7 +7,7 @@ import uvicorn
 
 from routers.default import router as default_router
 from routers.health import router as health_router
-from routers.example import router as example_router
+from routers.addressing import router as example_router
 from config import get_config
 
 
@@ -59,13 +59,9 @@ def setup_fastapi() -> FastAPI:
     config = get_config()
 
     fastapi = (
-        FastAPI(
-            docs_url=config.uvicorn.docs_url,
-            redoc_url=config.uvicorn.redoc_url
-        ) if config.uvicorn.swagger_enabled else FastAPI(
-            docs_url=None,
-            redoc_url=None
-        )
+        FastAPI(docs_url=config.uvicorn.docs_url, redoc_url=config.uvicorn.redoc_url)
+        if config.uvicorn.swagger_enabled
+        else FastAPI(docs_url=None, redoc_url=None)
     )
 
     routers = [default_router, health_router, example_router]

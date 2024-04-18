@@ -1,6 +1,6 @@
 from typing import Any
 
-from db.models import Base
+from app.db.models.base import Base
 
 repository_registry = {}
 
@@ -15,4 +15,5 @@ def repository(model_class: Base) -> Any:
         """
         repository_registry[model_class] = repo_class
         return repo_class
+
     return decorator

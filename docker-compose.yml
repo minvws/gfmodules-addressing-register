@@ -20,6 +20,9 @@ services:
             POSTGRES_DB: postgres
             POSTGRES_USER: postgres
             POSTGRES_PASSWORD: postgres
+            PGPORT: '5431'
+        ports:
+            - '5431:5431'
         networks:
             - zmodules
 
