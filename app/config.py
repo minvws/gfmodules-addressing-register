@@ -38,16 +38,10 @@ class ConfigUvicorn(BaseModel):
     ssl_key_file: str | None
 
 
-class ConfigExample(BaseModel):
-    argument1: str = Field(default="default")
-    argument2: bool = Field(default=False)
-
-
 class Config(BaseModel):
     app: ConfigApp
     database: ConfigDatabase
     uvicorn: ConfigUvicorn
-    example: ConfigExample
 
 
 def read_ini_file(path: str) -> Any:
