@@ -11,8 +11,6 @@ from app.response_models.addresses import AddressesRequest
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-PAGE_LIMIT = 25
-
 
 @router.post(
     "/metadata_endpoint",

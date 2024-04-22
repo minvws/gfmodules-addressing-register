@@ -9,7 +9,7 @@ repository_registry: Dict[Type[Base], Type[RepositoryBase]] = {}
 def repository(model_class: Type[Base]) -> Any:
     def decorator(repo_class: Type[RepositoryBase]) -> Type[RepositoryBase]:
         """
-        Decorator to register a repositories for a model class
+        Decorator to register a repository for a model class
 
         :param repo_class:
         :return:
