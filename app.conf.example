@@ -20,7 +20,7 @@ redoc_url = /redocs
 # Host for the uvicorn server
 host = 0.0.0.0
 # Port for the uvicorn server
-port = 8501
+port = 8502
 # Live reload for uvicorn server
 reload = True
 
