@@ -2,7 +2,7 @@
 loglevel=debug
 
 [database]
-dsn=postgresql+psycopg://postgres:postgres@addressing_db:5431/postgres
+dsn=postgresql+psycopg://postgres:postgres@addressing_db:5432/postgres
 
 [uvicorn]
 swagger_enabled = True
