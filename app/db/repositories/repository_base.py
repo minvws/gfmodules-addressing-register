@@ -1,5 +1,7 @@
 from typing import TypeVar
+
 from sqlalchemy.orm import Session
+
 
 
 class RepositoryBase:
