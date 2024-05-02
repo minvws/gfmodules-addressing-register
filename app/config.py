@@ -38,10 +38,18 @@ class ConfigUvicorn(BaseModel):
     ssl_key_file: str | None
 
 
+class ConfigTelemetry(BaseModel):
+    enabled: bool = Field(default=False)
+    endpoint: str | None
+    service_name: str | None
+    tracer_name: str | None
+
+
 class Config(BaseModel):
     app: ConfigApp
     database: ConfigDatabase
     uvicorn: ConfigUvicorn
+    telemetry: ConfigTelemetry
 
 
 def read_ini_file(path: str) -> Any:
