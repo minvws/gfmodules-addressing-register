@@ -19,6 +19,11 @@ pydantic-settings = "^2.1.0"
 inject = "^5.2.0"
 sqlalchemy = "^2.0.25"
 psycopg = { extras = ["binary", "pool"], version = "^3.1.17" }
+opentelemetry-sdk = "^1.24.0"
+opentelemetry-exporter-otlp-proto-grpc = "^1.24.0"
+opentelemetry-instrumentation = "^0.45b0"
+opentelemetry-instrumentation-fastapi = "^0.45b0"
+opentelemetry-instrumentation-requests = "^0.45b0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.4"
