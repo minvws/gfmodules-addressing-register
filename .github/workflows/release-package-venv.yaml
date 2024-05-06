@@ -34,7 +34,7 @@ jobs:
           poetry bundle venv .venv --no-interaction --without dev
 
       - name: Fix python3 symlink - back to default location
-        run: cd .venv/bin && rm python3 && ln -s /usr/bin/python3 python3
+        run: cd .venv/bin && rm python3 python && ln -s /usr/bin/python3 python3 && ln -s /usr/bin/python python
 
       - name: Add version file
         run: 'echo "{ \"version\": \"${{ env.RELEASE_VERSION }}\", \"git_ref\": \"$GITHUB_SHA\"}" > .venv/version.json'
