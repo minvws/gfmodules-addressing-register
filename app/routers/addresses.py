@@ -61,6 +61,12 @@ def add_one_address(
     data: Address,
     addressing_service: AddressingService = Depends(get_addressing_service),
 ) -> Address:
+    span = trace.get_current_span()
+    span.set_attribute("data.provider_id", data.provider_id)
+    span.set_attribute("data.data_domain", data.data_domain)
+    span.set_attribute("data.endpoint", data.endpoint)
+    span.set_attribute("data.request_type", data.request_type)
+
     return addressing_service.add_provider_address(data)
 
 
@@ -83,6 +89,9 @@ def delete_one_address(
     data: AddressRequest,
     addressing_service: AddressingService = Depends(get_addressing_service),
 ) -> DeleteAddress:
+    span = trace.get_current_span()
+    span.set_attribute("data.provider_id", data.provider_id)
+    span.set_attribute("data.data_domain", data.data_domain)
     return addressing_service.remove_one_address(data.provider_id, data.data_domain)
 
 
