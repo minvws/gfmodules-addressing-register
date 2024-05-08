@@ -4,7 +4,7 @@ from sqlalchemy import Engine
 from sqlalchemy.orm import Session
 
 from app.db.decorator import repository_registry
-from app.db.models.base import Base
+from app.db.entities.base import Base
 from app.db.repositories.repository_base import TRepositoryBase
 
 
