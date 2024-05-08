@@ -31,7 +31,7 @@ class TestGettingOneAddress(unittest.TestCase):
         expected_address = Address(
             provider_id="provider",
             data_domain="domain",
-            endpoint="https://provider.com",
+            endpoint="https://provider.example.com",
             request_type="GET",
             parameters=[mock_address_paramteres],
         )
@@ -69,14 +69,14 @@ class TestGettingManyAddresses(unittest.TestCase):
         provider_address_1 = Address(
             provider_id="provider_1",
             data_domain="domain_1",
-            endpoint="https://provider_1.com",
+            endpoint="https://provider_1.example.com",
             request_type="GET",
             parameters=[mock_address_paramteres],
         )
         provider_address_2 = Address(
             provider_id="provider_2",
             data_domain="data_domain_2",
-            endpoint="https://provider_2.com",
+            endpoint="https://provider_2.example.com",
             request_type="POST",
             parameters=[mock_address_paramteres],
         )
@@ -116,7 +116,7 @@ class TestDeleteOneAddress(unittest.TestCase):
         provider_address = Address(
             provider_id="provider",
             data_domain="domain",
-            endpoint="https://provider.com",
+            endpoint="https://provider.example.com",
             request_type="GET",
             parameters=[mock_address_paramteres],
         )
@@ -154,14 +154,14 @@ class TestDeleteManyAddresses(unittest.TestCase):
         provider_address_1 = Address(
             provider_id="provider_1",
             data_domain="domain_1",
-            endpoint="https://provider_1.com",
+            endpoint="https://provider_1.example.com",
             request_type="GET",
             parameters=[mock_address_paramteres],
         )
         provider_address_2 = Address(
             provider_id="provider_2",
             data_domain="data_domain_2",
-            endpoint="https://provider_2.com",
+            endpoint="https://provider_2.examople.com",
             request_type="POST",
             parameters=[mock_address_paramteres],
         )
