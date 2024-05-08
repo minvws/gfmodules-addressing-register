@@ -161,7 +161,7 @@ class TestDeleteManyAddresses(unittest.TestCase):
         provider_address_2 = Address(
             provider_id="provider_2",
             data_domain="data_domain_2",
-            endpoint="https://provider_2.examople.com",
+            endpoint="https://provider_2.example.com",
             request_type="POST",
             parameters=[mock_address_paramteres],
         )
