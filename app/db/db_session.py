@@ -1,28 +1,55 @@
-from typing import Generic, Type
+from typing import Type, Any
 
 from sqlalchemy import Engine
 from sqlalchemy.orm import Session
 
 from app.db.decorator import repository_registry
 from app.db.entities.base import Base
-from app.db.repositories.repository_base import TRepositoryBase
+from app.db.repositories.repository_base import RepositoryBase
+
+"""
+This module contains the DbSession class, which is a context manager that provides a session to interact with 
+the database. It also provides methods to add and delete resources from the session, and to commit or rollback the
+current transaction.
+
+Usage:
+
+    with DbSession(engine) as session:
+        repo = session.get_repository(MyModel)
+        repo.find_all()
+        session.add_resource(MyModel())
+        session.commit()       
+"""
 
 
-class DbSession(Generic[TRepositoryBase]):
+class DbSession:
     def __init__(self, engine: Engine) -> None:
-        self.session = Session(engine)
+        self._engine = engine
 
-    def get_repository(self, model_class: Type[Base]) -> TRepositoryBase:
+    def __enter__(self) -> 'DbSession':
         """
-        Returns an instantiated repositories for the given model class
+        Create a new session when entering the context manager
+        """
+        self.session = Session(self._engine, expire_on_commit=False)
+        return self
 
-        :param model_class:
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
+        """
+        Close the session when exiting the context manager
+        """
+        self.session.close()
+
+    def get_repository(self, model: Type[Base]) -> RepositoryBase:
+        """
+        Returns an instantiated repository for the given model class
+
+        :param model:
         :return:
         """
-        repo_class = repository_registry.get(model_class)
+        repo_class = repository_registry.get(model)
         if repo_class:
-            return repo_class(self.session)  # type: ignore
-        raise ValueError(f"No repositories registered for model {model_class}")
+            return repo_class(self.session)
+        raise ValueError(f"No repository registered for model {model}")
 
     def add_resource(self, entry: Base) -> None:
         """
