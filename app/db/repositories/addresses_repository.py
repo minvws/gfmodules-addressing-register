@@ -2,7 +2,6 @@ import logging
 from typing import List, Sequence, TypeVar, Mapping, Dict
 
 from sqlalchemy import delete, select
-from sqlalchemy.orm import Session
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import DatabaseError
 from app.db.decorator import repository
@@ -19,9 +18,6 @@ TAddressDict = TypeVar(
 
 @repository(AddressEntity)
 class AddressesRepository(RepositoryBase):
-    def __init__(self, session: Session):
-        super().__init__(session)
-
     def find_one(self, provider_id: str, data_domain: str) -> AddressEntity | None:
         """
         Find one addressing by provider_id and data_domain
@@ -32,9 +28,7 @@ class AddressesRepository(RepositoryBase):
             .where(AddressEntity.data_domain == data_domain)
         )
 
-        results = self.session.execute(stmt).scalars().first()
-
-        return results
+        return self.db_session.execute(stmt).scalars().first()  # type: ignore
 
     def find_many(self, params: List[Dict[str, str]]) -> List[AddressEntity]:
         results = []
@@ -63,10 +57,10 @@ class AddressesRepository(RepositoryBase):
             )
             .returning(AddressEntity)
         )
-        result = self.session.execute(stmt).scalars().first()
+        result = self.db_session.execute(stmt).scalars().first()
 
-        self.session.commit()
-        return result
+        self.db_session.commit()
+        return result   # type: ignore
 
     def create_many(
         self, new_addresses: List[TAddressDict]
@@ -75,15 +69,15 @@ class AddressesRepository(RepositoryBase):
         Create bulk addresses for multiple providers
         """
         try:
-            results = self.session.scalars(
+            results = self.db_session.scalars(
                 insert(AddressEntity).returning(AddressEntity),
                 new_addresses,
             ).all()
-            self.session.commit()
+            self.db_session.commit()
 
-            return results
+            return results  # type: ignore
         except DatabaseError:
-            self.session.rollback()
+            self.db_session.rollback()
             return None
 
     def delete_one(self, provider_id: str, data_domain: str) -> int:
@@ -93,12 +87,12 @@ class AddressesRepository(RepositoryBase):
                 .where(AddressEntity.provider_id == provider_id)
                 .where(AddressEntity.data_domain == data_domain)
             )
-            result = self.session.execute(stmt)
-            self.session.commit()
+            result = self.db_session.execute(stmt)
+            self.db_session.commit()
 
-            return result.rowcount
+            return result.rowcount  # type: ignore
         except DatabaseError:
-            self.session.rollback()
+            self.db_session.rollback()
             return 0
 
     def delete_many(self, data: List[TAddressDict]) -> int:
@@ -110,11 +104,11 @@ class AddressesRepository(RepositoryBase):
                     .where(AddressEntity.provider_id == item["provider_id"])
                     .where(AddressEntity.data_domain == item["data_domain"])
                 )
-                result = self.session.execute(stmt)
+                result = self.db_session.execute(stmt)
                 row_count += result.rowcount
-                self.session.commit()
+                self.db_session.commit()
             except DatabaseError:
-                self.session.rollback()
+                self.db_session.rollback()
                 row_count = 0
                 break
 
