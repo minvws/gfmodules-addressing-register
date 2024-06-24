@@ -1,7 +1,7 @@
 from typing import List, cast
 
 from app.db.db import Database
-from app.db.db_session import DbSession
+from app.db.session import DbSession
 from app.db.entities.address_entity import AddressEntity
 from app.db.repositories.addresses_repository import AddressesRepository
 from app.exceptions.service_exceptions import (

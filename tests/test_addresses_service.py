@@ -4,10 +4,14 @@ from app.models.address.dto import AddressRequest, DeleteAddress
 from app.models.address.model import Address, AddressURLParameters
 from app.models.meta.model import Meta
 from app.services.addressing_service import AddressingService
+from app.config import set_config
+from test_config import get_test_config
 
 
 class TestGettingOneAddress(unittest.TestCase):
     def setUp(self) -> None:
+        set_config(get_test_config())
+
         # setup database
         self.database = Database("sqlite:///:memory:")
         self.database.generate_tables()
