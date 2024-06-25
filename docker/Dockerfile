@@ -29,7 +29,8 @@ RUN apt update && \
     apt install -y \
         git \
         gnupg2 \
-        make \
+        libsqlite3-dev \
+        build-essential \
         postgresql-client-15 \
         postgresql-client-common
 
@@ -49,9 +50,9 @@ COPY --chown=${APP_USER}:${APP_GROUP} --from=builder /usr/local /usr/local
 
 USER ${APP_USER}
 
-EXPOSE 8501:8501
+EXPOSE 8504:8504
 WORKDIR ${PROJECT_DIR}
 
 ENV PYTHONPATH=${PROJECT_DIR}
 
-CMD python app/main.py
+CMD docker/./init.sh addressing_db
