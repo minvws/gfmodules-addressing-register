@@ -3,8 +3,8 @@ from typing import Any
 
 from fastapi import APIRouter, Depends
 
-import container
-from db.db import Database
+from app import container
+from app.db.db import Database
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
