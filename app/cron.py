@@ -4,9 +4,7 @@ from typing import Protocol, Any
 
 import inject
 
-import application
-
-from cron.cleanup_expired import CleanupExpired
+from app import application
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +18,6 @@ class CronCommand(Protocol):
 
 
 CRON_COMMANDS: dict[str, CronCommand] = {
-    "cleanup_expired": CleanupExpired,
 }
 
 

@@ -1,6 +1,6 @@
 import inject
-from db.db import Database
-from config import get_config
+from app.db.db import Database
+from app.config import get_config
 from app.services.addressing_service import AddressingService
 
 

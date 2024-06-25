@@ -1,5 +1,5 @@
-import application
-import container
+from app import application
+from app import container
 
 if __name__ == "__main__":
     application.application_init()
