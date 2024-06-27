@@ -52,7 +52,7 @@ class DbSession:
         Returns an instantiated repository
         """
         if issubclass(repository_class, RepositoryBase):
-            return repository_class(self.session)
+            return repository_class(self)
         raise ValueError(f"No repository registered for model {repository_class}")
 
     def add(self, entry: Base) -> None:
@@ -89,15 +89,6 @@ class DbSession:
         :return:
         """
         self._retry(self.session.rollback)
-
-    def scalars(self, stmt: Any) -> Any:
-        """
-        Execute a statement in the current session and return the scalar results
-
-        :param stmt:
-        :return:
-        """
-        return self._retry(self.session.scalars, stmt)
 
     def execute(self, stmt: Any) -> Any:
         """
