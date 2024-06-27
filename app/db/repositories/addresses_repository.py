@@ -69,7 +69,7 @@ class AddressesRepository(RepositoryBase):
         Create bulk addresses for multiple providers
         """
         try:
-            results = self.db_session.scalars(
+            results = self.db_session.session.scalars(
                 insert(AddressEntity).returning(AddressEntity),
                 new_addresses,
             ).all()
