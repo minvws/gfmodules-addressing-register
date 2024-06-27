@@ -8,8 +8,8 @@ from sqlalchemy.exc import OperationalError, DatabaseError, PendingRollbackError
 from sqlalchemy.orm import Session
 
 from app.config import get_config
-from app.db.decorator import repository_registry
 from app.db.entities.base import Base
+from app.db.repositories.repository_base import TRepositoryBase, RepositoryBase
 
 """
 This module contains the DbSession class, which is a context manager that provides a session to interact with 
@@ -19,26 +19,12 @@ current transaction.
 Usage:
 
     with DbSession(engine) as session:
-        repo = session.get_repository(MyModel)
-        repo.find_all()
-        session.add_resource(MyModel())
-        session.commit()       
-"""
-
-
-"""
-This module contains the DbSession class, which is a context manager that provides a session to interact with 
-the database. It also provides methods to add and delete resources from the session, and to commit or rollback the
-current transaction.
-
-Usage:
-
-    with DbSession(engine) as session:
-        repo = session.get_repository(MyModel)
+        repo = session.get_repository(MyModelRepository)
         repo.find_all()
         session.add(MyModel())
-        session.commit()       
+        session.commit()        
 """
+
 
 logger = logging.getLogger(__name__)
 
@@ -61,17 +47,13 @@ class DbSession:
         """
         self.session.close()
 
-    def get_repository(self, model: Type[Base]) -> Any:
+    def get_repository(self, repository_class: Type[TRepositoryBase]) -> TRepositoryBase:
         """
-        Returns an instantiated repository for the given model class
-
-        :param model:
-        :return:
+        Returns an instantiated repository
         """
-        repo_class = repository_registry.get(model)
-        if repo_class:
-            return repo_class(self)
-        raise ValueError(f"No repository registered for model {model}")
+        if issubclass(repository_class, RepositoryBase):
+            return repository_class(self.session)
+        raise ValueError(f"No repository registered for model {repository_class}")
 
     def add(self, entry: Base) -> None:
         """
@@ -107,6 +89,15 @@ class DbSession:
         :return:
         """
         self._retry(self.session.rollback)
+
+    def scalars(self, stmt: Any) -> Any:
+        """
+        Execute a statement in the current session and return the scalar results
+
+        :param stmt:
+        :return:
+        """
+        return self._retry(self.session.scalars, stmt)
 
     def execute(self, stmt: Any) -> Any:
         """

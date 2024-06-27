@@ -1,8 +1,6 @@
-from typing import List, cast
+from typing import List
 
 from app.db.db import Database
-from app.db.session import DbSession
-from app.db.entities.address_entity import AddressEntity
 from app.db.repositories.addresses_repository import AddressesRepository
 from app.exceptions.service_exceptions import (
     AddressNotFoundException,
@@ -20,7 +18,7 @@ class AddressingService:
 
     def get_provider_address(self, provider_id: str, data_domain: str) -> Address:
         with self.database.get_db_session() as session:
-            addressing_repository = self.get_addressing_repository(session)
+            addressing_repository = session.get_repository(AddressesRepository)
             address_entity = addressing_repository.find_one(
                 provider_id=provider_id,
                 data_domain=data_domain,
@@ -35,7 +33,7 @@ class AddressingService:
         self, requested_addresses: List[AddressRequest]
     ) -> List[Address]:
         with self.database.get_db_session() as session:
-            addressing_repository = self.get_addressing_repository(session)
+            addressing_repository = session.get_repository(AddressesRepository)
             results = addressing_repository.find_many(
                 [address.model_dump() for address in requested_addresses]
             )
@@ -46,7 +44,7 @@ class AddressingService:
 
     def add_provider_address(self, new_address: Address) -> Address:
         with self.database.get_db_session() as session:
-            addressing_repository = self.get_addressing_repository(session)
+            addressing_repository = session.get_repository(AddressesRepository)
             result = addressing_repository.create_one(new_address=new_address.model_dump())
             if result is None:
                 raise UnsuccessfulAddException()
@@ -55,7 +53,7 @@ class AddressingService:
 
     def add_many_addresses(self, addresses: List[Address]) -> List[Address]:
         with self.database.get_db_session() as session:
-            addressing_repository = self.get_addressing_repository(session)
+            addressing_repository = session.get_repository(AddressesRepository)
             results = addressing_repository.create_many(
                 [address.model_dump() for address in addresses]
             )
@@ -67,7 +65,7 @@ class AddressingService:
 
     def remove_one_address(self, provider_id: str, data_domain: str) -> DeleteAddress:
         with self.database.get_db_session() as session:
-            addressing_repository = self.get_addressing_repository(session)
+            addressing_repository = session.get_repository(AddressesRepository)
             address = self.get_provider_address(provider_id, data_domain)
 
             deleted_row_count = addressing_repository.delete_one(
@@ -86,7 +84,7 @@ class AddressingService:
         self, requested_addresses: List[AddressRequest]
     ) -> DeleteAddress:
         with self.database.get_db_session() as session:
-            addressing_repository = self.get_addressing_repository(session)
+            addressing_repository = session.get_repository(AddressesRepository)
             addresses = self.get_many_providers_addresses(requested_addresses)
 
             if len(addresses) != len(requested_addresses):
@@ -99,13 +97,3 @@ class AddressingService:
             meta = Meta(total=results)
 
             return DeleteAddress(meta=meta, data=addresses)
-
-    @staticmethod
-    def get_addressing_repository(session: DbSession) -> AddressesRepository:
-        """
-        private method to get repository for providers
-        """
-        return cast(
-            AddressesRepository,
-            session.get_repository(AddressEntity)
-        )
