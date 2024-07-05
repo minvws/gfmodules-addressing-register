@@ -1,5 +1,7 @@
 -- Mock Provider: irealisatie.mock.metadata
 INSERT INTO addresses (provider_id, data_domain, endpoint, request_type, parameters) VALUES ('irealisatie.mock.metadata', 'beeldbank', 'http://metadata:8503/resource', 'GET', '[]');
+-- Mock Provider: irealisatie.mock.metadata.unavailable
+INSERT INTO addresses (provider_id, data_domain, endpoint, request_type, parameters) VALUES ('irealisatie.mock.metadata.unavailable', 'beeldbank', 'http://metadata:9999/resource', 'GET', '[]');
 
 -- Mock Provider: ziekenhuis.amsterdam@medmij
 INSERT INTO addresses (provider_id, data_domain, endpoint, request_type, parameters) VALUES ('ziekenhuis.amsterdam@medmij', 'beeldbank', 'https://medmeij.example.nl', 'GET', '[{"name": "category", "type" : "string", "value" : "blood-bank", "required": "true", "description": "blood bank route"}, {"name": "blood-type", "type" : "string", "values": ["A", "B", "AB", "O"], "required": "true", "description": "the type of blood"}]');

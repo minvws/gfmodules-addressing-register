@@ -33,11 +33,12 @@ def get_address(
     Returns an addressing object based on parameters in request body
     """
     span = trace.get_current_span()
-    span.set_attribute("data.data_domain", data.data_domain)
-    span.set_attribute("data.provider_id", data.provider_id)
-    return addressing_service.get_provider_address(
+    span.update_name(f"POST /metadata_endpoint data_domain={data.data_domain} provider_id={data.provider_id}")
+    ret_value = addressing_service.get_provider_address(
         provider_id=data.provider_id, data_domain=data.data_domain
     )
+    span.set_attribute("data.address", ret_value.endpoint)
+    return ret_value
 
 
 @router.post(

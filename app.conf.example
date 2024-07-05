@@ -28,9 +28,9 @@ enabled = True
 # Endpoint to GRPC server for telemetry
 endpoint = http://tracing:4317
 # Service name to use
-service_name = addressing
+service_name = Adressering Register
 # Tracer name to use
-tracer_name = zmodules.service.addressing
+tracer_name = zmodules.service.addressing_register
 
 [uvicorn]
 # If true, the api docs will be enabled
