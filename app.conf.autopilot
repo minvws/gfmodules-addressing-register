@@ -13,8 +13,8 @@ pool_recycle=1800
 [telemetry]
 enabled = True
 endpoint = http://tracing:4317
-service_name = addressing
-tracer_name = zmodules.service.addressing
+service_name = Adressering Register
+tracer_name = zmodules.service.addressing_register
 
 [uvicorn]
 swagger_enabled = True
