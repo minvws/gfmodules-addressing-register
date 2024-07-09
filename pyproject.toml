@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "zmodules-addressing-service"
+name = "gfmodules-addressing-register"
 version = "0.1.0"
 description = ""
 license = "EUPL-1.2"
