@@ -1,6 +1,6 @@
 ### GFModules Addressing Register
 
-The Addressing Register holds the information about the various Health Data endpoints that are available
+The Addressing Register holds information about various Health Data endpoints that are available
 for fetching the metadata. The information of the Addressing Register should be enough for the Timeline
 Service or the Health application to fetch the actual metadata.
 
