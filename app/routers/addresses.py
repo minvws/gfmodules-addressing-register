@@ -8,10 +8,7 @@ from opentelemetry import trace
 from app.container import get_addressing_service
 from app.models.address.model import Address
 from app.services.addressing_service import AddressingService
-from app.models.address.dto import (
-    AddressRequest,
-    DeleteAddress,
-)
+from app.models.address.dto import DeleteAddressResponse, AddressRequest
 
 logger = logging.getLogger(__name__)
 router = APIRouter(
@@ -19,24 +16,23 @@ router = APIRouter(
     tags=["Addresses"],
 )
 
-
 @router.post(
     "",
     summary="Returns an address metadata for a single provider",
     response_model=Address,
 )
 def get_address(
-    data: AddressRequest,
+    req: AddressRequest,
     addressing_service: AddressingService = Depends(get_addressing_service),
 ) -> Address:
     """
     Returns an addressing object based on parameters in request body
     """
     span = trace.get_current_span()
-    span.update_name(f"POST /metadata_endpoint data_domain={data.data_domain} provider_id={data.provider_id}")
-    ret_value = addressing_service.get_provider_address(
-        provider_id=data.provider_id, data_domain=data.data_domain
-    )
+    span.update_name(f"POST /metadata_endpoint data_domain={req.data_domain} provider_id={req.provider_id}")
+
+    ret_value = addressing_service.get_provider_address(provider_id=req.provider_id, data_domain=req.data_domain)
+
     span.set_attribute("data.address", ret_value.endpoint)
     return ret_value
 
@@ -44,13 +40,13 @@ def get_address(
 @router.post(
     "/get-many",
     summary="Returns many providers addresses",
-    response_model=Address,
+    response_model=list[Address],
 )
 def get_many_addresses(
-    data: List[AddressRequest],
+    req: list[AddressRequest],
     addressing_service: AddressingService = Depends(get_addressing_service),
-) -> List[Address]:
-    return addressing_service.get_many_providers_addresses(data)
+) -> list[Address]:
+    return addressing_service.get_many_providers_addresses(req)
 
 
 @router.post(
@@ -59,50 +55,62 @@ def get_many_addresses(
     response_model=Address,
 )
 def add_one_address(
-    data: Address,
+    req: Address,
     addressing_service: AddressingService = Depends(get_addressing_service),
 ) -> Address:
     span = trace.get_current_span()
-    span.set_attribute("data.provider_id", data.provider_id)
-    span.set_attribute("data.data_domain", data.data_domain)
-    span.set_attribute("data.endpoint", data.endpoint)
-    span.set_attribute("data.request_type", data.request_type)
+    span.set_attribute("data.provider_id", str(req.provider_id))
+    span.set_attribute("data.data_domain", str(req.data_domain))
+    span.set_attribute("data.endpoint", req.endpoint)
+    span.set_attribute("data.request_type", req.request_type)
 
-    return addressing_service.add_provider_address(data)
+    addressing_service.add_provider_address(req)
+    return req
 
 
 @router.post(
     "/add-many",
     summary="adds an many of Providers Addresses to the Database",
-    response_model=List[Address],
+    response_model=list[Address],
 )
 def add_many_addresses(
-    data: List[Address],
+    req: list[Address],
     addressing_service: AddressingService = Depends(get_addressing_service),
 ) -> List[Address]:
-    return addressing_service.add_many_addresses(data)
+    addressing_service.add_many_addresses(req)
+    return req
 
 
 @router.delete(
-    "/delete-one", summary="delete one provider address", response_model=DeleteAddress
+    "/delete-one", summary="delete one provider address", response_model=DeleteAddressResponse
 )
 def delete_one_address(
-    data: AddressRequest,
+    req: AddressRequest,
     addressing_service: AddressingService = Depends(get_addressing_service),
-) -> DeleteAddress:
+) -> DeleteAddressResponse:
     span = trace.get_current_span()
-    span.set_attribute("data.provider_id", data.provider_id)
-    span.set_attribute("data.data_domain", data.data_domain)
-    return addressing_service.remove_one_address(data.provider_id, data.data_domain)
+    span.set_attribute("data.provider_id", str(req.provider_id))
+    span.set_attribute("data.data_domain", str(req.data_domain))
+
+    result = addressing_service.remove_one_address(provider_id=req.provider_id, data_domain=req.data_domain)
+    return DeleteAddressResponse(
+        meta=result.meta,
+        addresses=result.addresses,
+    )
 
 
 @router.delete(
     "/delete-many",
     summary="delete many providers addresses",
-    response_model=DeleteAddress,
+    response_model=DeleteAddressResponse,
 )
 def delete_many_addresses(
-    data: List[AddressRequest],
+    req: List[AddressRequest],
     addressing_service: AddressingService = Depends(get_addressing_service),
-) -> DeleteAddress:
-    return addressing_service.remove_many_addresses(data)
+) -> DeleteAddressResponse:
+
+    result = addressing_service.remove_many_addresses(req)
+    return DeleteAddressResponse(
+        meta=result.meta,
+        addresses=result.addresses,
+    )

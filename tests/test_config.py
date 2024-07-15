@@ -9,6 +9,11 @@ def get_test_config() -> Config:
         database=ConfigDatabase(
             dsn="sqlite:///:memory:",
             create_tables=True,
+            retry_backoff=[0.1, 0.2, 0.4, 0.8, 1.6, 3.2, 4.8, 6.4, 10.0],
+            pool_size=5,
+            max_overflow=10,
+            pool_pre_ping=False,
+            pool_recycle=1
         ),
         uvicorn=ConfigUvicorn(
             swagger_enabled=False,
