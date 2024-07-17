@@ -8,8 +8,8 @@ from app.db.entities.base import Base
 class AddressEntity(Base):
     __tablename__ = "addresses"
 
-    provider_id: Mapped[str] = mapped_column(
-        "provider_id", String, primary_key=True, nullable=False
+    ura_number: Mapped[str] = mapped_column(
+        "ura_number", String, primary_key=True, nullable=False
     )
     data_domain: Mapped[str] = mapped_column(
         "data_domain", String, primary_key=True, nullable=False
@@ -19,4 +19,4 @@ class AddressEntity(Base):
     parameters: Mapped[list[dict[str, Any]]] = mapped_column("parameters", JSON, nullable=False)
 
     def __repr__(self) -> str:
-        return f"<AddressEntity(provider_id={self.provider_id}, data_domain={self.data_domain} endpoint={self.endpoint}, request_type={self.request_type}, parameters = {self.parameters})>"
+        return f"<AddressEntity(ura_number={self.ura_number}, data_domain={self.data_domain} endpoint={self.endpoint}, request_type={self.request_type}, parameters = {self.parameters})>"

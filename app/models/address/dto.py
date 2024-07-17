@@ -2,7 +2,7 @@ from typing import List, Optional, Any
 
 from pydantic import BaseModel, field_serializer
 
-from app.data import ProviderID, DataDomain
+from app.data import UraNumber, DataDomain
 from app.models.address.model import Address
 
 
@@ -24,12 +24,12 @@ class DeleteAddressResponse(BaseModel):
 
 
 class AddressRequest(BaseModel):
-    provider_id: ProviderID
+    ura_number: UraNumber
     data_domain: DataDomain
 
-    @field_serializer('provider_id')
-    def serialize_provider_id(self, provider_id: ProviderID, _info: Any) -> str:
-        return str(provider_id)
+    @field_serializer('ura_number')
+    def serialize_ura_number(self, ura_number: UraNumber, _info: Any) -> str:
+        return str(ura_number)
 
     @field_serializer('data_domain')
     def serialize_dd(self, data_domain: DataDomain, _info: Any) -> str:
