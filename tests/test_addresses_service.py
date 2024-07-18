@@ -1,6 +1,6 @@
 import unittest
 
-from app.data import DataDomain, ProviderID
+from app.data import DataDomain, UraNumber
 from app.db.db import Database
 from app.models.address.dto import AddressRequest, Meta, DeleteAddressResult
 from app.models.address.model import Address, AddressURLParameters
@@ -35,7 +35,7 @@ class TestGettingOneAddress(BaseTestSuite):
             description="department",
         )
         expected_address = Address(
-            provider_id=ProviderID("1234"),
+            ura_number=UraNumber("1234"),
             data_domain=DataDomain.BeeldBank,
             endpoint="https://provider.example.com",
             request_type="GET",
@@ -45,7 +45,7 @@ class TestGettingOneAddress(BaseTestSuite):
         # act
         self.addresses_service.add_provider_address(expected_address)
         actual_address = self.addresses_service.get_provider_address(
-            provider_id=ProviderID("00001234"), data_domain=DataDomain.BeeldBank
+            ura_number=UraNumber("00001234"), data_domain=DataDomain.BeeldBank
         )
 
         # assert
@@ -64,14 +64,14 @@ class TestGettingManyAddresses(BaseTestSuite):
             description="department",
         )
         provider_address_1 = Address(
-            provider_id=ProviderID("1234"),
+            ura_number=UraNumber("1234"),
             data_domain=DataDomain.Medicatie,
             endpoint="https://provider_1.example.com",
             request_type="GET",
             parameters=[mock_address_parameters],
         )
         provider_address_2 = Address(
-            provider_id=ProviderID("5312"),
+            ura_number=UraNumber("5312"),
             data_domain=DataDomain.BeeldBank,
             endpoint="https://provider_2.example.com",
             request_type="POST",
@@ -80,8 +80,8 @@ class TestGettingManyAddresses(BaseTestSuite):
 
         expected_results = [provider_address_1, provider_address_2]
         parameters = [
-            AddressRequest(provider_id=ProviderID("1234"), data_domain=DataDomain.Medicatie),
-            AddressRequest(provider_id=ProviderID("5312"), data_domain=DataDomain.BeeldBank),
+            AddressRequest(ura_number=UraNumber("1234"), data_domain=DataDomain.Medicatie),
+            AddressRequest(ura_number=UraNumber("5312"), data_domain=DataDomain.BeeldBank),
         ]
 
         # act
@@ -103,7 +103,7 @@ class TestDeleteOneAddress(BaseTestSuite):
             description="department",
         )
         provider_address = Address(
-            provider_id=ProviderID("1234"),
+            ura_number=UraNumber("1234"),
             data_domain=DataDomain.BeeldBank,
             endpoint="https://provider.example.com",
             request_type="GET",
@@ -118,7 +118,7 @@ class TestDeleteOneAddress(BaseTestSuite):
         # act
         self.addresses_service.add_provider_address(provider_address)
         actual_results = self.addresses_service.remove_one_address(
-            provider_id=ProviderID("1234"),
+            ura_number=UraNumber("1234"),
             data_domain=DataDomain.BeeldBank,
         )
 
@@ -136,22 +136,22 @@ class TestDeleteManyAddresses(BaseTestSuite):
             description="department",
         )
         provider_address_1 = Address(
-            provider_id=ProviderID("1234"),
+            ura_number=UraNumber("1234"),
             data_domain=DataDomain.BeeldBank,
             endpoint="https://provider_1.example.com",
             request_type="GET",
             parameters=[mock_address_parameters],
         )
         provider_address_2 = Address(
-            provider_id=ProviderID("5312"),
+            ura_number=UraNumber("5312"),
             data_domain=DataDomain.Medicatie,
             endpoint="https://provider_2.example.com",
             request_type="POST",
             parameters=[mock_address_parameters],
         )
         parameters = [
-            AddressRequest(provider_id=ProviderID("1234"), data_domain=DataDomain.BeeldBank),
-            AddressRequest(provider_id=ProviderID("5312"), data_domain=DataDomain.Medicatie),
+            AddressRequest(ura_number=UraNumber("1234"), data_domain=DataDomain.BeeldBank),
+            AddressRequest(ura_number=UraNumber("5312"), data_domain=DataDomain.Medicatie),
         ]
 
         meta = Meta(total=2, deleted=2)

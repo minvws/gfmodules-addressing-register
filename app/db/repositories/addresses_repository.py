@@ -5,7 +5,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import DatabaseError
 
-from app.data import ProviderID, DataDomain
+from app.data import UraNumber, DataDomain
 from app.db.decorator import repository
 from app.db.entities.address_entity import AddressEntity
 from app.db.repositories.repository_base import RepositoryBase
@@ -14,19 +14,20 @@ from app.models.address.model import Address
 
 logger = logging.getLogger(__name__)
 
+
 class RepositoryException(Exception):
     pass
 
 
 @repository(AddressEntity)
 class AddressesRepository(RepositoryBase):
-    def find_one(self, provider_id: ProviderID, data_domain: DataDomain) -> AddressEntity | None:
+    def find_one(self, ura_number: UraNumber, data_domain: DataDomain) -> AddressEntity | None:
         """
-        Find one addressing by provider_id and data_domain
+        Find one addressing by ura_number and data_domain
         """
         stmt = (
             select(AddressEntity)
-            .where(AddressEntity.provider_id == str(provider_id))
+            .where(AddressEntity.ura_number == str(ura_number))
             .where(AddressEntity.data_domain == str(data_domain))
         )
 
@@ -35,7 +36,7 @@ class AddressesRepository(RepositoryBase):
     def find_many(self, params: List[AddressRequest]) -> List[AddressEntity]:
         results = []
         for base in params:
-            address = self.find_one(provider_id=base.provider_id, data_domain=base.data_domain)
+            address = self.find_one(ura_number=base.ura_number, data_domain=base.data_domain)
             if address is not None:
                 results.append(address)
 
@@ -49,7 +50,7 @@ class AddressesRepository(RepositoryBase):
             insert(AddressEntity)
             .values(**address.model_dump())
             .on_conflict_do_nothing(
-                index_elements=[AddressEntity.provider_id, AddressEntity.data_domain]
+                index_elements=[AddressEntity.ura_number, AddressEntity.data_domain]
             )
             .returning(AddressEntity)
         )
@@ -79,11 +80,11 @@ class AddressesRepository(RepositoryBase):
             logging.error(f"Failed to add addresses {addresses}: {e}")
             raise RepositoryException(f"Failed to add addresses {addresses}")
 
-    def delete_one(self, provider_id: ProviderID, data_domain: DataDomain) -> int:
+    def delete_one(self, ura_number: UraNumber, data_domain: DataDomain) -> int:
         try:
             stmt = (
                 delete(AddressEntity)
-                .where(AddressEntity.provider_id == str(provider_id))
+                .where(AddressEntity.ura_number == str(ura_number))
                 .where(AddressEntity.data_domain == str(data_domain))
             )
             result = self.db_session.execute(stmt)
@@ -92,19 +93,19 @@ class AddressesRepository(RepositoryBase):
             return result.rowcount  # type: ignore
         except DatabaseError as e:
             self.db_session.rollback()
-            logging.error(f"Failed to delete address {provider_id} {data_domain}: {e}")
+            logging.error(f"Failed to delete address {ura_number} {data_domain}: {e}")
             return 0
 
     def delete_many(self, data: List[AddressRequest]) -> int:
         row_count = 0
         for address_request in data:
-            provider_id = str(address_request.provider_id)
+            ura_number = str(address_request.ura_number)
             data_domain = str(address_request.data_domain)
 
             try:
                 stmt = (
                     delete(AddressEntity)
-                    .where(AddressEntity.provider_id == provider_id)
+                    .where(AddressEntity.ura_number == ura_number)
                     .where(AddressEntity.data_domain == data_domain)
                 )
                 result = self.db_session.execute(stmt)
@@ -112,7 +113,7 @@ class AddressesRepository(RepositoryBase):
                 self.db_session.commit()
             except DatabaseError as e:
                 self.db_session.rollback()
-                logging.error(f"Failed to delete address {provider_id} {data_domain}: {e}")
+                logging.error(f"Failed to delete address {ura_number} {data_domain}: {e}")
                 row_count = 0
                 break
 

@@ -41,7 +41,7 @@ Database schema:
 ```mermaid
 erDiagram
     endpoints {
-        string provider_id
+        string ura_number
         string data_domain
         string endpoint
         string request_type

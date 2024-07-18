@@ -1,7 +1,7 @@
 import logging
 from typing import List
 
-from app.data import ProviderID, DataDomain
+from app.data import UraNumber, DataDomain
 from app.db.db import Database
 from app.db.entities.address_entity import AddressEntity
 from app.db.repositories.addresses_repository import AddressesRepository
@@ -20,16 +20,16 @@ class AddressingService:
     def __init__(self, database: Database):
         self.database = database
 
-    def get_provider_address(self, provider_id: ProviderID, data_domain: DataDomain) -> Address:
+    def get_provider_address(self, ura_number: UraNumber, data_domain: DataDomain) -> Address:
         with self.database.get_db_session() as session:
             addressing_repository = session.get_repository(AddressesRepository)
             entity = addressing_repository.find_one(
-                provider_id=provider_id,
+                ura_number=ura_number,
                 data_domain=data_domain,
             )
 
             if entity is None:
-                logging.warning(f"Address not found for {provider_id} {data_domain}")
+                logging.warning(f"Address not found for {ura_number} {data_domain}")
                 raise AddressNotFoundException()
 
             return self.hydrate_address(entity)
@@ -64,20 +64,20 @@ class AddressingService:
                 logging.error(f"Failed to add address {addresses}: {str(e)}")
                 raise UnsuccessfulAddException()
 
-    def remove_one_address(self, provider_id: ProviderID, data_domain: DataDomain) -> DeleteAddressResult:
+    def remove_one_address(self, ura_number: UraNumber, data_domain: DataDomain) -> DeleteAddressResult:
         with self.database.get_db_session() as session:
             addressing_repository = session.get_repository(AddressesRepository)
-            address = self.get_provider_address(provider_id, data_domain)
+            address = self.get_provider_address(ura_number, data_domain)
             if address is None:
-                logging.warning(f"Address not found for {provider_id} {data_domain}")
+                logging.warning(f"Address not found for {ura_number} {data_domain}")
                 raise AddressNotFoundException()
 
             delete_count = addressing_repository.delete_one(
-                provider_id=provider_id, data_domain=data_domain
+                ura_number=ura_number, data_domain=data_domain
             )
 
             if delete_count == 0:
-                logging.warning(f"Cannot remove address {provider_id} {data_domain}")
+                logging.warning(f"Cannot remove address {ura_number} {data_domain}")
                 raise UnsuccessfulDeleteOperationException()
 
         return DeleteAddressResult(
@@ -115,7 +115,7 @@ class AddressingService:
             params.append(AddressURLParameters(**url_param))
 
         return Address(
-            provider_id=ProviderID(entity.provider_id),
+            ura_number=UraNumber(entity.ura_number),
             data_domain=data_domain,
             endpoint=entity.endpoint,
             request_type=entity.request_type,
