@@ -4,36 +4,27 @@ The Addressing Register holds information about various Health Data endpoints th
 for fetching the metadata. The information of the Addressing Register should be enough for the Timeline
 Service or the Health application to fetch the actual metadata.
 
-
-## First run
-
-If you need to run the application without actual development, you can use the autopilot functionality. When this
-repository is checked out, just run the following command:
-
-```bash
-make autopilot
-```
-
-This will configure the whole system for you and you should be able to use the API right away at http://localhost:8501/docs
-
-
 ## Usage
 
 The application is a FastAPI application, so you can use the FastAPI documentation to see how to use the application.
 
 ## Development
 
-Build and run the application
+You can either run the application natively or in a docker container. If you want to run the application natively you
+can take a look at the initialisation steps in `docker/init.sh`. 
 
-Firstly, copy the `app.conf.example` to `app.conf` and adjust values when needed.
+The preferred way to run the application is through docker.
+
 If you run Linux, make sure you export your user ID and group ID to synchronize permissions with the Docker user.
 
+```
 export NEW_UID=$(id -u)
 export NEW_GID=$(id -g)
+```
 
-When you're ready, build the application with: make container-build.
+After this you can simply run `docker compose up`. 
 
-Run make up to start the application.
+The application will be available at https://localhost:8502 when the startup is completed.
 
 ## Models
 
