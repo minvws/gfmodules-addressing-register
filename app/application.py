@@ -6,6 +6,7 @@ from fastapi import FastAPI
 import uvicorn
 
 from app.telemetry import setup_telemetry
+from app.stats import setup_stats, StatsdMiddleware
 from app.routers.default import router as default_router
 from app.routers.health import router as health_router
 from app.routers.addresses import router as example_router
@@ -44,6 +45,9 @@ def create_fastapi_app() -> FastAPI:
     application_init()
     fastapi = setup_fastapi()
 
+    if get_config().stats.enabled:
+        setup_stats()
+
     if get_config().telemetry.enabled:
         setup_telemetry(fastapi)
 
@@ -77,5 +81,8 @@ def setup_fastapi() -> FastAPI:
     routers = [default_router, health_router, example_router]
     for router in routers:
         fastapi.include_router(router)
+
+    if get_config().stats.enabled:
+        fastapi.add_middleware(StatsdMiddleware, module_name=get_config().stats.module_name)
 
     return fastapi

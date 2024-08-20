@@ -16,6 +16,12 @@ endpoint = http://tracing:4317
 service_name = Adressering Register
 tracer_name = zmodules.service.addressing_register
 
+[stats]
+enabled = True
+host = graphite
+port = 8125
+module_name = addressing
+
 [uvicorn]
 swagger_enabled = True
 docs_url = /docs
