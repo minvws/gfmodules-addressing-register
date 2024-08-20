@@ -1,4 +1,4 @@
-from app.config import Config, ConfigApp, LogLevel, ConfigDatabase, ConfigUvicorn, ConfigTelemetry
+from app.config import Config, ConfigApp, LogLevel, ConfigDatabase, ConfigUvicorn, ConfigTelemetry, ConfigStats
 
 
 def get_test_config() -> Config:
@@ -33,4 +33,10 @@ def get_test_config() -> Config:
             service_name=None,
             tracer_name=None,
         ),
+        stats=ConfigStats(
+            enabled=False,
+            host=None,
+            port=None,
+            module_name=None
+        )
     )

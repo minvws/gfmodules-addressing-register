@@ -21,7 +21,7 @@ router = APIRouter(
     summary="Returns an address metadata for a single provider",
     response_model=Address,
 )
-def get_address(
+def post_address(
     req: AddressRequest,
     addressing_service: AddressingService = Depends(get_addressing_service),
 ) -> Address:
