@@ -1,5 +1,5 @@
 from typing import Optional, List, Any
-from pydantic import BaseModel, field_serializer
+from pydantic import BaseModel, field_serializer, field_validator
 
 from app.data import UraNumber, DataDomain
 
@@ -18,6 +18,19 @@ class Address(BaseModel):
     endpoint: str
     request_type: str
     parameters: List[AddressURLParameters]
+
+
+    @field_validator('ura_number', mode='before')
+    @classmethod
+    def validate_ura_number(cls, val: str|UraNumber) -> UraNumber:
+        if isinstance(val, UraNumber):
+            return val
+        return UraNumber(val)
+
+    @field_validator('data_domain', mode='before')
+    @classmethod
+    def serialize_dd(cls, val: str) -> DataDomain:
+        return DataDomain(val)
 
     @field_serializer('ura_number')
     def serialize_ura_number(self, ura_number: UraNumber) -> str:
