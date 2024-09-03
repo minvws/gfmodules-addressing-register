@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Build venv package
-        uses: minvws/nl-irealisatie-generic-pipelines/.github/actions/python-venv-package@split-install-venv-package
+        uses: minvws/nl-irealisatie-generic-pipelines/.github/actions/python-venv-package@main
         with:
           python_version: ${{ matrix.python_version }}
           package_file_name: nl-irealisatie-zmodules-addressing-register
