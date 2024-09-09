@@ -31,11 +31,42 @@ The application will be available at https://localhost:8502 when the startup is 
 Database schema:
 ```mermaid
 erDiagram
-    endpoints {
+    ENDPOINTS {
         string ura_number
         string data_domain
         string endpoint
         string request_type
         json parameters
     }
+    
+    ORGANIZATION {
+      uuid id PK
+      boolean active
+      string name                   
+      string description
+      string parent_organization_id
+      timestamp created_at
+      timestamp modified_at
+    }
+    ORGANIZATION ||--o{ ORGANIZATION_TYPE: is
+    ORGANIZATION ||--o{ CONTACT_TYPE: has
+    
+    ORGANIZATION_TYPE {
+      uuid id PK  
+      string code
+      string definition
+      string display
+      timestamp created_at
+      timestamp modified_at
+    }
+    
+    CONTACT_TYPE {
+      uuid id PK
+      string code
+      string definition
+      string display
+      timestamp created_at
+      timestamp modified_at
+    }
+    
 ```
