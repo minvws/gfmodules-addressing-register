@@ -12,7 +12,7 @@ from app.db.entities.endpoint.endpoint_connection_type import EndpointConnection
 from app.db.entities.endpoint.endpoint_environment import EndpointEnvironment
 from app.db.entities.endpoint.endpoint_header import EndpointHeader
 from app.db.entities.mixin.common_mixin import CommonMixin
-from app.db.entities.organization.organization import Organization
+from app.db.entities.organization import organization
 from app.db.entities.value_sets.status import Status
 
 
@@ -38,7 +38,7 @@ class Endpoint(CommonMixin, Base):
     connection_type: Mapped[List["EndpointConnectionType"]] = relationship(
         back_populates="endpoint"
     )
-    managing_organization: Mapped[Optional["Organization"]] = relationship(
+    managing_organization: Mapped[Optional["organization.Organization"]] = relationship(
         back_populates="endpoints"
     )
     period: Mapped[Optional["EndpointPeriod"]] = relationship(back_populates="endpoint")

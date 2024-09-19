@@ -1,10 +1,9 @@
 from uuid import UUID, uuid4
 
 from sqlalchemy import types, Text, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.entities.base import Base
-from app.db.entities.endpoint.endpoint import Endpoint
 from app.db.entities.mixin.common_mixin import CommonMixin
 
 
@@ -19,5 +18,3 @@ class EndpointHeader(CommonMixin, Base):
     )
     data: Mapped[str] = mapped_column("data", Text)
     endpoint_id: Mapped[UUID] = mapped_column(ForeignKey("endpoints.id"))
-
-    endpoint: Mapped["Endpoint"] = relationship(back_populates="headers")
