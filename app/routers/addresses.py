@@ -16,6 +16,7 @@ router = APIRouter(
     tags=["Addresses"],
 )
 
+
 @router.post(
     "",
     summary="Returns an address metadata for a single provider",
@@ -29,9 +30,13 @@ def post_address(
     Returns an addressing object based on parameters in request body
     """
     span = trace.get_current_span()
-    span.update_name(f"POST /metadata_endpoint data_domain={req.data_domain} ura_number={req.ura_number}")
+    span.update_name(
+        f"POST /metadata_endpoint data_domain={req.data_domain} ura_number={req.ura_number}"
+    )
 
-    ret_value = addressing_service.get_provider_address(ura_number=req.ura_number, data_domain=req.data_domain)
+    ret_value = addressing_service.get_provider_address(
+        ura_number=req.ura_number, data_domain=req.data_domain
+    )
 
     span.set_attribute("data.address", ret_value.endpoint)
     return ret_value
@@ -82,7 +87,9 @@ def add_many_addresses(
 
 
 @router.delete(
-    "/delete-one", summary="delete one provider address", response_model=DeleteAddressResponse
+    "/delete-one",
+    summary="delete one provider address",
+    response_model=DeleteAddressResponse,
 )
 def delete_one_address(
     req: AddressRequest,
@@ -92,7 +99,9 @@ def delete_one_address(
     span.set_attribute("data.ura_number", str(req.ura_number))
     span.set_attribute("data.data_domain", str(req.data_domain))
 
-    result = addressing_service.remove_one_address(ura_number=req.ura_number, data_domain=req.data_domain)
+    result = addressing_service.remove_one_address(
+        ura_number=req.ura_number, data_domain=req.data_domain
+    )
     return DeleteAddressResponse(
         meta=result.meta,
         addresses=result.addresses,
