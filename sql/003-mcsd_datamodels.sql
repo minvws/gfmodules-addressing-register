@@ -2,6 +2,7 @@
 CREATE TABLE organizations
 (
   id                     uuid         NOT NULL DEFAULT gen_random_uuid(),
+  ura_number             VARCHAR      NOT NULL UNIQUE,
   active                 BOOLEAN      NOT NULL,
   name                   VARCHAR(150) NOT NULL,
   description            TEXT,
@@ -401,7 +402,7 @@ CREATE TABLE practice_codes
 INSERT INTO practice_codes (code, display, definition)
 VALUES ('408467006', 'Adult mental illness - specialty (qualifier value)','Adult mental illness'),
        ('394577000', 'Anesthetics','Anesthetics'),
-       ('394579002', 'Cardiology (qualifier value)','Cardiology',),
+       ('394579002', 'Cardiology (qualifier value)','Cardiology'),
        ('408480009', 'Clinical immunology (qualifier value)','Clinical immunology'),
        ('408475000', 'Diabetic medicine (qualifier value)','Diabetic medicine'),
        ('419772000', 'Family practice (qualifier value)', 'Family practice'),

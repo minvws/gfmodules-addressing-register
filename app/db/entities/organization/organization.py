@@ -21,6 +21,7 @@ class Organization(CommonMixin, Base):
     __tablename__ = "organizations"
 
     id: Mapped[UUID] = mapped_column("id", types.UUID, primary_key=True)
+    ura_number: Mapped[str] = mapped_column("ura_number", String, unique=True)
     active: Mapped[bool] = mapped_column(
         "active", Boolean, default=True, nullable=False
     )
