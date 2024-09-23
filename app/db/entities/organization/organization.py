@@ -5,7 +5,7 @@ from sqlalchemy import types, Boolean, String, Text, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.entities.base import Base
-from app.db.entities.endpoint.endpoint import Endpoint
+from app.db.entities.endpoint import endpoint
 from app.db.entities.mixin.common_mixin import CommonMixin
 from app.db.entities.organization.organization_type_association import (
     OrganizationTypeAssociation,
@@ -31,9 +31,7 @@ class Organization(CommonMixin, Base):
 
     part_of: Mapped["Organization"] = relationship(remote_side=[id])
     type: Mapped[List["OrganizationTypeAssociation"]] = relationship(
-        back_populates="organization_type"
     )
     contact: Mapped[List["OrganizationContact"]] = relationship(
-        back_populates="organization"
     )
-    endpoints: Mapped[List["Endpoint"]] = relationship(back_populates="organization")
+    endpoints: Mapped[List["endpoint.Endpoint"]] = relationship(back_populates="managing_organization")

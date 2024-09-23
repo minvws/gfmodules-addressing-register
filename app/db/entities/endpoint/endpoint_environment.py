@@ -24,4 +24,4 @@ class EndpointEnvironment(CommonMixin, Base):
         ForeignKey("environments.code"), primary_key=True
     )
 
-    environment: Mapped["Environment"] = relationship(back_populates="endpoints")
+    environment: Mapped["Environment"] = relationship()

@@ -1,12 +1,10 @@
 from uuid import UUID, uuid4
 
 from sqlalchemy import types, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.entities.base import Base
 from app.db.entities.mixin.common_mixin import CommonMixin
-from app.db.entities.value_sets.endpoint_payload_types import EndpointPayloadType
-
 
 class EndpointPayload(CommonMixin, Base):
     __tablename__ = "endpoint_payloads"
@@ -20,5 +18,3 @@ class EndpointPayload(CommonMixin, Base):
     )
     endpoint_id: Mapped[UUID] = mapped_column(ForeignKey("endpoints.id"))
     payload_type: Mapped[str] = mapped_column(ForeignKey("endpoint_payload_types.code"))
-
-    payload: Mapped["EndpointPayloadType"] = relationship(back_populates="endpoints")

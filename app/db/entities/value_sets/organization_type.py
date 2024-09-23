@@ -9,4 +9,4 @@ class OrganizationType(ValueSetMixin, Base):
     Represents a Organization Type FHIR definition. See: https://hl7.org/fhir/valueset-organization-type.html
     """
 
-    __tablename__ = "organization_type"
+    __tablename__ = "organization_types"

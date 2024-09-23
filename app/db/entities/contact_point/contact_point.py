@@ -27,6 +27,7 @@ class ContactPoint(CommonMixin, Base):
     system_type: Mapped[str] = mapped_column(ForeignKey("contact_point_systems.code"))
     use_type: Mapped[str] = mapped_column(ForeignKey("contact_point_use.code"))
 
-    system: Mapped["ContactPointSystem"] = relationship(back_populates="contact_points")
-    period: Mapped["ContactPointPeriod"] = relationship(back_populates="contact_point")
-    use: Mapped["ContactPointUse"] = relationship(back_populates="contact_points")
+    system: Mapped["ContactPointSystem"] = relationship()
+    period: Mapped["ContactPointPeriod"] = relationship()
+    use: Mapped["ContactPointUse"] = relationship()
+

@@ -33,22 +33,13 @@ class Endpoint(CommonMixin, Base):
     status_type: Mapped[str] = mapped_column(
         ForeignKey("statuses.code"), nullable=False
     )
+    status: Mapped["Status"] = relationship()
+    connection_type: Mapped[List["EndpointConnectionType"]] = relationship()
 
-    status: Mapped["Status"] = relationship(back_populates="endpoint")
-    connection_type: Mapped[List["EndpointConnectionType"]] = relationship(
-        back_populates="endpoint"
-    )
-    managing_organization: Mapped[Optional["organization.Organization"]] = relationship(
-        back_populates="endpoints"
-    )
+    managing_organization: Mapped[Optional["organization.Organization"]] = relationship(back_populates="endpoints")
     period: Mapped[Optional["EndpointPeriod"]] = relationship(back_populates="endpoint")
-    headers: Mapped[List["EndpointHeader"]] = relationship(back_populates="endpoint")
-    environment_type: Mapped[Optional[List["EndpointEnvironment"]]] = relationship(
-        back_populates="endpoint"
-    )
-    contact: Mapped[Optional[List["EndpointContactPoint"]]] = relationship(
-        back_populates="endpoint"
-    )
-    payload: Mapped[Optional[List["EndpointPayload"]]] = relationship(
-        back_populates="endpoint"
-    )
+
+    headers: Mapped[List["EndpointHeader"]] = relationship()
+    environment_type: Mapped[Optional[List["EndpointEnvironment"]]] = relationship()
+    contacts: Mapped[Optional[List["EndpointContactPoint"]]] = relationship()
+    payload: Mapped[Optional[List["EndpointPayload"]]] = relationship()

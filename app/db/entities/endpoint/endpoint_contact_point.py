@@ -22,4 +22,4 @@ class EndpointContactPoint(CommonMixin, Base):
     endpoint_id: Mapped[UUID] = mapped_column(ForeignKey("endpoints.id"))
     contact_point_id: Mapped[UUID] = mapped_column(ForeignKey("contact_points.id"))
 
-    contact_point: Mapped["ContactPoint"] = relationship(back_populates="endpoints")
+    contact_point: Mapped["ContactPoint"] = relationship()
