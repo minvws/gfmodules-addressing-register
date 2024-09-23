@@ -85,7 +85,7 @@ CREATE TABLE organization_type_associations
 );
 
 -- association between organization and contact type
-CREATE TABLE organization_contacts -- added
+CREATE TABLE organization_contacts
 (
   id              uuid        NOT NULL UNIQUE DEFAULT gen_random_uuid(),
   organization_id uuid        NOT NULL,
@@ -179,26 +179,14 @@ CREATE TABLE endpoints
   status_type     VARCHAR(50) NOT NULL,
   name            VARCHAR(150),
   description     VARCHAR,
+  period_start_date  TIMESTAMP,
+  period_end_date    TIMESTAMP,
   address         TEXT        NOT NULL,
 
   PRIMARY KEY (id),
   CONSTRAINT endpoints_organizations_fk FOREIGN KEY (organization_id) REFERENCES organizations (id),
   CONSTRAINT endpoint_statuses_fk FOREIGN KEY (status_type) REFERENCES statuses (code)
 
-);
-
--- zero to one
-CREATE TABLE endpoint_periods -- added
-(
-  id          uuid      NOT NULL DEFAULT gen_random_uuid(),
-  endpoint_id uuid      NOT NULL UNIQUE,
-  start_date  TIMESTAMP NOT NULL,
-  end_date    TIMESTAMP NOT NULL,
-  created_at  TIMESTAMP          DEFAULT NOW(),
-  modified_at TIMESTAMP          DEFAULT NOW(),
-
-  PRIMARY KEY (id),
-  CONSTRAINT endpoints_period_endpoint_fk FOREIGN KEY (endpoint_id) REFERENCES endpoints (id)
 );
 
 CREATE TABLE endpoint_headers -- added
@@ -292,6 +280,8 @@ CREATE TABLE contact_points
   use_type    VARCHAR(50),
   value       VARCHAR NOT NULL,
   rank        numeric CHECK (rank > 0),
+  period_start_date  TIMESTAMP,
+  period_end_date    TIMESTAMP,
   created_at  TIMESTAMP        DEFAULT NOW(),
   modified_at TIMESTAMP        DEFAULT NOW(),
 
@@ -299,19 +289,6 @@ CREATE TABLE contact_points
   UNIQUE (id, system_type),
   CONSTRAINT contact_points_contact_point_systems_fk FOREIGN KEY (system_type) REFERENCES contact_point_systems (code),
   CONSTRAINT contact_points_contact_point_use_fk FOREIGN KEY (use_type) REFERENCES contact_point_use (code)
-);
-
--- zero to one
-CREATE TABLE contact_point_periods -- added
-(
-  id               uuid NOT NULL DEFAULT gen_random_uuid(),
-  contact_point_id uuid NOT NULL UNIQUE,
-  start_date       TIMESTAMP,
-  end_date         TIMESTAMP,
-  created_at       TIMESTAMP     DEFAULT NOW(),
-  modified_at      TIMESTAMP     DEFAULT NOW(),
-  PRIMARY KEY (id),
-  CONSTRAINT contact_points_period_contact_points_fk FOREIGN KEY (contact_point_id) REFERENCES contact_points (id)
 );
 
 CREATE TABLE endpoints_contact_points
@@ -361,7 +338,7 @@ CREATE TABLE endpoint_payloads
 );
 
 -- https://hl7.org/fhir/R4/organizationaffiliation.html
-CREATE TABLE organization_affiliation_roles
+CREATE TABLE affiliation_roles
 (
   code        VARCHAR(50)  NOT NULL UNIQUE,
   definition  VARCHAR      NOT NULL,
@@ -373,7 +350,7 @@ CREATE TABLE organization_affiliation_roles
 );
 
 
-INSERT INTO organization_affiliation_roles (code, display, definition)
+INSERT INTO affiliation_roles (code, display, definition)
 VALUES ('provider', 'Provider', 'An organization that delivers care services (e.g. hospitals, clinics, community and social services, etc.).'),
        ('agency', 'Agency', 'An organization such as a public health agency, community/social services provider, etc.'),
        ('research', 'Research',
@@ -411,22 +388,60 @@ VALUES ('408467006', 'Adult mental illness - specialty (qualifier value)','Adult
 
 
 
+-- https://hl7.org/fhir/r4/organizationaffiliation.html
+CREATE TABLE organization_affiliations
+(
+  id           uuid        NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+  active      BOOLEAN NOT NULL,
+  period_start_date       TIMESTAMP,
+  period_end_date         TIMESTAMP,
+  organization_id uuid,
+  participating_organization_id uuid,
+  data JSON,
+  created_at  TIMESTAMP DEFAULT NOW(),
+  modified_at TIMESTAMP DEFAULT NOW(),
 
+  PRIMARY KEY (id),
+  CONSTRAINT organization_fk FOREIGN KEY (organization_id) REFERENCES organizations (id),
+  CONSTRAINT participation_organization_fk FOREIGN KEY (participating_organization_id) REFERENCES organizations (id)
+);
 
+CREATE TABLE organization_affiliation_endpoints
+(
+  id           uuid        NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+  affiliation_id UUID,
+  endpoint_id UUID,
+  created_at  TIMESTAMP DEFAULT NOW(),
+  modified_at TIMESTAMP DEFAULT NOW(),
 
+  PRIMARY KEY (id),
+  CONSTRAINT affiliations_fk FOREIGN KEY (affiliation_id) REFERENCES organization_affiliations (id),
+  CONSTRAINT endpoint_fk FOREIGN KEY (endpoint_id) REFERENCES endpoints (id)
+);
 
+CREATE TABLE organization_affiliations_roles
+(
+  id           uuid        NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+  affiliation_id uuid,
+  role_code VARCHAR(50),
+  created_at  TIMESTAMP DEFAULT NOW(),
+  modified_at TIMESTAMP DEFAULT NOW(),
 
+  PRIMARY KEY (id),
+  CONSTRAINT affiliations_fk FOREIGN KEY (affiliation_id) REFERENCES organization_affiliations (id),
+  CONSTRAINT affiliation_role_fk FOREIGN KEY (role_code) REFERENCES affiliation_roles (code)
 
+);
 
+CREATE TABLE organization_affiliation_practice_codes
+(
+  id           uuid        NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+  affiliation_id uuid,
+  practice_code VARCHAR(50),
+  created_at  TIMESTAMP DEFAULT NOW(),
+  modified_at TIMESTAMP DEFAULT NOW(),
 
-
-
-
-
-
-
-
-
-
-
-
+  PRIMARY KEY (id),
+  CONSTRAINT affiliations_fk FOREIGN KEY (affiliation_id) REFERENCES organization_affiliations (id),
+  CONSTRAINT affiliations_practice_code_fk FOREIGN KEY (practice_code) REFERENCES practice_codes (code)
+)

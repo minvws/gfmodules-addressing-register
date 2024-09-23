@@ -2,10 +2,10 @@ from sqlalchemy import String
 
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.db.entities.mixin.common_mixin import CommonMixin
+from app.db.entities.mixin.common_mixin import BaseMixin
 
 
-class ValueSetMixin(CommonMixin):
+class ValueSetMixin(BaseMixin):
     code: Mapped[str] = mapped_column(
         "code", String(50), nullable=False, primary_key=True
     )

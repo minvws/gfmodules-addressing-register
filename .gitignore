@@ -7,3 +7,4 @@ secrets/
 *.priv
 *.pub
 docker-compose.override.yml
+coverage.xml

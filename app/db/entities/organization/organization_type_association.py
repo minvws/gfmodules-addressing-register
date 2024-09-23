@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from sqlalchemy import PrimaryKeyConstraint, ForeignKey, types
+from sqlalchemy import PrimaryKeyConstraint, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.entities.base import Base
@@ -17,7 +17,6 @@ class OrganizationTypeAssociation(CommonMixin, Base):
     __tablename__ = "organization_type_associations"
     __table_args__ = (PrimaryKeyConstraint("organization_id", "organization_type"),)
 
-    id: Mapped[UUID] = mapped_column("id", types.UUID, unique=True)
     organization_id: Mapped[UUID] = mapped_column(
         ForeignKey("organizations.id"), nullable=False
     )

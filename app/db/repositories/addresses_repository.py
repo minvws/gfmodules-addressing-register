@@ -21,7 +21,9 @@ class RepositoryException(Exception):
 
 @repository(AddressEntity)
 class AddressesRepository(RepositoryBase):
-    def find_one(self, ura_number: UraNumber, data_domain: DataDomain) -> AddressEntity | None:
+    def find_one(
+        self, ura_number: UraNumber, data_domain: DataDomain
+    ) -> AddressEntity | None:
         """
         Find one addressing by ura_number and data_domain
         """
@@ -36,7 +38,9 @@ class AddressesRepository(RepositoryBase):
     def find_many(self, params: List[AddressRequest]) -> List[AddressEntity]:
         results = []
         for base in params:
-            address = self.find_one(ura_number=base.ura_number, data_domain=base.data_domain)
+            address = self.find_one(
+                ura_number=base.ura_number, data_domain=base.data_domain
+            )
             if address is not None:
                 results.append(address)
 
@@ -71,8 +75,7 @@ class AddressesRepository(RepositoryBase):
 
         try:
             self.db_session.session.scalars(
-                insert(AddressEntity).returning(AddressEntity),
-                entities
+                insert(AddressEntity).returning(AddressEntity), entities
             ).all()
             self.db_session.commit()
         except DatabaseError as e:
@@ -113,7 +116,9 @@ class AddressesRepository(RepositoryBase):
                 self.db_session.commit()
             except DatabaseError as e:
                 self.db_session.rollback()
-                logging.error(f"Failed to delete address {ura_number} {data_domain}: {e}")
+                logging.error(
+                    f"Failed to delete address {ura_number} {data_domain}: {e}"
+                )
                 row_count = 0
                 break
 
