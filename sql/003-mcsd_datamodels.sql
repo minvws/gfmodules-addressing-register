@@ -99,7 +99,7 @@ CREATE TABLE organization_contacts -- added
 
 
 -- https://hl7.org/fhir/valueset-endpoint-status.html
-CREATE TABLE statuses 
+CREATE TABLE statuses
 (
   code        VARCHAR(50)  NOT NULL UNIQUE,
   definition  VARCHAR      NOT NULL,
@@ -175,10 +175,10 @@ CREATE TABLE endpoints
 (
   id              UUID        NOT NULL DEFAULT gen_random_uuid(),
   organization_id UUID,
-  status_type          VARCHAR(50) NOT NULL,
+  status_type     VARCHAR(50) NOT NULL,
   name            VARCHAR(150),
   description     VARCHAR,
-  address         TEXT NOT NULL,
+  address         TEXT        NOT NULL,
 
   PRIMARY KEY (id),
   CONSTRAINT endpoints_organizations_fk FOREIGN KEY (organization_id) REFERENCES organizations (id),
@@ -287,8 +287,8 @@ VALUES ('home', 'Home',
 CREATE TABLE contact_points
 (
   id          uuid    NOT NULL DEFAULT gen_random_uuid(),
-  system_type      VARCHAR(50),
-  use_type         VARCHAR(50),
+  system_type VARCHAR(50),
+  use_type    VARCHAR(50),
   value       VARCHAR NOT NULL,
   rank        numeric CHECK (rank > 0),
   created_at  TIMESTAMP        DEFAULT NOW(),
@@ -303,12 +303,12 @@ CREATE TABLE contact_points
 -- zero to one
 CREATE TABLE contact_point_periods -- added
 (
-  id               uuid      NOT NULL DEFAULT gen_random_uuid(),
-  contact_point_id uuid      NOT NULL UNIQUE,
+  id               uuid NOT NULL DEFAULT gen_random_uuid(),
+  contact_point_id uuid NOT NULL UNIQUE,
   start_date       TIMESTAMP,
   end_date         TIMESTAMP,
-  created_at       TIMESTAMP          DEFAULT NOW(),
-  modified_at      TIMESTAMP          DEFAULT NOW(),
+  created_at       TIMESTAMP     DEFAULT NOW(),
+  modified_at      TIMESTAMP     DEFAULT NOW(),
   PRIMARY KEY (id),
   CONSTRAINT contact_points_period_contact_points_fk FOREIGN KEY (contact_point_id) REFERENCES contact_points (id)
 );
@@ -329,31 +329,103 @@ CREATE TABLE endpoints_contact_points
 
 CREATE TABLE endpoint_payload_types
 (
- code        VARCHAR(50)  NOT NULL UNIQUE,
- definition  VARCHAR      NOT NULL,
- display     VARCHAR(150) NOT NULL,
- created_at  TIMESTAMP     DEFAULT NOW(),
- modified_at TIMESTAMP    DEFAULT NOW(),
+  code        VARCHAR(50)  NOT NULL UNIQUE,
+  definition  VARCHAR      NOT NULL,
+  display     VARCHAR(150) NOT NULL,
+  created_at  TIMESTAMP DEFAULT NOW(),
+  modified_at TIMESTAMP DEFAULT NOW(),
 
- PRIMARY KEY (code)
+  PRIMARY KEY (code)
 );
 
 INSERT INTO endpoint_payload_types (code, display, definition)
-VALUES ('any', 'ANY', 'Any payload type can be used with this endpoint, it is either a payload agnostic infrastructure (such as a storage repository), or some other type of endpoint where payload considerations are internally handled, and not available'),
-        ('none', 'NONE', 'This endpoint does not require any content to be sent; simply connecting to the endpoint is enough notification. This can be used as a ''ping'' to wakeup a service to retrieve content, which could be to ensure security considerations are correctly handled'),
-        ('urn:ihe:pcc:xds-ms:2007', 'PCC XDS-MS', 'XDS Medical Summaries');
+VALUES ('any', 'ANY',
+        'Any payload type can be used with this endpoint, it is either a payload agnostic infrastructure (such as a storage repository), or some other type of endpoint where payload considerations are internally handled, and not available'),
+       ('none', 'NONE',
+        'This endpoint does not require any content to be sent; simply connecting to the endpoint is enough notification. This can be used as a ''ping'' to wakeup a service to retrieve content, which could be to ensure security considerations are correctly handled'),
+       ('urn:ihe:pcc:xds-ms:2007', 'PCC XDS-MS', 'XDS Medical Summaries');
 
 CREATE TABLE endpoint_payloads
 (
-  id      uuid NOT NULL UNIQUE DEFAULT gen_random_uuid(),
-  endpoint_id UUID NOT NULL,
+  id           uuid        NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+  endpoint_id  UUID        NOT NULL,
   payload_type VARCHAR(50) NOT NULL,
-  mime_type TEXT,
-  created_at  TIMESTAMP     DEFAULT NOW(),
-  modified_at TIMESTAMP    DEFAULT NOW(),
+  mime_type    TEXT,
+  created_at   TIMESTAMP                   DEFAULT NOW(),
+  modified_at  TIMESTAMP                   DEFAULT NOW(),
 
   PRIMARY KEY (id),
   CONSTRAINT endpoint_payloads_endpoint_payload_types_fk FOREIGN KEY (payload_type) REFERENCES endpoint_payload_types (code),
   CONSTRAINT endpont_payloads_endpoints_fk FOREIGN KEY (endpoint_id) REFERENCES endpoints (id)
-)
+);
+
+-- https://hl7.org/fhir/R4/organizationaffiliation.html
+CREATE TABLE organization_affiliation_roles
+(
+  code        VARCHAR(50)  NOT NULL UNIQUE,
+  definition  VARCHAR      NOT NULL,
+  display     VARCHAR(150) NOT NULL,
+  created_at  TIMESTAMP DEFAULT NOW(),
+  modified_at TIMESTAMP DEFAULT NOW(),
+
+  PRIMARY KEY (code)
+);
+
+
+INSERT INTO organization_affiliation_roles (code, display, definition)
+VALUES ('provider', 'Provider', 'An organization that delivers care services (e.g. hospitals, clinics, community and social services, etc.).'),
+       ('agency', 'Agency', 'An organization such as a public health agency, community/social services provider, etc.'),
+       ('research', 'Research',
+        'An organization providing research-related services such as conducting research, recruiting research participants, analyzing data, etc.'),
+       ('payer', 'Payer', 'An organization providing reimbursement, payment, or related services'),
+       ('diagnostics', 'Diagnostics', 'An organization providing diagnostic testing/laboratory services'),
+       ('supplier', 'Supplier',
+        'An organization that provides medical supplies (e.g. medical devices, equipment, pharmaceutical products, etc.'),
+       ('HIE/HIO', 'HIE/HIO', 'An organization that facilitates electronic clinical data exchange between entities'),
+       ('member', 'Member',
+        'A type of non-ownership relationship between entities (encompasses partnerships, collaboration, joint ventures, etc.)');
+
+
+-- https://hl7.org/fhir/R4/valueset-c80-practice-codes.html
+-- note: not all codes are added, just examples
+CREATE TABLE practice_codes
+(
+  code        VARCHAR(50)  NOT NULL UNIQUE,
+  definition  VARCHAR      NOT NULL,
+  display     VARCHAR(150) NOT NULL,
+  created_at  TIMESTAMP DEFAULT NOW(),
+  modified_at TIMESTAMP DEFAULT NOW(),
+
+  PRIMARY KEY (code)
+);
+INSERT INTO practice_codes (code, display, definition)
+VALUES ('408467006', 'Adult mental illness - specialty (qualifier value)','Adult mental illness'),
+       ('394577000', 'Anesthetics','Anesthetics'),
+       ('394579002', 'Cardiology (qualifier value)','Cardiology',),
+       ('408480009', 'Clinical immunology (qualifier value)','Clinical immunology'),
+       ('408475000', 'Diabetic medicine (qualifier value)','Diabetic medicine'),
+       ('419772000', 'Family practice (qualifier value)', 'Family practice'),
+       ('394814009', 'General practice (specialty) (qualifier value)', 'General practice'),
+       ('394593009', 'Medical oncology (qualifier value)', 'Medical oncology');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
