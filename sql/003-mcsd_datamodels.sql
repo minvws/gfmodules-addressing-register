@@ -180,6 +180,8 @@ CREATE TABLE endpoints
   name            VARCHAR(150),
   description     VARCHAR,
   address         TEXT        NOT NULL,
+  created_at      TIMESTAMP            DEFAULT NOW(),
+  modified_at     TIMESTAMP            DEFAULT NOW(),
 
   PRIMARY KEY (id),
   CONSTRAINT endpoints_organizations_fk FOREIGN KEY (organization_id) REFERENCES organizations (id),
