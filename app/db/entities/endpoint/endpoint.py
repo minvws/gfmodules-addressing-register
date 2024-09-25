@@ -1,13 +1,13 @@
 from typing import List, Optional
-from uuid import UUID, uuid4
+from uuid import UUID
+from datetime import datetime
 
-from sqlalchemy import types, String, ForeignKey, Text
+from sqlalchemy import String, ForeignKey, Text, PrimaryKeyConstraint, TIMESTAMP
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.entities.base import Base
 from app.db.entities.endpoint.endpoint_contact_point import EndpointContactPoint
 from app.db.entities.endpoint.endpoint_payload import EndpointPayload
-from app.db.entities.endpoint.endpoint_period import EndpointPeriod
 from app.db.entities.endpoint.endpoint_connection_type import EndpointConnectionType
 from app.db.entities.endpoint.endpoint_environment import EndpointEnvironment
 from app.db.entities.endpoint.endpoint_header import EndpointHeader
@@ -18,14 +18,8 @@ from app.db.entities.value_sets.status import Status
 
 class Endpoint(CommonMixin, Base):
     __tablename__ = "endpoints"
+    __table_args__ = (PrimaryKeyConstraint("id"),)
 
-    id: Mapped[UUID] = mapped_column(
-        "id",
-        types.Uuid,
-        primary_key=True,
-        nullable=False,
-        default=uuid4,
-    )
     name: Mapped[str | None] = mapped_column("name", String(150))
     description: Mapped[str | None] = mapped_column("description", String)
     address: Mapped[str] = mapped_column("address", Text)
@@ -35,10 +29,16 @@ class Endpoint(CommonMixin, Base):
     )
     status: Mapped["Status"] = relationship()
     connection_type: Mapped[List["EndpointConnectionType"]] = relationship()
+    period_start_date: Mapped[datetime | None] = mapped_column(
+        "period_start_date", TIMESTAMP
+    )
+    period_end_date: Mapped[datetime | None] = mapped_column(
+        "period_end_date", TIMESTAMP
+    )
 
-    managing_organization: Mapped[Optional["organization.Organization"]] = relationship(back_populates="endpoints")
-    period: Mapped[Optional["EndpointPeriod"]] = relationship(back_populates="endpoint")
-
+    managing_organization: Mapped[Optional["organization.Organization"]] = relationship(
+        back_populates="endpoints"
+    )
     headers: Mapped[List["EndpointHeader"]] = relationship()
     environment_type: Mapped[Optional[List["EndpointEnvironment"]]] = relationship()
     contacts: Mapped[Optional[List["EndpointContactPoint"]]] = relationship()

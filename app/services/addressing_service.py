@@ -4,7 +4,9 @@ from typing import List
 from app.data import UraNumber, DataDomain
 from app.db.db import Database
 from app.db.entities.address_entity import AddressEntity
-from app.db.repositories.addresses_repository import AddressesRepository
+from app.db.repositories.addresses_repository import (
+    AddressesRepository,
+)
 from app.exceptions.service_exceptions import (
     AddressNotFoundException,
     UnsuccessfulAddException,
@@ -20,7 +22,9 @@ class AddressingService:
     def __init__(self, database: Database):
         self.database = database
 
-    def get_provider_address(self, ura_number: UraNumber, data_domain: DataDomain) -> Address:
+    def get_provider_address(
+        self, ura_number: UraNumber, data_domain: DataDomain
+    ) -> Address:
         with self.database.get_db_session() as session:
             addressing_repository = session.get_repository(AddressesRepository)
             entity = addressing_repository.find_one(
@@ -64,7 +68,9 @@ class AddressingService:
                 logging.error(f"Failed to add address {addresses}: {str(e)}")
                 raise UnsuccessfulAddException()
 
-    def remove_one_address(self, ura_number: UraNumber, data_domain: DataDomain) -> DeleteAddressResult:
+    def remove_one_address(
+        self, ura_number: UraNumber, data_domain: DataDomain
+    ) -> DeleteAddressResult:
         with self.database.get_db_session() as session:
             addressing_repository = session.get_repository(AddressesRepository)
             address = self.get_provider_address(ura_number, data_domain)
@@ -97,7 +103,7 @@ class AddressingService:
                 raise UnsuccessfulDeleteOperationException()
 
         return DeleteAddressResult(
-            meta = Meta(
+            meta=Meta(
                 total=len(addresses),
                 deleted=delete_count,
             ),
