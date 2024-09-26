@@ -1,6 +1,8 @@
 [app]
 # Loglevel can be one of: debug, info, warning, error, critical
 loglevel=debug
+# Override authentication_ura to override SSL certificate check
+override_authentication_ura=
 
 [database]
 # Dsn for database connection

@@ -1,5 +1,6 @@
 [app]
 loglevel=debug
+override_authentication_ura=
 
 [database]
 dsn=postgresql+psycopg://postgres:postgres@addressing_db:5432/postgres

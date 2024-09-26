@@ -10,15 +10,39 @@ services:
             dockerfile: docker/Dockerfile
         volumes:
             - ./:/src
+            - ./secrets:/src/secrets
         ports:
             - 8502:8502
+        healthcheck:
+          test: [ "CMD", "curl", "-f", "http://localhost:8502/health" ]
+          interval: 5s
+          timeout: 10s
+          retries: 5
+          start_period: 5s
         depends_on:
             addressing_db:
               condition: service_healthy
         networks:
             zmodules:
                 aliases:
-                    - addressing
+                    - addressing-app
+
+    app_ssl:
+      image: httpd
+      restart: "no"
+      ports:
+        - "8542:443"
+      volumes:
+        - "./secrets:/usr/local/secrets"
+        - "./docker/httpd.conf:/usr/local/apache2/conf/httpd.conf"
+        - "./docker/httpd-ssl.conf:/usr/local/apache2/conf/extra/httpd-ssl.conf"
+      depends_on:
+        app:
+          condition: service_healthy
+      networks:
+        zmodules:
+          aliases:
+            - addressing
 
     addressing_db:
         image: postgres:14

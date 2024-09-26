@@ -5,6 +5,7 @@ def get_test_config() -> Config:
     return Config(
         app=ConfigApp(
             loglevel=LogLevel.error,
+            override_authentication_ura=None,
         ),
         database=ConfigDatabase(
             dsn="sqlite:///:memory:",
