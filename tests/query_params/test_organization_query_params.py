@@ -41,6 +41,9 @@ def test_correct_query_params_should_succeed(
 ) -> None:
     mock_model = OrganizationQueryParams(**correct_organization_params)
 
+    print("the one failing")
+    print(correct_organization_params)
+
     expected_params = correct_organization_params
     actual_params = mock_model.model_dump(exclude_none=True)
 
