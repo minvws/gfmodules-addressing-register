@@ -1,37 +1,69 @@
 import logging
-from typing import List, Union
+from typing import Union, Sequence, Any
 
-from sqlalchemy import select
+from sqlalchemy import select, or_
 from sqlalchemy.exc import DatabaseError
 from uuid import UUID
+
+
 from app.db.decorator import repository
 from app.db.entities.organization.organization import Organization
+from app.db.entities.organization.organization_type_association import (
+    OrganizationTypeAssociation,
+)
 from app.db.repositories.repository_base import RepositoryBase
 
 logger = logging.getLogger(__name__)
 
+
 class RepositoryException(Exception):
     pass
+
 
 @repository(Organization)
 class OrganizationsRepository(RepositoryBase):
     def get(self, **kwargs: Union[str, UUID, dict[str, str]]) -> Organization | None:
-        stmt = (
-            select(Organization).filter_by(**kwargs)
-        )
-        result = self.db_session.execute(stmt).scalars().first()
-        if result is None or isinstance(result, Organization):
-            return result
-
-        raise TypeError("Result not of type Organization")
-
-    def get_many(self, **kwargs: Union[bool, str, UUID, dict[str, str]]) -> List[Organization]:
         stmt = select(Organization).filter_by(**kwargs)
-        result = self.db_session.execute(stmt).scalars().all()
-        if isinstance(result, List):
-            return result
+        return self.db_session.session.execute(stmt).scalars().first()
 
-        raise TypeError("Result not of type Organization")
+    def get_many(
+        self, **kwargs: Union[bool, str, UUID, dict[str, str]]
+    ) -> Sequence[Organization]:
+        stmt = select(Organization).filter_by(**kwargs)
+        return self.db_session.session.execute(stmt).scalars().all()
+
+    def find(
+        self, **conditions: Union[bool, str, UUID, dict[str, Any]]
+    ) -> Sequence[Organization]:
+        stmt = select(Organization)
+        filter_conditions = []
+        if "id" in conditions:
+            filter_conditions.append(Organization.id == conditions["id"])
+
+        if "parent_organization_id" in conditions:
+            filter_conditions.append(
+                Organization.parent_organization_id
+                == conditions["parent_organization_id"]
+            )
+
+        if "name" in conditions:
+            filter_conditions.append(Organization.name.ilike(f"%{conditions['name']}%"))
+
+        if "active" in conditions:
+            filter_conditions.append(Organization.active == conditions["active"])
+
+        if "ura_number" in conditions:
+            filter_conditions.append(
+                Organization.ura_number == conditions["ura_number"]
+            )
+
+        if "type" in conditions:
+            stmt = stmt.filter(
+                OrganizationTypeAssociation.organization_type == conditions["type"]
+            )
+
+        stmt = stmt.where(or_(*filter_conditions))
+        return self.db_session.session.execute(stmt).scalars().all()
 
     def create(self, organization: Organization) -> Organization:
         try:

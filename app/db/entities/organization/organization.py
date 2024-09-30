@@ -31,13 +31,13 @@ class Organization(BaseMixin, Base):
     active: Mapped[bool] = mapped_column(
         "active", Boolean, default=True, nullable=False
     )
-    parent_organization_id: Mapped[UUID] = mapped_column(ForeignKey("organizations.id"))
+    parent_organization_id: Mapped[UUID | None] = mapped_column(ForeignKey("organizations.id"))
     name: Mapped[str] = mapped_column("name", String(150), nullable=False)
     description: Mapped[Optional[str]] = mapped_column("description", Text)
 
-    part_of: Mapped["Organization"] = relationship(remote_side=[id])
-    type: Mapped[List["OrganizationTypeAssociation"]] = relationship()
+    part_of: Mapped[Optional["Organization"]] = relationship("Organization", remote_side=[id], lazy="joined", join_depth=2)
+    type: Mapped[List["OrganizationTypeAssociation"]] = relationship(lazy="selectin")
     contact: Mapped[List["OrganizationContact"]] = relationship()
     endpoints: Mapped[List["endpoint.Endpoint"]] = relationship(
-        back_populates="managing_organization"
+        back_populates="managing_organization", lazy="selectin"
     )

@@ -8,6 +8,7 @@ from app.services.addressing_service import AddressingService
 from app.config import set_config
 from test_config import get_test_config
 
+
 class BaseTestSuite(unittest.TestCase):
     def setUp(self) -> None:
         set_config(get_test_config())
@@ -79,8 +80,12 @@ class TestGettingManyAddresses(BaseTestSuite):
 
         expected_results = [provider_address_1, provider_address_2]
         parameters = [
-            AddressRequest(ura_number=UraNumber("1234"), data_domain=DataDomain.Medicatie),
-            AddressRequest(ura_number=UraNumber("5312"), data_domain=DataDomain.BeeldBank),
+            AddressRequest(
+                ura_number=UraNumber("1234"), data_domain=DataDomain.Medicatie
+            ),
+            AddressRequest(
+                ura_number=UraNumber("5312"), data_domain=DataDomain.BeeldBank
+            ),
         ]
 
         # act
@@ -110,8 +115,7 @@ class TestDeleteOneAddress(BaseTestSuite):
         )
 
         expected_results = DeleteAddressResult(
-            meta=Meta(total=1, deleted=1),
-            addresses=[provider_address]
+            meta=Meta(total=1, deleted=1), addresses=[provider_address]
         )
 
         # act
@@ -149,8 +153,12 @@ class TestDeleteManyAddresses(BaseTestSuite):
             parameters=[mock_address_parameters],
         )
         parameters = [
-            AddressRequest(ura_number=UraNumber("1234"), data_domain=DataDomain.BeeldBank),
-            AddressRequest(ura_number=UraNumber("5312"), data_domain=DataDomain.Medicatie),
+            AddressRequest(
+                ura_number=UraNumber("1234"), data_domain=DataDomain.BeeldBank
+            ),
+            AddressRequest(
+                ura_number=UraNumber("5312"), data_domain=DataDomain.Medicatie
+            ),
         ]
 
         meta = Meta(total=2, deleted=2)

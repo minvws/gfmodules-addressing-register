@@ -27,8 +27,7 @@ def test_query_params_creation_should_succeed_when_correct_values_are_passed(
 ) -> None:
     model = OrganizationAffliliationQueryParams(**expected_query_params)
 
-    actual_query_params = model.model_dump(exclude_none=True)
-
+    actual_query_params = model.model_dump(exclude_none=True, by_alias=False)
     assert expected_query_params == actual_query_params
 
 

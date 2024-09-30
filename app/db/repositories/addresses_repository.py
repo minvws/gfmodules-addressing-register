@@ -29,7 +29,7 @@ class AddressesRepository(RepositoryBase):
             .where(AddressEntity.data_domain == str(data_domain))
         )
 
-        return self.db_session.execute(stmt).scalars().first()  # type: ignore
+        return self.db_session.session.execute(stmt).scalars().first()
 
     def find_many(self, params: List[AddressRequest]) -> List[AddressEntity]:
         results = []
@@ -86,10 +86,10 @@ class AddressesRepository(RepositoryBase):
                 .where(AddressEntity.ura_number == str(ura_number))
                 .where(AddressEntity.data_domain == str(data_domain))
             )
-            result = self.db_session.execute(stmt)
+            result = self.db_session.session.execute(stmt)
             self.db_session.commit()
 
-            return result.rowcount  # type: ignore
+            return result.rowcount
         except DatabaseError as e:
             self.db_session.rollback()
             logging.error(f"Failed to delete address {ura_number} {data_domain}: {e}")

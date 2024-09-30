@@ -178,6 +178,7 @@ CREATE TABLE endpoints
   organization_id UUID,
   status_type     VARCHAR(50) NOT NULL,
   name            VARCHAR(150),
+  connection_type VARCHAR(50) NOT NULL,
   description     VARCHAR,
   period_start_date  TIMESTAMP,
   period_end_date    TIMESTAMP,
@@ -187,7 +188,8 @@ CREATE TABLE endpoints
 
   PRIMARY KEY (id),
   CONSTRAINT endpoints_organizations_fk FOREIGN KEY (organization_id) REFERENCES organizations (id),
-  CONSTRAINT endpoint_statuses_fk FOREIGN KEY (status_type) REFERENCES statuses (code)
+  CONSTRAINT endpoints_statuses_fk FOREIGN KEY (status_type) REFERENCES statuses (code),
+  CONSTRAINT endpoints_connection_types FOREIGN KEY (connection_type) REFERENCES connection_types (code)
 
 );
 
@@ -201,19 +203,6 @@ CREATE TABLE endpoint_headers -- added
 
   PRIMARY KEY (id),
   CONSTRAINT endpoint_headers_endpoint_fk FOREIGN KEY (endpoint_id) REFERENCES endpoints (id)
-);
-
-CREATE TABLE endpoints_connection_types -- added
-(
-  id              uuid        NOT NULL DEFAULT gen_random_uuid(),
-  endpoint_id     uuid        NOT NULL,
-  connection_type VARCHAR(50) NOT NULL,
-  created_at      TIMESTAMP            DEFAULT NOW(),
-  modified_at     TIMESTAMP            DEFAULT NOW(),
-
-  PRIMARY KEY (endpoint_id, connection_type),
-  CONSTRAINT endpoint_connection_types_endpoint_fk FOREIGN KEY (endpoint_id) REFERENCES endpoints (id),
-  CONSTRAINT endpoints_connection_types_connection_types_fk FOREIGN KEY (connection_type) REFERENCES connection_types (code)
 );
 
 CREATE TABLE endpoints_environments -- added

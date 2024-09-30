@@ -1,8 +1,8 @@
 import logging
 from uuid import UUID
-from typing import List, Union
+from typing import Sequence, Union, Any
 
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.exc import DatabaseError
 
 from app.db.decorator import repository
@@ -11,27 +11,38 @@ from app.db.repositories.repository_base import RepositoryBase
 
 logger = logging.getLogger(__name__)
 
+
 class RepositoryException(Exception):
     pass
+
 
 @repository(Endpoint)
 class EndpointsRepository(RepositoryBase):
     def get(self, **kwargs: Union[str, UUID, dict[str, str]]) -> Endpoint | None:
-        stmt = (
-            select(Endpoint)
-            .filter_by(**kwargs)
-        )
-        result = self.db_session.execute(stmt).scalars().first()
-        if result is None or isinstance(result, Endpoint):
-            return result
-        raise TypeError("Result not of type Endpoint")
-
-    def get_many(self, **kwargs: Union[str, UUID, dict[str, str]]) -> List[Endpoint]:
         stmt = select(Endpoint).filter_by(**kwargs)
-        result = self.db_session.execute(stmt).scalars().all()
-        if isinstance(result, List):
-            return result
-        raise TypeError("Result not of type List")
+        return self.db_session.session.execute(stmt).scalars().first()
+
+    def get_many(
+        self, **kwargs: Union[str, UUID, dict[str, str]]
+    ) -> Sequence[Endpoint]:
+        stmt = select(Endpoint).filter_by(**kwargs)
+        return self.db_session.session.execute(stmt).scalars().all()
+
+    def find(
+        self, **conditions: Union[bool, str, UUID, dict[str, Any]]
+    ) -> Sequence[Endpoint]:
+        stmt = select(Endpoint)
+        filter_conditions = []
+        if "id" in conditions:
+            filter_conditions.append(Endpoint.id == conditions["id"])
+
+        if "organization_id" in conditions:
+            filter_conditions.append(
+                Endpoint.organization_id == conditions["organization_id"]
+            )
+
+        stmt = stmt.where(or_(*filter_conditions))
+        return self.db_session.session.execute(stmt).scalars().all()
 
     def create(self, endpoint: Endpoint) -> Endpoint:
         try:

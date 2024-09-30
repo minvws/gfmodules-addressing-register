@@ -24,4 +24,4 @@ class OrganizationTypeAssociation(CommonMixin, Base):
         ForeignKey("organization_types.code"), nullable=False
     )
 
-    institution_type: Mapped["OrganizationType"] = relationship()
+    institution_type: Mapped["OrganizationType"] = relationship(lazy="selectin")

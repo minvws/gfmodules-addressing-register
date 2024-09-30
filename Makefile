@@ -32,10 +32,10 @@ safety-check: ## Check for security vulnerabilities
 	$(RUN_PREFIX) safety check
 
 spelling-check: ## Check spelling mistakes
-	$(RUN_PREFIX) codespell .
+	$(RUN_PREFIX) codespell -L selectin .
 
 spelling-fix: ## Fix spelling mistakes
-	$(RUN_PREFIX) codespell . --write-changes --interactive=3
+	$(RUN_PREFIX) codespell -L selectin . --write-changes --interactive=3
 
 test: ## Runs automated tests
 	$(RUN_PREFIX) pytest --cov --cov-report=term --cov-report=xml
