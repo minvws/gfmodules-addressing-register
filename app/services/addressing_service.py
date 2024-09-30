@@ -8,9 +8,7 @@ from app.db.repositories.addresses_repository import (
     AddressesRepository,
 )
 from app.exceptions.service_exceptions import (
-    AddressNotFoundException,
-    UnsuccessfulAddException,
-    UnsuccessfulDeleteOperationException,
+    ResourceNotDeletedException, ResourceNotFoundException, ResourceNotAddedException
 )
 from app.models.address.dto import Meta, DeleteAddressResult, AddressRequest
 from app.models.address.model import Address, AddressURLParameters
@@ -34,7 +32,7 @@ class AddressingService:
 
             if entity is None:
                 logging.warning(f"Address not found for {ura_number} {data_domain}")
-                raise AddressNotFoundException()
+                raise ResourceNotFoundException()
 
             return self.hydrate_address(entity)
 
@@ -46,7 +44,7 @@ class AddressingService:
             entities = addressing_repository.find_many(requested_addresses)
             if len(entities) == 0:
                 logging.warning(f"Addresses not found for {requested_addresses}")
-                raise AddressNotFoundException()
+                raise ResourceNotFoundException()
 
             return [self.hydrate_address(entity) for entity in entities]
 
@@ -57,7 +55,7 @@ class AddressingService:
                 addressing_repository.create_one(address)
             except Exception as e:
                 logging.error(f"Failed to add address {address}: {str(e)}")
-                raise UnsuccessfulAddException()
+                raise ResourceNotAddedException()
 
     def add_many_addresses(self, addresses: List[Address]) -> None:
         with self.database.get_db_session() as session:
@@ -66,7 +64,7 @@ class AddressingService:
                 addressing_repository.create_many(addresses)
             except Exception as e:
                 logging.error(f"Failed to add address {addresses}: {str(e)}")
-                raise UnsuccessfulAddException()
+                raise ResourceNotAddedException()
 
     def remove_one_address(
         self, ura_number: UraNumber, data_domain: DataDomain
@@ -76,7 +74,7 @@ class AddressingService:
             address = self.get_provider_address(ura_number, data_domain)
             if address is None:
                 logging.warning(f"Address not found for {ura_number} {data_domain}")
-                raise AddressNotFoundException()
+                raise ResourceNotFoundException()
 
             delete_count = addressing_repository.delete_one(
                 ura_number=ura_number, data_domain=data_domain
@@ -84,7 +82,7 @@ class AddressingService:
 
             if delete_count == 0:
                 logging.warning(f"Cannot remove address {ura_number} {data_domain}")
-                raise UnsuccessfulDeleteOperationException()
+                raise ResourceNotDeletedException()
 
         return DeleteAddressResult(
             meta=Meta(total=1, deleted=1),
@@ -100,7 +98,7 @@ class AddressingService:
 
             delete_count = addressing_repository.delete_many(requested_addresses)
             if delete_count != len(addresses):
-                raise UnsuccessfulDeleteOperationException()
+                raise ResourceNotDeletedException()
 
         return DeleteAddressResult(
             meta=Meta(

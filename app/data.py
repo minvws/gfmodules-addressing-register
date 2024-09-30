@@ -25,6 +25,23 @@ class DataDomain(Enum):
     def __str__(self) -> str:
         return self.value
 
+class EndpointStatus(Enum):
+    Active = 'active'
+    Suspended = 'suspended'
+    Error = 'error'
+    Off = 'off'
+    EnteredInError = 'entered-in-error'
+
+    @classmethod
+    def from_str(cls, label: str) -> Optional['EndpointStatus']:
+        try:
+            return cls(label.lower())
+        except ValueError:
+            return None
+
+    def __str__(self) -> str:
+        return self.value
+
 
 @dataclass
 class UraNumber:

@@ -1,16 +1,13 @@
-from app.exceptions.http_base_exceptions import NotFoundException, ConflictException
+from app.exceptions.http_base_exceptions import NotFoundException
 
-
-class AddressNotFoundException(NotFoundException):
+class ResourceNotFoundException(NotFoundException):
     def __init__(self) -> None:
-        super().__init__("Requested address is not found")
+        super().__init__("Requested resource was not found")
 
-
-class UnsuccessfulAddException(ConflictException):
+class ResourceNotAddedException(NotFoundException):
     def __init__(self) -> None:
-        super().__init__("Creating new addresses failed")
+        super().__init__("Creating new resource failed")
 
-
-class UnsuccessfulDeleteOperationException(ConflictException):
+class ResourceNotDeletedException(NotFoundException):
     def __init__(self) -> None:
-        super().__init__("Deleting address failed")
+        super().__init__("Deleting resource failed")
