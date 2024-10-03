@@ -13,8 +13,7 @@ class BaseTestSuite(unittest.TestCase):
         set_config(get_test_config())
 
         # setup database
-        self.database = Database("sqlite:///:memory:")
-        self.database.generate_tables()
+        self.database = Database("sqlite:///:memory:", create_tables=True)
 
         # setup addresses service
         self.addresses_service = AddressingService(self.database)

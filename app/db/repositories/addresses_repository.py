@@ -9,15 +9,11 @@ from app.data import UraNumber, DataDomain
 from app.db.decorator import repository
 from app.db.entities.address_entity import AddressEntity
 from app.db.repositories.repository_base import RepositoryBase
+from app.db.repositories.repository_exception import RepositoryException
 from app.models.address.dto import AddressRequest
 from app.models.address.model import Address
 
 logger = logging.getLogger(__name__)
-
-
-class RepositoryException(Exception):
-    pass
-
 
 @repository(AddressEntity)
 class AddressesRepository(RepositoryBase):

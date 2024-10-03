@@ -4,12 +4,13 @@ from app.config import get_config
 from app.services.addressing_service import AddressingService
 from app.services.endpoint_service import EndpointService
 from app.services.organization_service import OrganizationService
+from app.services.supplier_service import SupplierService
 
 
 def container_config(binder: inject.Binder) -> None:
     config = get_config()
 
-    db = Database(dsn=config.database.dsn)
+    db = Database(dsn=config.database.dsn, create_tables=config.database.create_tables)
     binder.bind(Database, db)
     addressing_service = AddressingService(db)
     binder.bind(AddressingService, addressing_service)
@@ -17,6 +18,8 @@ def container_config(binder: inject.Binder) -> None:
     binder.bind(OrganizationService, organization_service)
     endpoint_service = EndpointService(db)
     binder.bind(EndpointService, endpoint_service)
+    supplying_service = SupplierService(db)
+    binder.bind(SupplierService, supplying_service)
 
 
 def get_database() -> Database:
@@ -32,5 +35,8 @@ def get_organization_service() -> OrganizationService:
 def get_endpoint_service() -> EndpointService:
     return inject.instance(EndpointService)
 
-if not inject.is_configured():
+def get_supplying_service() -> SupplierService:
+    return inject.instance(SupplierService)
+
+def setup_container() -> None:
     inject.configure(container_config)

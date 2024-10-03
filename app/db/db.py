@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 class Database:
-    def __init__(self, dsn: str):
+    def __init__(self, dsn: str, create_tables: bool = False):
         try:
             if "sqlite://" in dsn:
                 self.engine = create_engine(
@@ -33,6 +33,9 @@ class Database:
         except BaseException as e:
             logger.error("Error while connecting to database: %s", e)
             raise e
+
+        if create_tables:
+            self.generate_tables()
 
     def generate_tables(self) -> None:
         logger.info("Generating tables...")

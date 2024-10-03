@@ -5,11 +5,13 @@ from typing import Any
 from fastapi import FastAPI
 import uvicorn
 
+from app.container import setup_container
 from app.telemetry import setup_telemetry
 from app.stats import setup_stats, StatsdMiddleware
 from app.routers.default import router as default_router
 from app.routers.health import router as health_router
 from app.routers.addresses import router as address_router
+from app.routers.suppliers import router as supplier_router
 from app.config import get_config
 
 
@@ -55,6 +57,7 @@ def create_fastapi_app() -> FastAPI:
 
 
 def application_init() -> None:
+    setup_container()
     setup_logging()
 
 
@@ -78,7 +81,7 @@ def setup_fastapi() -> FastAPI:
         else FastAPI(docs_url=None, redoc_url=None)
     )
 
-    routers = [default_router, health_router, address_router]
+    routers = [default_router, health_router, address_router, supplier_router]
     for router in routers:
         fastapi.include_router(router)
 
