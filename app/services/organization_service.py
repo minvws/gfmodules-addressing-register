@@ -1,5 +1,4 @@
 import logging
-from datetime import datetime
 from typing import Optional, Sequence
 
 
@@ -29,7 +28,6 @@ class OrganizationService:
         name: str | None = None,
         type: str | None = None,
         parent_organization_id: UUID | None = None,
-        updated_at: datetime | None = None,
     ) -> Sequence[Organization]:
         params = {
             "id": id,

@@ -55,5 +55,4 @@ def get_matching_care_service() -> MatchingCareService:
 
 
 def setup_container() -> None:
-    if not inject.is_configured():
-        inject.configure(container_config)
+    inject.configure(container_config, once=True)
