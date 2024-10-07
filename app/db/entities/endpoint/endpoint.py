@@ -8,11 +8,11 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.entities.base import Base
 from app.db.entities.endpoint.endpoint_contact_point import EndpointContactPoint
 from app.db.entities.endpoint.endpoint_payload import EndpointPayload
-from app.db.entities.endpoint.endpoint_connection_type import EndpointConnectionType
 from app.db.entities.endpoint.endpoint_environment import EndpointEnvironment
 from app.db.entities.endpoint.endpoint_header import EndpointHeader
 from app.db.entities.mixin.common_mixin import CommonMixin
 from app.db.entities.organization import organization
+from app.db.entities.value_sets.connection_type import ConnectionType
 from app.db.entities.value_sets.status import Status
 
 
@@ -27,8 +27,9 @@ class Endpoint(CommonMixin, Base):
     status_type: Mapped[str] = mapped_column(
         ForeignKey("statuses.code"), nullable=False
     )
-    status: Mapped["Status"] = relationship()
-    connection_type: Mapped[List["EndpointConnectionType"]] = relationship()
+    connection_type: Mapped[str] = mapped_column(
+        ForeignKey("connection_types.code"), nullable=False
+    )
     period_start_date: Mapped[datetime | None] = mapped_column(
         "period_start_date", TIMESTAMP
     )
@@ -37,9 +38,13 @@ class Endpoint(CommonMixin, Base):
     )
 
     managing_organization: Mapped[Optional["organization.Organization"]] = relationship(
-        back_populates="endpoints"
+        back_populates="endpoints", lazy="selectin"
     )
-    headers: Mapped[List["EndpointHeader"]] = relationship()
+    status: Mapped["Status"] = relationship(lazy="selectin")
+    connection: Mapped["ConnectionType"] = relationship(lazy="selectin")
+    headers: Mapped[List["EndpointHeader"]] = relationship(lazy="selectin")
     environment_type: Mapped[Optional[List["EndpointEnvironment"]]] = relationship()
-    contacts: Mapped[Optional[List["EndpointContactPoint"]]] = relationship()
-    payload: Mapped[Optional[List["EndpointPayload"]]] = relationship()
+    contacts: Mapped[Optional[List["EndpointContactPoint"]]] = relationship(
+        lazy="selectin"
+    )
+    payload: Mapped[Optional[List["EndpointPayload"]]] = relationship(lazy="selectin")

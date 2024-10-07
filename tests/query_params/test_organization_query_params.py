@@ -1,53 +1,72 @@
-from typing import Any
+from typing import Any, Generator, Type
 from uuid import uuid4
 from pydantic import ValidationError
 import pytest
-
+from contextlib import contextmanager
 from app.params.organization_query_params import OrganizationQueryParams
 
 
+@contextmanager
+def not_raise(ValidationError: Type[Exception]) -> Generator[None, Any, Any]:
+    try:
+        yield
+    except ValidationError as e:
+        pytest.fail("function did railse {0}".format(e))
+
+
 @pytest.mark.parametrize(
-    "correct_organization_params",
+    "expected_params",
     [
         {
             "id": uuid4(),
             "active": True,
-            "identifier": "some identifier",
-            "partOf": uuid4(),
+            "ura_number": "some identifier",
+            "parent_organization_id": uuid4(),
             "name": "Just a regular query parameter",
         },
         {
             "id": uuid4(),
             "active": True,
-            "identifier": "some identifier",
+            "ura_number": "some identifier",
             "name": "with only include parameter",
             "include": "Organization.endpoint",
         },
-        {"name": "with only revInclude", "revInclude": "Location:organization"},
+        {"name": "with only revInclude", "rev_include": "Location:organization"},
         {
             "name": "combination of include and revInclude",
             "include": "Organization.endpoint",
-            "revInclude": "OrganizationAffiliation:participating-organization",
+            "rev_include": "OrganizationAffiliation:participating-organization",
         },
         {
             "name": "with a variation of revInclude",
             "include": "Organization.endpoint",
-            "revInclude": "OrganizationAffiliation:primary-organization",
+            "rev_include": "OrganizationAffiliation:primary-organization",
         },
     ],
 )
-def test_correct_query_params_should_succeed(
-    correct_organization_params: dict[str, Any]
-) -> None:
-    mock_model = OrganizationQueryParams(**correct_organization_params)
-
-    print("the one failing")
-    print(correct_organization_params)
-
-    expected_params = correct_organization_params
-    actual_params = mock_model.model_dump(exclude_none=True)
-
+def test_correct_query_params_should_succeed(expected_params: dict[str, Any]) -> None:
+    actual_params = (OrganizationQueryParams(**expected_params)).model_dump(
+        exclude_none=True
+    )
     assert expected_params == actual_params
+
+
+@pytest.mark.parametrize(
+    "alias_params",
+    [
+        {
+            "_id": uuid4(),
+            "identifier": "1234567",
+            "_revInclude": "OrganizationAffiliation:primary-organization",
+            "_include": "Organization.endpoint",
+        },
+    ],
+)
+def test_using_alias_as_params_should_succed(
+    alias_params: dict[str, Any],
+) -> None:
+    with not_raise(ValidationError):
+        OrganizationQueryParams.model_validate(alias_params)
 
 
 @pytest.mark.parametrize(
@@ -55,14 +74,14 @@ def test_correct_query_params_should_succeed(
     [
         {"id": uuid4(), "include": "Organization.incorrectJoin"},
         {"id": uuid4(), "include": "IncorrectResource:endpoint"},
-        {"id": uuid4(), "revInclude": "Location:incorrectJoin"},
-        {"id": uuid4(), "revInclude": "IncorrectResource:primary-organization"},
-        {"id": uuid4(), "revInclude": "IncorrectResource:participating-organization"},
-        {"id": uuid4(), "revInclude": "OrganizationAffiliation:incorrect-join"},
+        {"id": uuid4(), "rev_include": "Location:incorrectJoin"},
+        {"id": uuid4(), "rev_include": "IncorrectResource:primary-organization"},
+        {"id": uuid4(), "rev_include": "IncorrectResource:participating-organization"},
+        {"id": uuid4(), "rev_include": "OrganizationAffiliation:incorrect-join"},
         {
             "id": uuid4(),
             "name": "use dot instead of column",
-            "revInclude": "Location.organization",
+            "_revInclude": "Location.organization",
         },
     ],
 )
@@ -77,7 +96,7 @@ def test_incorrect_query_params_should_raise_value_error(
     "incorrect_organization_params",
     [
         {"name": "Incorrect type", "id": 12345},
-        {"name": "another incorrect type", "last_updated": ["some wrong data"]},
+        {"name": "another incorrect type", "updated_at": ["some wrong data"]},
     ],
 )
 def test_incorrect_param_should_raise_validation_error(

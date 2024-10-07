@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from sqlalchemy import ForeignKey, PrimaryKeyConstraint
+from sqlalchemy import ForeignKey, PrimaryKeyConstraint, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.entities.base import Base
@@ -14,5 +14,6 @@ class EndpointPayload(CommonMixin, Base):
 
     endpoint_id: Mapped[UUID] = mapped_column(ForeignKey("endpoints.id"))
     payload_type: Mapped[str] = mapped_column(ForeignKey("endpoint_payload_types.code"))
+    mime_type: Mapped[str | None] = mapped_column("mime_type", Text)
 
-    payload: Mapped["EndpointPayloadType"] = relationship()
+    payload: Mapped["EndpointPayloadType"] = relationship(lazy="selectin")

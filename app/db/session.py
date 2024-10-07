@@ -9,10 +9,10 @@ from sqlalchemy.orm import Session
 
 from app.config import get_config
 from app.db.entities.base import Base
-from app.db.repositories.repository_base import TRepositoryBase, RepositoryBase
+from app.db.repositories import repository_base
 
 """
-This module contains the DbSession class, which is a context manager that provides a session to interact with 
+This module contains the DbSession class, which is a context manager that provides a session to interact with
 the database. It also provides methods to add and delete resources from the session, and to commit or rollback the
 current transaction.
 
@@ -22,19 +22,20 @@ Usage:
         repo = session.get_repository(MyModelRepository)
         repo.find_all()
         session.add(MyModel())
-        session.commit()        
+        session.commit()
 """
 
 
 logger = logging.getLogger(__name__)
 
-T = TypeVar('T')
+T = TypeVar("T")
+
 
 class DbSession:
     def __init__(self, engine: Engine) -> None:
         self._engine = engine
 
-    def __enter__(self) -> 'DbSession':
+    def __enter__(self) -> "DbSession":
         """
         Create a new session when entering the context manager
         """
@@ -47,11 +48,13 @@ class DbSession:
         """
         self.session.close()
 
-    def get_repository(self, repository_class: Type[TRepositoryBase]) -> TRepositoryBase:
+    def get_repository(
+        self, repository_class: Type["repository_base.TRepositoryBase"]
+    ) -> "repository_base.TRepositoryBase":
         """
         Returns an instantiated repository
         """
-        if issubclass(repository_class, RepositoryBase):
+        if issubclass(repository_class, repository_base.RepositoryBase):
             return repository_class(self)
         raise ValueError(f"No repository registered for model {repository_class}")
 
@@ -133,5 +136,5 @@ class DbSession:
                 raise Exception("Operation failed after all retries")
 
             logger.info("Retrying operation in %s seconds", backoff[0])
-            sleep(backoff[0] + random.uniform(0, 0.1) )
+            sleep(backoff[0] + random.uniform(0, 0.1))
             backoff = backoff[1:]
