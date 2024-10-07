@@ -1,6 +1,10 @@
-from typing import List, Dict, Any
+from typing import Any
 
-from app.mappers.fhir_mapper import map_to_fhir_organization, map_to_endpoint_fhir
+from app.mappers.fhir_mapper import (
+    create_fhir_bundle,
+    create_organization_bundled_resources,
+    create_endpoint_bundled_resources,
+)
 from app.params.endpoint_query_params import EndpointQueryParams
 from app.params.organization_query_params import OrganizationQueryParams
 from app.services.organization_service import OrganizationService
@@ -18,20 +22,21 @@ class MatchingCareService:
 
     def find_organizations(
         self, org_query_request: OrganizationQueryParams
-    ) -> list[Dict[str, Any]]:
+    ) -> dict[str, Any]:
         organizations = self._organization_service.find(
             **org_query_request.model_dump(
                 exclude={"include", "rev_include", "updated_at"}
             ),
         )
         include_endpoints = True if org_query_request.include is not None else False
-        return [
-            map_to_fhir_organization(org, include_endpoints).dict()
-            for org in organizations
-        ]
+        bundled_organization_resources = create_organization_bundled_resources(
+            organizations, include_endpoints
+        )
+        return create_fhir_bundle(bundled_entries=bundled_organization_resources).dict()  # type: ignore
 
     def find_endpoints(
         self, endpoints_req_params: EndpointQueryParams
-    ) -> List[Dict[str, Any]]:
+    ) -> dict[str, Any]:
         endpoints = self._endpoint_service.find(**endpoints_req_params.model_dump())
-        return [map_to_endpoint_fhir(endpoint).dict() for endpoint in endpoints]
+        bundled_endpoint_resources = create_endpoint_bundled_resources(endpoints)
+        return create_fhir_bundle(bundled_entries=bundled_endpoint_resources).dict()  # type: ignore
