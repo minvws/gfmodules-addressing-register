@@ -92,7 +92,7 @@ def map_to_endpoint_fhir(entity: EndpointEntity) -> Endpoint:
     contact = (
         [
             ContactPoint.construct(
-                system=contact.contact_point.system,
+                system=contact.contact_point.system_type,
                 value=contact.contact_point.value,
                 use=contact.contact_point.use_type,
                 rank=contact.contact_point.rank,
@@ -148,5 +148,5 @@ def create_endpoint_bundled_resources(
 
 def create_fhir_bundle(bundled_entries: list[BundleEntry]) -> Bundle:
     return Bundle.construct(
-        entry=bundled_entries,
+        type="searchset", entry=bundled_entries, total=len(bundled_entries)
     )
