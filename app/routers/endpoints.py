@@ -1,4 +1,5 @@
 from typing import Any
+from uuid import UUID
 
 from fastapi import APIRouter, Depends
 
@@ -12,11 +13,15 @@ router = APIRouter(
 )
 
 
+@router.get("/{_id}")
 @router.get(
     "",
 )
 def find_endpoints(
+    _id: UUID | None = None,
     query_params: EndpointQueryParams = Depends(),
     service: MatchingCareService = Depends(get_matching_care_service),
 ) -> dict[str, Any]:
+    if _id:
+        query_params.id = _id
     return service.find_endpoints(query_params)
