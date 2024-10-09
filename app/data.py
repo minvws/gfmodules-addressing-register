@@ -25,6 +25,22 @@ class DataDomain(Enum):
     def __str__(self) -> str:
         return self.value
 
+class ConnectionType(Enum):
+    DicomWadoRs = 'dicom-wado-rs'
+    DicomQidoRs = 'dicom-qido-rs'
+    DicomStowRs = 'dicom-stow-rs'
+    DicomWadoUri = 'dicom-wado-uri'
+    Hl7FhirRest = 'hl7-fhir-rest'
+    Hl7FhirMsg = 'hl7-fhir-msg'
+    Hl7v2Mllp = 'hl7v2-mllp'
+    SecureEmail = 'secure-email'
+    DirectProject = 'direct-project'
+    CdsHooksService = 'cds-hooks-service'
+
+    def __str__(self) -> str:
+        return self.value
+
+
 class EndpointStatus(Enum):
     Active = 'active'
     Suspended = 'suspended'

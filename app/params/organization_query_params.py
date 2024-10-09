@@ -13,7 +13,7 @@ class OrganizationQueryParams(CommonQueryParams):
         validation_alias=AliasChoices("ura_number", "identifier"),
         default=None,
     )
-    name: str | None | None = None
+    name: str | None = None
     parent_organization_id: UUID | None = Field(
         alias="partOf",
         validation_alias=AliasChoices("parent_organization_id", "partOf"),

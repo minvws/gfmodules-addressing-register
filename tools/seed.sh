@@ -26,7 +26,7 @@ if
     echo "CREATE TABLE seed_migrations (id serial PRIMARY KEY, name VARCHAR(255) NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);" | psql -h $DB_HOST -U $DB_USER -d $DB_NAME -q -o /dev/null
 fi
 
-for file in seed-sql/*.sql; do
+for file in seeds/*.sql; do
     # Check each SQL file to see if it's already in the migrations table
     if psql -h $DB_HOST -U $DB_USER -d $DB_NAME -c "SELECT name FROM seed_migrations WHERE name = '$file';" | grep -q $file; then
         echo -e "${YELLOW}⏩ File $file is already in the seed_migrations table. Skipping.${NC}"
@@ -34,5 +34,17 @@ for file in seed-sql/*.sql; do
         echo -e "${GREEN}▶️ Running seed_migrations $file${NC}"
         psql -h $DB_HOST -U $DB_USER -d $DB_NAME -f $file -q -o /dev/null
         echo "INSERT INTO seed_migrations (name) VALUES ('$file');" | psql -h $DB_HOST -U $DB_USER -d $DB_NAME -o /dev/null
+    fi
+done
+
+for file_path in seeds/*.py; do
+    file_name=$(basename $file_path)
+    # Check each SQL file to see if it's already in the migrations table
+    if psql -h $DB_HOST -U $DB_USER -d $DB_NAME -c "SELECT name FROM seed_migrations WHERE name = '$file_name';" | grep -q $file_name; then
+        echo -e "${YELLOW}⏩ File $file_path is already in the seed_migrations table. Skipping.${NC}"
+    else
+        echo -e "${GREEN}▶️ Running seed_migrations $file_name${NC}"
+        python $file_path
+        echo "INSERT INTO seed_migrations (name) VALUES ('$file_name');" | psql -h $DB_HOST -U $DB_USER -d $DB_NAME -o /dev/null
     fi
 done

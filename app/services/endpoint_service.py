@@ -3,7 +3,7 @@ import logging
 from typing import Sequence
 from uuid import UUID
 
-from app.data import EndpointStatus
+from app.data import EndpointStatus, ConnectionType
 from app.db.db import Database
 from app.db.entities.endpoint.endpoint import Endpoint
 from app.db.repositories.endpoints_repository import EndpointsRepository
@@ -40,7 +40,8 @@ class EndpointService:
         address: str,
         status_type: EndpointStatus,
         organization_id: UUID | None,
-    ) -> None:
+        connection_type: ConnectionType | None,
+    ) -> Endpoint:
         with self.database.get_db_session() as session:
             endpoint_repository = session.get_repository(EndpointsRepository)
             try:
@@ -50,8 +51,9 @@ class EndpointService:
                     address=address,
                     status_type=str(status_type),
                     organization_id=organization_id,
+                    connection_type=str(connection_type),
                 )
-                endpoint_repository.create(endpoint_entity)
+                return endpoint_repository.create(endpoint_entity)
             except Exception as e:
                 logging.error(f"Failed to add endpoint: {str(e)}")
                 raise ResourceNotAddedException()
