@@ -1,3 +1,6 @@
+from typing import Sequence
+
+from fhir.resources.R4B.bundle import Bundle, BundleEntry
 from fhir.resources.R4B.organization import Organization
 
 from fhir.resources.R4B.endpoint import Endpoint
@@ -89,7 +92,7 @@ def map_to_endpoint_fhir(entity: EndpointEntity) -> Endpoint:
     contact = (
         [
             ContactPoint.construct(
-                system=contact.contact_point.system,
+                system=contact.contact_point.system_type,
                 value=contact.contact_point.value,
                 use=contact.contact_point.use_type,
                 rank=contact.contact_point.rank,
@@ -120,4 +123,30 @@ def map_to_endpoint_fhir(entity: EndpointEntity) -> Endpoint:
         period=period,
         address=entity.address,
         header=headers,
+    )
+
+
+def create_organization_bundled_resources(
+    organizations: Sequence[OrganizationEntity], include_endpoints: bool = False
+) -> list[BundleEntry]:
+    return [
+        BundleEntry.construct(
+            resource=(map_to_fhir_organization(org, include_endpoints))
+        )
+        for org in organizations
+    ]
+
+
+def create_endpoint_bundled_resources(
+    endpoints: Sequence[EndpointEntity],
+) -> list[BundleEntry]:
+    return [
+        BundleEntry.construct(resource=map_to_endpoint_fhir(endpoint))
+        for endpoint in endpoints
+    ]
+
+
+def create_fhir_bundle(bundled_entries: list[BundleEntry]) -> Bundle:
+    return Bundle.construct(
+        type="searchset", entry=bundled_entries, total=len(bundled_entries)
     )

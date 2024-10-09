@@ -35,5 +35,5 @@ class ContactPoint(CommonMixin, Base):
         "period_end_date", TIMESTAMP
     )
 
-    system: Mapped["ContactPointSystem"] = relationship()
-    use: Mapped["ContactPointUse"] = relationship()
+    system: Mapped["ContactPointSystem"] = relationship(lazy="selectin")
+    use: Mapped["ContactPointUse"] = relationship(lazy="selectin")

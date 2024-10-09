@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any
 
 from fastapi import APIRouter, Depends
 
@@ -16,5 +16,5 @@ router = APIRouter(
 def find_organization(
     query_params: OrganizationQueryParams = Depends(),
     service: MatchingCareService = Depends(get_matching_care_service),
-) -> list[Dict[str, Any]]:
+) -> dict[str, Any]:
     return service.find_organizations(query_params)

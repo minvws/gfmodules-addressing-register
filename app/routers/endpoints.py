@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any
 
 from fastapi import APIRouter, Depends
 
@@ -15,8 +15,8 @@ router = APIRouter(
 @router.get(
     "",
 )
-def find_endpoins(
+def find_endpoints(
     query_params: EndpointQueryParams = Depends(),
     service: MatchingCareService = Depends(get_matching_care_service),
-) -> list[Dict[str, Any]]:
+) -> dict[str, Any]:
     return service.find_endpoints(query_params)
