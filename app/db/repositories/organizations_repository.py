@@ -58,9 +58,9 @@ class OrganizationsRepository(RepositoryBase):
             )
 
         if "type" in conditions:
-            stmt = stmt.filter(
-                OrganizationTypeAssociation.organization_type == conditions["type"]
-            )
+            stmt = stmt.join(OrganizationTypeAssociation,
+                             Organization.id == OrganizationTypeAssociation.organization_id)
+            stmt = stmt.filter(OrganizationTypeAssociation.organization_type == conditions["type"])
 
         stmt = stmt.where(or_(*filter_conditions))
         return self.db_session.session.execute(stmt).scalars().all()
