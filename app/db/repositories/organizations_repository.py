@@ -1,10 +1,9 @@
 import logging
 from typing import Union, Sequence, Any
+from uuid import UUID
 
 from sqlalchemy import select, or_
 from sqlalchemy.exc import DatabaseError
-from uuid import UUID
-
 
 from app.db.decorator import repository
 from app.db.entities.organization.organization import Organization
@@ -14,10 +13,6 @@ from app.db.entities.organization.organization_type_association import (
 from app.db.repositories.repository_base import RepositoryBase
 
 logger = logging.getLogger(__name__)
-
-
-class RepositoryException(Exception):
-    pass
 
 
 @repository(Organization)
@@ -71,8 +66,8 @@ class OrganizationsRepository(RepositoryBase):
             self.db_session.commit()
         except DatabaseError as e:
             self.db_session.rollback()
-            logging.error(f"Failed to add organization {organization}: {e}")
-            raise RepositoryException(f"Failed to add organization {organization}")
+            logging.error(f"Failed to add organization {organization.id}: {e}")
+            raise e
         return organization
 
     def delete(self, organization: Organization) -> None:
@@ -81,7 +76,7 @@ class OrganizationsRepository(RepositoryBase):
             self.db_session.commit()
         except DatabaseError as e:
             self.db_session.rollback()
-            logging.error(f"Failed to delete organization {organization}: {e}")
+            logging.error(f"Failed to delete organization {organization.id}: {e}")
             raise e
 
     def update(self, organization: Organization) -> Organization:
@@ -91,5 +86,5 @@ class OrganizationsRepository(RepositoryBase):
             return organization
         except DatabaseError as e:
             self.db_session.rollback()
-            logging.error(f"Failed to update organization {organization}: {e}")
+            logging.error(f"Failed to update organization {organization.id}: {e}")
             raise e

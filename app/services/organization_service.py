@@ -1,10 +1,9 @@
 import logging
 from typing import Optional, Sequence
-
+from uuid import UUID
 
 from app.data import UraNumber
 from app.db.db import Database
-from uuid import UUID
 from app.db.entities.organization.organization import Organization
 from app.db.repositories.organizations_repository import OrganizationsRepository
 from app.exceptions.service_exceptions import (
@@ -46,12 +45,18 @@ class OrganizationService:
         with self.database.get_db_session() as session:
             organization_repository = session.get_repository(OrganizationsRepository)
             try:
+                if organization.parent_organization_id is not None:
+                    if organization_repository.get(id=organization.parent_organization_id) is None:
+                        logging.error(
+                            f"Failed to add organization {organization.ura_number}: Parent organization {organization.parent_organization_id} does not exist"
+                        )
+                        raise ResourceNotFoundException("Parent organization not found")
                 if (
                     organization_repository.get(ura_number=str(organization.ura_number))
                     is not None
                 ):
                     logging.error(
-                        f"Failed to add organization {organization}: Organization with URA number already exists"
+                        f"Failed to add organization {organization.ura_number}: Organization with URA number already exists"
                     )
                     raise ResourceNotAddedException()
                 organization_entity = Organization(
@@ -85,16 +90,18 @@ class OrganizationService:
     ) -> Sequence[Organization]:
         with self.database.get_db_session() as session:
             organization_repository = session.get_repository(OrganizationsRepository)
+            if parent_organization_id is not None:
+                if organization_repository.get(id=parent_organization_id) is None:
+                    logging.error(
+                        f"Failed to get organizations: Parent organization {parent_organization_id} does not exist"
+                    )
+                    raise ResourceNotFoundException("Parent organization not found")
             params = {
                 "ura_number": ura_number,
                 "name": name,
                 "active": active,
                 "description": description,
-                "parent_organization_id": (
-                    str(parent_organization_id)
-                    if parent_organization_id is not None
-                    else None
-                ),
+                "parent_organization_id": parent_organization_id,
             }
             # Remove keys with None values
             filtered_params = {k: v for k, v in params.items() if v is not None}
@@ -118,7 +125,6 @@ class OrganizationService:
             if entity is None:
                 logging.warning(f"Organization not found for {ura_number}")
                 raise ResourceNotFoundException()
-
             if active is not None:
                 entity.active = active
             if name is not None:
@@ -126,6 +132,11 @@ class OrganizationService:
             if description is not None:
                 entity.description = description
             if parent_org is not None:
+                if organization_repository.get(id=parent_org) is None:
+                    logging.error(
+                        f"Failed to update organization: Parent organization {parent_org} does not exist"
+                    )
+                    raise ResourceNotFoundException("Parent organization not found")
                 entity.parent_organization_id = parent_org
             return organization_repository.update(entity)
 

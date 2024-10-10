@@ -1,6 +1,6 @@
 import logging
-from uuid import UUID
 from typing import Sequence, Union, Any
+from uuid import UUID
 
 from sqlalchemy import or_, select
 from sqlalchemy.exc import DatabaseError
@@ -10,10 +10,6 @@ from app.db.entities.endpoint.endpoint import Endpoint
 from app.db.repositories.repository_base import RepositoryBase
 
 logger = logging.getLogger(__name__)
-
-
-class RepositoryException(Exception):
-    pass
 
 
 @repository(Endpoint)
@@ -51,8 +47,8 @@ class EndpointsRepository(RepositoryBase):
             return endpoint
         except DatabaseError as e:
             self.db_session.rollback()
-            logging.error(f"Failed to add Endpoint {endpoint}: {e}")
-            raise RepositoryException(f"Failed to add Endpoint {endpoint}")
+            logging.error(f"Failed to add Endpoint {endpoint.id}: {e}")
+            raise e
 
     def delete(self, endpoint: Endpoint) -> None:
         try:
@@ -60,7 +56,7 @@ class EndpointsRepository(RepositoryBase):
             self.db_session.commit()
         except DatabaseError as e:
             self.db_session.rollback()
-            logging.error(f"Failed to delete Endpoint {endpoint}: {e}")
+            logging.error(f"Failed to delete Endpoint {endpoint.id}: {e}")
             raise e
 
     def update(self, endpoint: Endpoint) -> Endpoint:
@@ -70,5 +66,5 @@ class EndpointsRepository(RepositoryBase):
             return endpoint
         except DatabaseError as e:
             self.db_session.rollback()
-            logging.error(f"Failed to update Endpoint {endpoint}: {e}")
+            logging.error(f"Failed to update Endpoint {endpoint.id}: {e}")
             raise e

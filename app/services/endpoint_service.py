@@ -1,5 +1,5 @@
-from datetime import datetime
 import logging
+from datetime import datetime
 from typing import Sequence
 from uuid import UUID
 
@@ -7,6 +7,7 @@ from app.data import EndpointStatus, ConnectionType
 from app.db.db import Database
 from app.db.entities.endpoint.endpoint import Endpoint
 from app.db.repositories.endpoints_repository import EndpointsRepository
+from app.db.repositories.organizations_repository import OrganizationsRepository
 from app.exceptions.service_exceptions import (
     ResourceNotAddedException,
     ResourceNotFoundException,
@@ -44,7 +45,11 @@ class EndpointService:
     ) -> Endpoint:
         with self.database.get_db_session() as session:
             endpoint_repository = session.get_repository(EndpointsRepository)
+            organization_repository = session.get_repository(OrganizationsRepository)
             try:
+                if organization_id is not None:
+                    if organization_repository.get(id=organization_id) is None:
+                        raise ResourceNotFoundException(f"Organization {organization_id} was not found")
                 endpoint_entity = Endpoint(
                     name=name,
                     description=description,
@@ -86,6 +91,10 @@ class EndpointService:
     ) -> Sequence[Endpoint]:
         with self.database.get_db_session() as session:
             endpoint_repository = session.get_repository(EndpointsRepository)
+            organization_repository = session.get_repository(OrganizationsRepository)
+            if organization_id is not None:
+                if organization_repository.get(id=organization_id) is None:
+                    raise ResourceNotFoundException(f"Organization {organization_id} was not found")
             params = {
                 "name": name,
                 "description": description,
@@ -112,6 +121,8 @@ class EndpointService:
     ) -> Endpoint:
         with self.database.get_db_session() as session:
             endpoint_repository = session.get_repository(EndpointsRepository)
+            organization_repository = session.get_repository(OrganizationsRepository)
+
             entity = endpoint_repository.get(id=endpoint_id)
             if entity is None:
                 logging.warning(f"Endpoint not found for {endpoint_id}")
@@ -126,5 +137,7 @@ class EndpointService:
             if name is not None:
                 entity.name = name
             if organization_id is not None:
+                if organization_repository.get(id=organization_id) is None:
+                    raise ResourceNotFoundException(f"Organization {organization_id} was not found")
                 entity.organization_id = organization_id
             return endpoint_repository.update(entity)
