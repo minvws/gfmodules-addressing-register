@@ -3,8 +3,8 @@ from app.db.db import Database
 from app.config import get_config
 from app.services.matching_care_service import MatchingCareService
 from app.services.addressing_service import AddressingService
-from app.services.endpoint_service import EndpointService
-from app.services.organization_service import OrganizationService
+from app.services.entity_services.endpoint_service import EndpointService
+from app.services.entity_services.organization_service import OrganizationService
 from app.services.supplier_service import SupplierService
 
 

@@ -15,8 +15,8 @@ from app.db.entities.value_sets import contact_point_system, contact_point_use, 
     environment, organization_type
 from app.models.organization.model import OrganizationModel
 from app.models.supplier.model import SupplierModel
-from app.services.endpoint_service import EndpointService
-from app.services.organization_service import OrganizationService
+from app.services.entitiy_services.endpoint_service import EndpointService
+from app.services.entitiy_services.organization_service import OrganizationService
 from app.services.supplier_service import SupplierService
 
 fake = Faker("nl_nl")

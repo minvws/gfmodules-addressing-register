@@ -9,7 +9,7 @@ from app.db.db import Database
 from app.db.entities.organization.organization import Organization
 from app.exceptions.service_exceptions import ResourceNotFoundException, ResourceNotAddedException
 from app.models.organization.model import OrganizationModel
-from app.services.organization_service import OrganizationService
+from app.services.entity_services.organization_service import OrganizationService
 from test_config import get_test_config
 
 
@@ -70,7 +70,7 @@ class TestFindOrganization(BaseTestSuite):
 class TestCreateOneOrganization(BaseTestSuite):
     def test_create_one_should_succeed_with_proper_values(self) -> None:
         expected = self.add_organization()
-        actual = self.organization_service.get_one_by_ura(UraNumber(expected.ura_number))
+        actual = self.organization_service.get_one(UraNumber(expected.ura_number))
         self.assertEqual(expected.id, actual.id)
 
 class TestGetManyOrganizations(BaseTestSuite):
@@ -95,14 +95,14 @@ class TestGetManyOrganizations(BaseTestSuite):
 class TestGetOneOrganization(BaseTestSuite):
     def test_get_one_by_ura_should_succeed_with_proper_values(self) -> None:
         expected_1 = self.add_organization()
-        actual = self.organization_service.get_one_by_ura(
+        actual = self.organization_service.get_one(
             ura_number=UraNumber(expected_1.ura_number)
         )
         assert_equal(expected_1.id, actual.id)
 
     def test_get_one_by_ura_should_fail_due_to_no_resource(self) -> None:
         with self.assertRaises(ResourceNotFoundException):
-            self.organization_service.get_one_by_ura(ura_number=UraNumber("12345678"))
+            self.organization_service.get_one(ura_number=UraNumber("12345678"))
 
 
 class TestUpdateOrganization(BaseTestSuite):
@@ -111,7 +111,7 @@ class TestUpdateOrganization(BaseTestSuite):
         actual = self.organization_service.update_one(ura_number=UraNumber(expected_1.ura_number),
                                                       name="Updated_name", description="Updated_descr", parent_org=None,
                                                       active=False)
-        expected_1 = self.organization_service.get_one_by_ura(UraNumber(expected_1.ura_number))
+        expected_1 = self.organization_service.get_one(UraNumber(expected_1.ura_number))
         assert_equal(expected_1.id, actual.id)
         assert_equal(expected_1.ura_number, actual.ura_number)
         assert_equal(expected_1.name, actual.name)
@@ -126,10 +126,10 @@ class TestUpdateOrganization(BaseTestSuite):
 class TestDeleteOrganization(BaseTestSuite):
     def test_get_one_by_ura_should_fail_when_org_does_not_exist(self) -> None:
         expected_1 = self.add_organization()
-        assert self.organization_service.get_one_by_ura(UraNumber(expected_1.ura_number)) is not None
+        assert self.organization_service.get_one(UraNumber(expected_1.ura_number)) is not None
         self.organization_service.delete_one(ura_number=UraNumber(expected_1.ura_number))
         with self.assertRaises(ResourceNotFoundException):
-            self.organization_service.get_one_by_ura(UraNumber(expected_1.ura_number))
+            self.organization_service.get_one(UraNumber(expected_1.ura_number))
 
     def test_delete_one_should_fail_due_to_no_resource(self) -> None:
         with self.assertRaises(ResourceNotFoundException):

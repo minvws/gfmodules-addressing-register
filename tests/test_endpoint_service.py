@@ -10,8 +10,8 @@ from app.db.entities.endpoint.endpoint import Endpoint
 from app.db.entities.organization.organization import Organization
 from app.exceptions.service_exceptions import ResourceNotFoundException, ResourceNotAddedException
 from app.models.organization.model import OrganizationModel
-from app.services.endpoint_service import EndpointService
-from app.services.organization_service import OrganizationService
+from app.services.entity_services.endpoint_service import EndpointService
+from app.services.entity_services.organization_service import OrganizationService
 from test_config import get_test_config
 
 
@@ -69,9 +69,9 @@ class TestMissingOrganization(BaseTestSuite):
     def test_update_should_fail_with_missing_organization(self) -> None:
         endpoint = self.add_endpoint()
         with self.assertRaises(ResourceNotFoundException):
-            self.endpoint_service.update_endpoint(endpoint_id=endpoint.id, organization_id=uuid.uuid4(),
-                                                  name="Updated_name", description="Updated_descr",
-                                                  address="Updated_address", status_type=EndpointStatus.Active)
+            self.endpoint_service.update_one(endpoint_id=endpoint.id, organization_id=uuid.uuid4(),
+                                             name="Updated_name", description="Updated_descr",
+                                             address="Updated_address", status_type=EndpointStatus.Active)
 
 
 class TestCreateOneEndpoint(BaseTestSuite):
@@ -116,10 +116,10 @@ class TestGetOneEndpoint(BaseTestSuite):
 class TestUpdateEndpoint(BaseTestSuite):
     def test_update_one_should_succeed_with_proper_values(self) -> None:
         expected_1 = self.add_endpoint()
-        actual = self.endpoint_service.update_endpoint(endpoint_id=expected_1.id,
-                                                       name="Updated_name", description="Updated_descr",
-                                                       address="Updated_address",
-                                                       organization_id=None, status_type=EndpointStatus.Active)
+        actual = self.endpoint_service.update_one(endpoint_id=expected_1.id,
+                                                  name="Updated_name", description="Updated_descr",
+                                                  address="Updated_address",
+                                                  organization_id=None, status_type=EndpointStatus.Active)
         expected_1 = self.endpoint_service.get_one(expected_1.id)
         assert_equal(expected_1.id, actual.id)
         assert_equal(expected_1.name, actual.name)
@@ -130,9 +130,9 @@ class TestUpdateEndpoint(BaseTestSuite):
 
     def test_update_one_should_fail_due_to_no_resource(self) -> None:
         with self.assertRaises(ResourceNotFoundException):
-            self.endpoint_service.update_endpoint(endpoint_id=uuid.uuid4(), name="Updated_name",
-                                                  description="Updated_descr", address="Updated_address",
-                                                  status_type=EndpointStatus.Active, organization_id=None)
+            self.endpoint_service.update_one(endpoint_id=uuid.uuid4(), name="Updated_name",
+                                             description="Updated_descr", address="Updated_address",
+                                             status_type=EndpointStatus.Active, organization_id=None)
 
 
 class TestDeleteEndpoint(BaseTestSuite):

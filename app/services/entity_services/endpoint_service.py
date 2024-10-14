@@ -12,13 +12,12 @@ from app.exceptions.service_exceptions import (
     ResourceNotAddedException,
     ResourceNotFoundException,
 )
+from app.services.entity_services.abstraction import EntityService
 
-logger = logging.getLogger(__name__)
 
-
-class EndpointService:
+class EndpointService(EntityService):
     def __init__(self, database: Database):
-        self.database = database
+        super().__init__(database)
 
     def find(
         self,
@@ -110,7 +109,7 @@ class EndpointService:
                 raise ResourceNotFoundException()
             return entities
 
-    def update_endpoint(
+    def update_one(
         self,
         endpoint_id: UUID,
         name: str | None,
