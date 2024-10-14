@@ -11,13 +11,12 @@ from app.exceptions.service_exceptions import (
     ResourceNotFoundException,
 )
 from app.models.organization.model import OrganizationModel
+from app.services.entity_services.abstraction import EntityService
 
-logger = logging.getLogger(__name__)
 
-
-class OrganizationService:
+class OrganizationService(EntityService):
     def __init__(self, database: Database):
-        self.database = database
+        super().__init__(database)
 
     def find(
         self,
@@ -71,7 +70,7 @@ class OrganizationService:
                 logging.error(f"Failed to add organization {organization}: {str(e)}")
                 raise ResourceNotAddedException()
 
-    def get_one_by_ura(self, ura_number: UraNumber) -> Organization:
+    def get_one(self, ura_number: UraNumber) -> Organization:
         with self.database.get_db_session() as session:
             organization_repository = session.get_repository(OrganizationsRepository)
             entity = organization_repository.get(ura_number=str(ura_number))

@@ -7,8 +7,8 @@ from app.mappers.fhir_mapper import (
 )
 from app.params.endpoint_query_params import EndpointQueryParams
 from app.params.organization_query_params import OrganizationQueryParams
-from app.services.organization_service import OrganizationService
-from app.services.endpoint_service import EndpointService
+from app.services.entity_services.organization_service import OrganizationService
+from app.services.entity_services.endpoint_service import EndpointService
 
 
 class MatchingCareService:
