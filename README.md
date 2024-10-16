@@ -4,6 +4,11 @@ The Addressing Register holds information about various Health Data endpoints th
 for fetching the metadata. The information of the Addressing Register should be enough for the Timeline
 Service or the Health application to fetch the actual metadata.
 
+## Disclaimer
+
+This application is currently in a PoC stage and currently under development.
+It is not intended yet to be used in a production like manner.
+
 ## Usage
 
 The application is a FastAPI application, so you can use the FastAPI documentation to see how to use the application.
@@ -11,7 +16,7 @@ The application is a FastAPI application, so you can use the FastAPI documentati
 ## Development
 
 You can either run the application natively or in a docker container. If you want to run the application natively you
-can take a look at the initialisation steps in `docker/init.sh`. 
+can take a look at the initialisation steps in `docker/init.sh`.
 
 The preferred way to run the application is through docker.
 
@@ -22,13 +27,14 @@ export NEW_UID=$(id -u)
 export NEW_GID=$(id -g)
 ```
 
-After this you can simply run `docker compose up`. 
+After this you can simply run `docker compose up`.
 
-The application will be available at https://localhost:8502 when the startup is completed.
+The application will be available at <https://localhost:8502> when the startup is completed.
 
 ## Models
 
 Database schema:
+
 ```mermaid
 erDiagram
     ENDPOINTS {
