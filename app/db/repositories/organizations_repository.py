@@ -2,7 +2,7 @@ import logging
 from typing import Union, Sequence, Any
 from uuid import UUID
 
-from sqlalchemy import select, or_
+from sqlalchemy import select, and_
 from sqlalchemy.exc import DatabaseError
 
 from app.db.decorator import repository
@@ -57,7 +57,7 @@ class OrganizationsRepository(RepositoryBase):
                              Organization.id == OrganizationTypeAssociation.organization_id)
             stmt = stmt.filter(OrganizationTypeAssociation.organization_type == conditions["type"])
 
-        stmt = stmt.where(or_(*filter_conditions))
+        stmt = stmt.where(and_(*filter_conditions))
         return self.db_session.session.execute(stmt).scalars().all()
 
     def create(self, organization: Organization) -> Organization:
