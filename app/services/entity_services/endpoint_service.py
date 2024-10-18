@@ -4,7 +4,6 @@ from typing import Sequence
 from uuid import UUID
 
 from app.data import EndpointStatus, ConnectionType
-from app.db.db import Database
 from app.db.entities.endpoint.endpoint import Endpoint
 from app.db.repositories.endpoints_repository import EndpointsRepository
 from app.db.repositories.organizations_repository import OrganizationsRepository
@@ -16,8 +15,6 @@ from app.services.entity_services.abstraction import EntityService
 
 
 class EndpointService(EntityService):
-    def __init__(self, database: Database):
-        super().__init__(database)
 
     def find(
         self,
@@ -40,34 +37,36 @@ class EndpointService(EntityService):
         address: str,
         status_type: EndpointStatus,
         organization_id: UUID | None,
-        connection_type: ConnectionType | None,
+        connection_type: ConnectionType,
     ) -> Endpoint:
         with self.database.get_db_session() as session:
             endpoint_repository = session.get_repository(EndpointsRepository)
             organization_repository = session.get_repository(OrganizationsRepository)
+            new_endpoint = Endpoint(
+                name=name,
+                description=description,
+                address=address,
+                status_type=str(status_type),
+                connection_type=str(connection_type),
+            )
+            if organization_id is not None:
+                organization = organization_repository.get(id=organization_id)
+                if organization is None:
+                    logging.warning("Organization %s was not found", organization_id)
+                    raise ResourceNotFoundException(f"Organization {organization_id} was not found")
+                new_endpoint.managing_organization = organization
             try:
-                if organization_id is not None:
-                    if organization_repository.get(id=organization_id) is None:
-                        raise ResourceNotFoundException(f"Organization {organization_id} was not found")
-                endpoint_entity = Endpoint(
-                    name=name,
-                    description=description,
-                    address=address,
-                    status_type=str(status_type),
-                    organization_id=organization_id,
-                    connection_type=str(connection_type),
-                )
-                return endpoint_repository.create(endpoint_entity)
+                return endpoint_repository.create(new_endpoint)
             except Exception as e:
-                logging.error(f"Failed to add endpoint: {str(e)}")
-                raise ResourceNotAddedException()
+                logging.error("Failed to add endpoint: %s", str(e))
+                raise ResourceNotAddedException() from e
 
     def delete_one(self, endpoint_id: UUID) -> None:
         with self.database.get_db_session() as session:
             endpoint_repository = session.get_repository(EndpointsRepository)
             endpoint = endpoint_repository.get(id=endpoint_id)
             if endpoint is None:
-                logging.warning(f"Endpoint not found for {endpoint_id}")
+                logging.warning("Endpoint not found for %s", endpoint_id)
                 raise ResourceNotFoundException()
             endpoint_repository.delete(endpoint)
 
@@ -76,7 +75,7 @@ class EndpointService(EntityService):
             endpoint_repository = session.get_repository(EndpointsRepository)
             endpoint = endpoint_repository.get(id=endpoint_id)
             if endpoint is None:
-                logging.warning(f"Endpoint not found for {endpoint_id}")
+                logging.warning("Endpoint not found for %s", endpoint_id)
                 raise ResourceNotFoundException()
             return endpoint
 
@@ -122,21 +121,23 @@ class EndpointService(EntityService):
             endpoint_repository = session.get_repository(EndpointsRepository)
             organization_repository = session.get_repository(OrganizationsRepository)
 
-            entity = endpoint_repository.get(id=endpoint_id)
-            if entity is None:
-                logging.warning(f"Endpoint not found for {endpoint_id}")
+            update_endpoint = endpoint_repository.get(id=endpoint_id)
+            if update_endpoint is None:
+                logging.warning("Endpoint not found for %s", endpoint_id)
                 raise ResourceNotFoundException()
 
             if address is not None:
-                entity.address = address
+                update_endpoint.address = address
             if description is not None:
-                entity.description = description
+                update_endpoint.description = description
             if status_type is not None:
-                entity.status_type = str(status_type)
+                update_endpoint.status_type = str(status_type)
             if name is not None:
-                entity.name = name
+                update_endpoint.name = name
             if organization_id is not None:
-                if organization_repository.get(id=organization_id) is None:
+                organization = organization_repository.get(id=organization_id)
+                if organization is None:
+                    logging.warning("Organization %s was not found", organization_id)
                     raise ResourceNotFoundException(f"Organization {organization_id} was not found")
-                entity.organization_id = organization_id
-            return endpoint_repository.update(entity)
+                update_endpoint.managing_organization = organization
+            return endpoint_repository.update(update_endpoint)

@@ -8,7 +8,7 @@ from app.data import EndpointStatus, ConnectionType, UraNumber
 from app.db.db import Database
 from app.db.entities.endpoint.endpoint import Endpoint
 from app.db.entities.organization.organization import Organization
-from app.exceptions.service_exceptions import ResourceNotFoundException, ResourceNotAddedException
+from app.exceptions.service_exceptions import ResourceNotFoundException
 from app.models.organization.model import OrganizationModel
 from app.services.entity_services.endpoint_service import EndpointService
 from app.services.entity_services.organization_service import OrganizationService
@@ -59,7 +59,7 @@ class TestFindEndpoint(BaseTestSuite):
 
 class TestMissingOrganization(BaseTestSuite):
     def test_add_should_fail_with_missing_organization(self) -> None:
-        with self.assertRaises(ResourceNotAddedException):
+        with self.assertRaises(ResourceNotFoundException):
             self.add_endpoint(organization_id=uuid.uuid4())
 
     def test_get_many_should_fail_with_missing_organization(self) -> None:
