@@ -2,28 +2,6 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Optional, Any
 
-# DataDomain definitions
-class DataDomain(Enum):
-    Unknown = 'unknown'
-    BeeldBank = 'beeldbank'
-    Medicatie = 'medicatie'
-
-    @classmethod
-    def from_str(cls, label: str) -> Optional['DataDomain']:
-        try:
-            return cls(label.lower())
-        except ValueError:
-            return None
-
-    def to_fhir(self) -> str:
-        if self == DataDomain.BeeldBank:
-            return 'ImagingStudy'
-        if self == DataDomain.Medicatie:
-            return 'MedicationRequest'
-        return ""
-
-    def __str__(self) -> str:
-        return self.value
 
 class ConnectionType(Enum):
     DicomWadoRs = 'dicom-wado-rs'

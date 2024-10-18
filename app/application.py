@@ -10,7 +10,6 @@ from app.telemetry import setup_telemetry
 from app.stats import setup_stats, StatsdMiddleware
 from app.routers.default import router as default_router
 from app.routers.health import router as health_router
-from app.routers.addresses import router as address_router
 from app.routers.organizations import router as organizations_router
 from app.routers.endpoints import router as endpoints_router
 from app.routers.suppliers import router as supplier_router
@@ -87,7 +86,6 @@ def setup_fastapi() -> FastAPI:
     routers = [
         default_router,
         health_router,
-        address_router,
         organizations_router,
         endpoints_router,
         supplier_router

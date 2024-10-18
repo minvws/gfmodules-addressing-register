@@ -2,7 +2,6 @@ import inject
 from app.db.db import Database
 from app.config import get_config
 from app.services.matching_care_service import MatchingCareService
-from app.services.addressing_service import AddressingService
 from app.services.entity_services.endpoint_service import EndpointService
 from app.services.entity_services.organization_service import OrganizationService
 from app.services.supplier_service import SupplierService
@@ -13,9 +12,6 @@ def container_config(binder: inject.Binder) -> None:
 
     db = Database(dsn=config.database.dsn, create_tables=config.database.create_tables)
     binder.bind(Database, db)
-
-    addressing_service = AddressingService(db)
-    binder.bind(AddressingService, addressing_service)
 
     organization_service = OrganizationService(db)
     binder.bind(OrganizationService, organization_service)
@@ -32,10 +28,6 @@ def container_config(binder: inject.Binder) -> None:
 
 def get_database() -> Database:
     return inject.instance(Database)
-
-
-def get_addressing_service() -> AddressingService:
-    return inject.instance(AddressingService)
 
 
 def get_organization_service() -> OrganizationService:
