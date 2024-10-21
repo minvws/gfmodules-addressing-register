@@ -47,4 +47,4 @@ class Endpoint(CommonMixin, Base):
     contacts: Mapped[Optional[List["EndpointContactPoint"]]] = relationship(
         lazy="selectin"
     )
-    payload: Mapped[Optional[List["EndpointPayload"]]] = relationship(lazy="selectin")
+    payload: Mapped[List["EndpointPayload"]] = relationship(lazy="selectin", cascade="all, delete-orphan")

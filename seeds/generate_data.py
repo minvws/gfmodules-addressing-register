@@ -9,9 +9,9 @@ from app.config import get_config
 from app.data import EndpointStatus, ConnectionType
 from app.db.db import Database
 from app.db.entities.contact_point.contact_point import ContactPoint
-from app.db.entities.endpoint import endpoint_contact_point, endpoint_environment, endpoint_header, endpoint_payload
+from app.db.entities.endpoint import endpoint_contact_point, endpoint_environment, endpoint_header
 from app.db.entities.organization import organization_contact, organization_type_association
-from app.db.entities.value_sets import contact_point_system, contact_point_use, contact_type, endpoint_payload_types, \
+from app.db.entities.value_sets import contact_point_system, contact_point_use, contact_type, \
     environment, organization_type
 from app.models.organization.model import OrganizationModel
 from app.models.supplier.model import SupplierModel
@@ -45,7 +45,10 @@ def run():
         address='http://metadata:8503/resource',
         status_type=EndpointStatus.Active,
         organization_id=default_org.id,
-        connection_type=random.choice(list(ConnectionType)))
+        connection_type=random.choice(list(ConnectionType)),
+        payload_type="none",
+        payload_mime_type=fake.mime_type()
+    )
     org_ids.append(default_org.id)
     endpoints_ids.append(default_endpoint.id)
     default_org = organization_service.add_one(OrganizationModel(
@@ -60,7 +63,10 @@ def run():
         address='http://metadata:9999/resource',
         status_type=EndpointStatus.Active,
         organization_id=default_org.id,
-        connection_type=random.choice(list(ConnectionType)))
+        connection_type=random.choice(list(ConnectionType)),
+        payload_type="none",
+        payload_mime_type=fake.mime_type()
+    )
     org_ids.append(default_org.id)
     endpoints_ids.append(default_endpoint.id)
 
@@ -80,7 +86,9 @@ def run():
                                             status_type=random.choice(list(EndpointStatus)),
                                             organization_id=org_ids[x + 2],
                                             connection_type=random.choice(list(ConnectionType)),
-                                            )
+            payload_type="none",
+            payload_mime_type=fake.mime_type()
+        )
         endpoints_ids.append(endpoint.id)
 
         supplier_model = SupplierModel(
@@ -105,11 +113,6 @@ def get_codes(model) -> List:
 def mass_session_commit(endpoints_ids: List, org_ids: List) -> None:
     for x in range(len(endpoints_ids)):
         with db.get_db_session() as session:
-            session.add(endpoint_payload.EndpointPayload(
-                endpoint_id=endpoints_ids[x],
-                payload_type=random.choice(list(get_codes(endpoint_payload_types.EndpointPayloadType))),
-                mime_type=fake.mime_type()
-            ))
             session.add(endpoint_header.EndpointHeader(
                 endpoint_id=endpoints_ids[x],
                 data=fake.text(50),

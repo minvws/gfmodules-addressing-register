@@ -2,7 +2,7 @@ import logging
 from typing import Sequence, Union, Any
 from uuid import UUID
 
-from sqlalchemy import or_, select
+from sqlalchemy import select
 from sqlalchemy.exc import DatabaseError
 
 from app.db.decorator import repository
@@ -37,7 +37,7 @@ class EndpointsRepository(RepositoryBase):
                 Endpoint.organization_id == conditions["organization_id"]
             )
 
-        stmt = stmt.where(or_(*filter_conditions))
+        stmt = stmt.where(*filter_conditions)
         return self.db_session.session.execute(stmt).scalars().all()
 
     def create(self, endpoint: Endpoint) -> Endpoint:

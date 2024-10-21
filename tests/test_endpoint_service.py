@@ -8,6 +8,7 @@ from app.data import EndpointStatus, ConnectionType, UraNumber
 from app.db.db import Database
 from app.db.entities.endpoint.endpoint import Endpoint
 from app.db.entities.organization.organization import Organization
+from app.db.entities.value_sets.endpoint_payload_types import EndpointPayloadType
 from app.exceptions.service_exceptions import ResourceNotFoundException
 from app.models.organization.model import OrganizationModel
 from app.services.entity_services.endpoint_service import EndpointService
@@ -33,16 +34,29 @@ class BaseTestSuite(unittest.TestCase):
             ura_number=UraNumber("0"), active=True, name="name", description="description",
             parent_organization_id=None,
         )
+
+        with cls.database.get_db_session() as session:
+            session.add(
+                EndpointPayloadType(
+                    code="none",
+                    definition="none",
+                    display="none"
+                )
+            )
+            session.commit()
+
         cls.default_org = organization_service.add_one(organization=create_organization)
 
     def add_endpoint(self,
                      name: str = "test_name", description: str = "test_descr", address: str = "test_address",
                      status_type: str = "active", organization_id: uuid.UUID | None = None,
                      connection_type: str = 'hl7-fhir-rest') -> Endpoint:
-        return self.endpoint_service.add_one(
+        created_endpoint = self.endpoint_service.add_one(
             name=name, description=description, address=address, status_type=EndpointStatus(status_type),
-            organization_id=organization_id, connection_type=ConnectionType(connection_type)
+            organization_id=organization_id, connection_type=ConnectionType(connection_type),
+            payload_type="none", payload_mime_type="application/xml"
         )
+        return created_endpoint
 
 
 class TestFindEndpoint(BaseTestSuite):

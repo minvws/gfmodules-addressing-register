@@ -5,10 +5,12 @@ from uuid import UUID
 
 from app.data import EndpointStatus, ConnectionType
 from app.db.entities.endpoint.endpoint import Endpoint
+from app.db.entities.endpoint.endpoint_payload import EndpointPayload
+from app.db.repositories.endpoint_payload_type_repository import EndpointPayloadTypeRepository
 from app.db.repositories.endpoints_repository import EndpointsRepository
 from app.db.repositories.organizations_repository import OrganizationsRepository
+from app.db.repositories.repository_exception import RepositoryException
 from app.exceptions.service_exceptions import (
-    ResourceNotAddedException,
     ResourceNotFoundException,
 )
 from app.services.entity_services.abstraction import EntityService
@@ -38,6 +40,8 @@ class EndpointService(EntityService):
         status_type: EndpointStatus,
         organization_id: UUID | None,
         connection_type: ConnectionType,
+        payload_type: str,
+        payload_mime_type: str,
     ) -> Endpoint:
         with self.database.get_db_session() as session:
             endpoint_repository = session.get_repository(EndpointsRepository)
@@ -55,11 +59,20 @@ class EndpointService(EntityService):
                     logging.warning("Organization %s was not found", organization_id)
                     raise ResourceNotFoundException(f"Organization {organization_id} was not found")
                 new_endpoint.managing_organization = organization
+            association = EndpointPayload(
+                endpoint_id=new_endpoint.id,
+                payload_type=payload_type,
+                mime_type=payload_mime_type,
+            )
+            endpoint_payload_type_repository = session.get_repository(EndpointPayloadTypeRepository)
             try:
-                return endpoint_repository.create(new_endpoint)
-            except Exception as e:
-                logging.error("Failed to add endpoint: %s", str(e))
-                raise ResourceNotAddedException() from e
+                association.payload = endpoint_payload_type_repository.get(code=payload_type)
+            except RepositoryException:
+                raise ResourceNotFoundException(f"Payload type {payload_type} was not found")
+            new_endpoint.payload.append(association)
+            created_endpoint = endpoint_repository.create(new_endpoint)
+
+            return created_endpoint
 
     def delete_one(self, endpoint_id: UUID) -> None:
         with self.database.get_db_session() as session:
