@@ -32,7 +32,7 @@ class BaseTestSuite(unittest.TestCase):
         self.supplier_service.add_one(created_endpoint)
         return created_endpoint
 
-class CreateSupplierEndpoint(BaseTestSuite):
+class TestCreateSupplierEndpoint(BaseTestSuite):
     def test_create_endpoint(self) -> None:
         expected = SupplierModel(
             ura_number=UraNumber("00000000"),
