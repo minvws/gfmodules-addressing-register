@@ -8,6 +8,7 @@ from app.container import get_database
 from app.services.entity_services.endpoint_service import EndpointService
 from app.services.entity_services.organization_service import OrganizationService
 from app.services.matching_care_service import MatchingCareService
+from app.services.organization_history_service import OrganizationHistoryService
 from test_config import get_test_config
 from utils import init_database_with_types
 
@@ -24,15 +25,19 @@ def app() -> FastAPI:
 def client(app: FastAPI) -> TestClient:
     return TestClient(app)
 
+@pytest.fixture(scope="module")
+def history_service() -> OrganizationHistoryService:
+    return OrganizationHistoryService(get_database())
+
 
 @pytest.fixture(scope="module")
-def endpoint_service() -> EndpointService:
-    return EndpointService(get_database())
+def endpoint_service(history_service: OrganizationHistoryService) -> EndpointService:
+    return EndpointService(get_database(), history_service)
 
 
 @pytest.fixture(scope="module")
-def organization_service() -> OrganizationService:
-    return OrganizationService(get_database())
+def organization_service(history_service: OrganizationHistoryService) -> OrganizationService:
+    return OrganizationService(get_database(), history_service)
 
 
 @pytest.fixture(scope="module")

@@ -1,6 +1,7 @@
 import unittest
 import uuid
 
+from app.services.organization_history_service import OrganizationHistoryService
 from mypy.test.helpers import assert_equal
 
 from app.config import set_config
@@ -14,15 +15,17 @@ from test_config import get_test_config
 
 
 class BaseTestSuite(unittest.TestCase):
-    database = Database("sqlite:///:memory:")  # needed here otherwise type-check fails
-    organization_service = OrganizationService(database)  # needed here otherwise type-check fails
+    database: Database
+    history_service: OrganizationHistoryService
+    organization_service: OrganizationService
 
     @classmethod
     def setUpClass(cls) -> None:
         set_config(get_test_config())
         cls.database = Database("sqlite:///:memory:")  # Set again for each class
         cls.database.generate_tables()
-        cls.organization_service = OrganizationService(cls.database)  # Set again for each class
+        cls.history_service = OrganizationHistoryService(cls.database)
+        cls.organization_service = OrganizationService(cls.database, cls.history_service)  # Set again for each class
         assert cls.database.is_healthy()
 
     def add_organization(self,

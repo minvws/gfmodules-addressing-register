@@ -13,21 +13,24 @@ from app.exceptions.service_exceptions import ResourceNotFoundException
 from app.models.organization.model import OrganizationModel
 from app.services.entity_services.endpoint_service import EndpointService
 from app.services.entity_services.organization_service import OrganizationService
+from app.services.organization_history_service import OrganizationHistoryService
 from test_config import get_test_config
 
 
 class BaseTestSuite(unittest.TestCase):
-    database = Database("sqlite:///:memory:")  # needed here otherwise type-check fails
-    endpoint_service = EndpointService(database)  # needed here otherwise type-check fails
-    default_org: Organization = Organization()
+    database: Database
+    history_service: OrganizationHistoryService
+    endpoint_service: EndpointService
+    default_org: Organization
 
     @classmethod
     def setUpClass(cls) -> None:
         set_config(get_test_config())
-        cls.database = Database("sqlite:///:memory:")  # Set again for each class
+        cls.database = Database("sqlite:///:memory:")
         cls.database.generate_tables()
-        cls.endpoint_service = EndpointService(cls.database)  # Set again for each class
-        organization_service = OrganizationService(cls.database)
+        cls.history_service = OrganizationHistoryService(cls.database)
+        cls.endpoint_service = EndpointService(cls.database, cls.history_service)
+        organization_service = OrganizationService(cls.database, cls.history_service)
         assert cls.database.is_healthy()
 
         create_organization = OrganizationModel(

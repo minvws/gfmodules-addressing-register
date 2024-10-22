@@ -12,11 +12,13 @@ from app.exceptions.service_exceptions import (
 )
 from app.models.organization.model import OrganizationModel
 from app.services.entity_services.abstraction import EntityService
+from app.services.organization_history_service import OrganizationHistoryService
 
 
 class OrganizationService(EntityService):
-    def __init__(self, database: Database):
+    def __init__(self, database: Database, history_service: OrganizationHistoryService):
         super().__init__(database)
+        self.history_service = history_service
 
     def find(
         self,
@@ -40,7 +42,8 @@ class OrganizationService(EntityService):
             organization_repository = session.get_repository(OrganizationsRepository)
             return organization_repository.find(**filtered_params)
 
-    def add_one(self, organization: OrganizationModel) -> Organization:
+    def add_one(self, organization: OrganizationModel
+                ) -> Organization:
         with self.database.get_db_session() as session:
             organization_repository = session.get_repository(OrganizationsRepository)
             try:
@@ -65,7 +68,9 @@ class OrganizationService(EntityService):
                     description=organization.description,
                     parent_organization_id=organization.parent_organization_id,
                 )
-                return organization_repository.create(organization_entity)
+                new_org = organization_repository.create(organization_entity)
+                self.history_service.create(new_org, "create")
+                return new_org
             except Exception as e:
                 logging.error(f"Failed to add organization {organization}: {str(e)}")
                 raise ResourceNotAddedException()
@@ -137,7 +142,9 @@ class OrganizationService(EntityService):
                     )
                     raise ResourceNotFoundException("Parent organization not found")
                 entity.parent_organization_id = parent_org
-            return organization_repository.update(entity)
+            updated_org = organization_repository.update(entity)
+            self.history_service.create(updated_org, "update")
+            return updated_org
 
     def delete_one(self, ura_number: UraNumber) -> None:
         with self.database.get_db_session() as session:
@@ -147,3 +154,4 @@ class OrganizationService(EntityService):
                 logging.warning(f"Organization not found for {ura_number}")
                 raise ResourceNotFoundException()
             organization_repository.delete(organization)
+            self.history_service.create(organization, "delete")

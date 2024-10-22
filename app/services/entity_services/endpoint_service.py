@@ -4,6 +4,7 @@ from typing import Sequence
 from uuid import UUID
 
 from app.data import EndpointStatus, ConnectionType
+from app.db.db import Database
 from app.db.entities.endpoint.endpoint import Endpoint
 from app.db.entities.endpoint.endpoint_payload import EndpointPayload
 from app.db.repositories.endpoint_payload_type_repository import EndpointPayloadTypeRepository
@@ -14,9 +15,13 @@ from app.exceptions.service_exceptions import (
     ResourceNotFoundException,
 )
 from app.services.entity_services.abstraction import EntityService
-
+from app.services.organization_history_service import OrganizationHistoryService
 
 class EndpointService(EntityService):
+
+    def __init__(self, database: Database, organization_history_service: OrganizationHistoryService):
+        super().__init__(database)
+        self.organization_history_service = organization_history_service
 
     def find(
         self,
@@ -46,6 +51,7 @@ class EndpointService(EntityService):
         with self.database.get_db_session() as session:
             endpoint_repository = session.get_repository(EndpointsRepository)
             organization_repository = session.get_repository(OrganizationsRepository)
+            organization = None
             new_endpoint = Endpoint(
                 name=name,
                 description=description,
@@ -56,7 +62,6 @@ class EndpointService(EntityService):
             if organization_id is not None:
                 organization = organization_repository.get(id=organization_id)
                 if organization is None:
-                    logging.warning("Organization %s was not found", organization_id)
                     raise ResourceNotFoundException(f"Organization {organization_id} was not found")
                 new_endpoint.managing_organization = organization
             association = EndpointPayload(
@@ -71,17 +76,26 @@ class EndpointService(EntityService):
                 raise ResourceNotFoundException(f"Payload type {payload_type} was not found")
             new_endpoint.payload.append(association)
             created_endpoint = endpoint_repository.create(new_endpoint)
-
+            if organization is not None:
+                self.organization_history_service.create(organization=organization, interaction="update")
             return created_endpoint
 
     def delete_one(self, endpoint_id: UUID) -> None:
         with self.database.get_db_session() as session:
             endpoint_repository = session.get_repository(EndpointsRepository)
+            organization_repository = session.get_repository(OrganizationsRepository)
+            organization = None
             endpoint = endpoint_repository.get(id=endpoint_id)
             if endpoint is None:
                 logging.warning("Endpoint not found for %s", endpoint_id)
                 raise ResourceNotFoundException()
+            if endpoint.organization_id is not None:
+                organization = organization_repository.get(id=endpoint.organization_id)
+                if organization is None:
+                    raise ResourceNotFoundException(f"Organization {endpoint.organization_id} was not found")
             endpoint_repository.delete(endpoint)
+            if organization is not None:
+                self.organization_history_service.create(organization=organization, interaction="update")
 
     def get_one(self, endpoint_id: UUID) -> Endpoint:
         with self.database.get_db_session() as session:
@@ -133,7 +147,7 @@ class EndpointService(EntityService):
         with self.database.get_db_session() as session:
             endpoint_repository = session.get_repository(EndpointsRepository)
             organization_repository = session.get_repository(OrganizationsRepository)
-
+            organization = None
             update_endpoint = endpoint_repository.get(id=endpoint_id)
             if update_endpoint is None:
                 logging.warning("Endpoint not found for %s", endpoint_id)
@@ -153,4 +167,7 @@ class EndpointService(EntityService):
                     logging.warning("Organization %s was not found", organization_id)
                     raise ResourceNotFoundException(f"Organization {organization_id} was not found")
                 update_endpoint.managing_organization = organization
-            return endpoint_repository.update(update_endpoint)
+            updated_endpoint = endpoint_repository.update(update_endpoint)
+            if organization is not None:
+                self.organization_history_service.create(organization=organization, interaction="update")
+            return updated_endpoint

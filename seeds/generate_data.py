@@ -17,6 +17,7 @@ from app.models.organization.model import OrganizationModel
 from app.models.supplier.model import SupplierModel
 from app.services.entity_services.endpoint_service import EndpointService
 from app.services.entity_services.organization_service import OrganizationService
+from app.services.organization_history_service import OrganizationHistoryService
 from app.services.supplier_service import SupplierService
 
 fake = Faker("nl_nl")
@@ -26,8 +27,9 @@ db = Database(dsn=config.database.dsn)
 
 
 def run():
-    organization_service = OrganizationService(database=db)
-    endpoint_service = EndpointService(database=db)
+    organization_history_service = OrganizationHistoryService(db)
+    organization_service = OrganizationService(database=db, history_service=organization_history_service)
+    endpoint_service = EndpointService(database=db, organization_history_service=organization_history_service)
 
     org_ids = []
     endpoints_ids = []

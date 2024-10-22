@@ -3,7 +3,7 @@ CREATE TYPE fhir_interactions AS ENUM ('create', 'update', 'delete');
 CREATE TABLE organizations_history
 (
     id              uuid              NOT NULL DEFAULT gen_random_uuid(),
-    organization_id uuid NOT NULL,
+    organization_id uuid,
     ura_number      VARCHAR NOT NULL,
     interaction     fhir_interactions NOT NULL,
     data            json,
@@ -11,5 +11,5 @@ CREATE TABLE organizations_history
     modified_at     timestamp,
 
     PRIMARY KEY (id),
-    CONSTRAINT organization_history_organizations_fk FOREIGN KEY (organization_id) REFERENCES organizations (id)
+    CONSTRAINT organization_history_organizations_fk FOREIGN KEY (organization_id) REFERENCES organizations (id) ON DELETE SET NULL
 );
