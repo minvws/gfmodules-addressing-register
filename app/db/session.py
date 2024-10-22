@@ -93,6 +93,15 @@ class DbSession:
         """
         self._retry(self.session.rollback)
 
+    def query(self, *entities: Any) -> Any:
+        """
+        Create a new query object
+
+        :param entities:
+        :return:
+        """
+        return self._retry(self.session.query, *entities)
+
     def execute(self, stmt: Any) -> Any:
         """
         Execute a statement in the current session
