@@ -33,7 +33,6 @@ class OrganizationHistoryService:
 
     def find(self,
              id: UUID | None = None,
-             organization_id: UUID | None = None,
              identifier: str | None = None,
              active: bool | None = None,
              endpoint_id: UUID | None = None,
@@ -43,8 +42,7 @@ class OrganizationHistoryService:
              updated_at: datetime | None = None
              ) -> Sequence[OrganizationHistory]:
         params = {
-            "id": id,
-            "organization_id": organization_id,
+            "organization_id": id,
             "identifier": identifier,
             "active": active,
             "endpoint_id": endpoint_id,

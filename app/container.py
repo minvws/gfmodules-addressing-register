@@ -14,32 +14,20 @@ def container_config(binder: inject.Binder) -> None:
     db = Database(dsn=config.database.dsn, create_tables=config.database.create_tables)
     binder.bind(Database, db)
 
-    organization_history_service = OrganizationHistoryService(db)
-    binder.bind(OrganizationHistoryService, organization_history_service)
-
-    organization_service = OrganizationService(db, organization_history_service)
-    binder.bind(OrganizationService, organization_service)
-
-    endpoint_service = EndpointService(db, organization_history_service)
-    binder.bind(EndpointService, endpoint_service)
-
     supplying_service = SupplierService(db)
     binder.bind(SupplierService, supplying_service)
 
-    matching_care_service = MatchingCareService(organization_service, endpoint_service)
+    organization_history_service = OrganizationHistoryService(db)
+    binder.bind(OrganizationHistoryService, organization_history_service)
+
+    endpoint_service = EndpointService(db, organization_history_service)
+    organization_service = OrganizationService(db, organization_history_service)
+    matching_care_service = MatchingCareService(organization_service, endpoint_service, organization_history_service)
     binder.bind(MatchingCareService, matching_care_service)
 
 
 def get_database() -> Database:
     return inject.instance(Database)
-
-
-def get_organization_service() -> OrganizationService:
-    return inject.instance(OrganizationService)
-
-
-def get_endpoint_service() -> EndpointService:
-    return inject.instance(EndpointService)
 
 
 def get_supplying_service() -> SupplierService:

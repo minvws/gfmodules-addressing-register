@@ -11,6 +11,7 @@ from fhir.resources.R4B.reference import Reference
 from fhir.resources.R4B.period import Period
 from fhir.resources.R4B.contactpoint import ContactPoint
 
+from app.db.entities.organization.history import OrganizationHistory
 from app.db.entities.organization.organization import Organization as OrganizationEntity
 from app.db.entities.endpoint.endpoint import Endpoint as EndpointEntity
 
@@ -125,6 +126,18 @@ def map_to_endpoint_fhir(entity: EndpointEntity) -> Endpoint:
         header=headers,
     )
 
+def create_organization_histories_bundled_resources(
+    organization_histories: Sequence[OrganizationHistory]
+) -> list[BundleEntry]:
+
+    listing = [
+        BundleEntry.construct(
+            resource=org.data
+        )
+        for org in organization_histories
+    ]
+
+    return listing
 
 def create_organization_bundled_resources(
     organizations: Sequence[OrganizationEntity], include_endpoints: bool = False
@@ -146,7 +159,7 @@ def create_endpoint_bundled_resources(
     ]
 
 
-def create_fhir_bundle(bundled_entries: list[BundleEntry]) -> Bundle:
+def create_fhir_bundle(bundled_entries: list[BundleEntry], bundle_type: str="searchset") -> Bundle:
     return Bundle.construct(
-        type="searchset", entry=bundled_entries, total=len(bundled_entries)
+        type=bundle_type, entry=bundled_entries, total=len(bundled_entries)
     )

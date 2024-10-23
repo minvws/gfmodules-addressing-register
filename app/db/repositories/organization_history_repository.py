@@ -30,8 +30,6 @@ class OrganizationHistoryRepository(RepositoryBase):
         stmt = (
             select(OrganizationHistory)
         )
-        if "id" in conditions:
-            filter_conditions.append(OrganizationHistory.id == conditions["id"])
         if "organization_id" in conditions:
             filter_conditions.append(OrganizationHistory.organization_id == conditions["organization_id"])
         if "identifier" in conditions:
