@@ -29,6 +29,7 @@ def mock_endpoint() -> EndpointEntity:
     return EndpointEntity(
         id=endpoint_id,
         name="example name",
+        identifier="12345678",
         address="https://example.address.nl",
         connection_type="hl7-fhir-rest",
         status="active",
@@ -115,8 +116,9 @@ def test_map_to_endpoint_fhir(
     expected = map_to_endpoint_fhir(mock_endpoint)
 
     assert isinstance(expected, Endpoint)
+    assert expected.id == mock_endpoint.id
     assert isinstance(expected.identifier[0], Identifier)
-    assert expected.identifier[0].value == mock_endpoint.id.__str__()
+    assert expected.identifier[0].value == mock_endpoint.identifier
     assert expected.status == mock_endpoint.status_type
     assert isinstance(expected.connectionType, Coding)
     assert expected.connectionType.code == mock_endpoint.connection_type

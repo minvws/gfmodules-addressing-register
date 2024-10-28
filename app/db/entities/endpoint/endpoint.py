@@ -20,6 +20,7 @@ class Endpoint(CommonMixin, Base):
     __tablename__ = "endpoints"
     __table_args__ = (PrimaryKeyConstraint("id"),)
 
+    identifier: Mapped[str | None] = mapped_column("identifier", String, unique=True)
     name: Mapped[str | None] = mapped_column("name", String(150))
     description: Mapped[str | None] = mapped_column("description", String)
     address: Mapped[str] = mapped_column("address", Text)
@@ -47,4 +48,6 @@ class Endpoint(CommonMixin, Base):
     contacts: Mapped[Optional[List["EndpointContactPoint"]]] = relationship(
         lazy="selectin"
     )
-    payload: Mapped[List["EndpointPayload"]] = relationship(lazy="selectin", cascade="all, delete-orphan")
+    payload: Mapped[List["EndpointPayload"]] = relationship(
+        lazy="selectin", cascade="all, delete-orphan"
+    )

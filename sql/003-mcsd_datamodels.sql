@@ -175,6 +175,7 @@ VALUES ('dicom-wado-rs', 'DICOM WADO-RS',
 CREATE TABLE endpoints
 (
   id              UUID        NOT NULL DEFAULT gen_random_uuid(),
+  identifier      VARCHAR     UNIQUE,
   organization_id UUID,
   status_type     VARCHAR(50) NOT NULL,
   name            VARCHAR(150),
