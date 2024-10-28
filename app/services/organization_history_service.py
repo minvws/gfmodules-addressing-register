@@ -15,10 +15,6 @@ class OrganizationHistoryService:
 
     def create(self, organization: Organization, interaction: Literal["create", "update", "delete"]) -> None:
         with self.database.get_db_session() as session:
-
-            if interaction == "delete":
-                print("Deleting organization")
-
             repository = session.get_repository(OrganizationHistoryRepository)
 
             fhir_org = map_to_fhir_organization(organization, True)
