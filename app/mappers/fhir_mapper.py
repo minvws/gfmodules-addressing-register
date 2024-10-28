@@ -60,7 +60,11 @@ def map_to_fhir_organization(
 
 
 def map_to_endpoint_fhir(entity: EndpointEntity) -> Endpoint:
-    identifiers = [Identifier.construct(use="usual", value=entity.id.__str__())]
+    identifiers = (
+        [Identifier.construct(use="official", value=entity.identifier)]
+        if entity.identifier
+        else None
+    )
     connection_type = Coding.construct(
         code=entity.connection.code,
         display=entity.connection.display,
@@ -113,6 +117,7 @@ def map_to_endpoint_fhir(entity: EndpointEntity) -> Endpoint:
     )
     headers = [header.data for header in entity.headers]
     return Endpoint.construct(
+        id=entity.id,
         identifier=identifiers,
         status=entity.status_type,
         connectionType=connection_type,
@@ -126,18 +131,17 @@ def map_to_endpoint_fhir(entity: EndpointEntity) -> Endpoint:
         header=headers,
     )
 
+
 def create_organization_histories_bundled_resources(
-    organization_histories: Sequence[OrganizationHistory]
+    organization_histories: Sequence[OrganizationHistory],
 ) -> list[BundleEntry]:
 
     listing = [
-        BundleEntry.construct(
-            resource=org.data
-        )
-        for org in organization_histories
+        BundleEntry.construct(resource=org.data) for org in organization_histories
     ]
 
     return listing
+
 
 def create_organization_bundled_resources(
     organizations: Sequence[OrganizationEntity], include_endpoints: bool = False
@@ -159,7 +163,9 @@ def create_endpoint_bundled_resources(
     ]
 
 
-def create_fhir_bundle(bundled_entries: list[BundleEntry], bundle_type: str="searchset") -> Bundle:
+def create_fhir_bundle(
+    bundled_entries: list[BundleEntry], bundle_type: str = "searchset"
+) -> Bundle:
     return Bundle.construct(
         type=bundle_type, entry=bundled_entries, total=len(bundled_entries)
     )

@@ -3,6 +3,7 @@ import random
 from typing import Any, Optional
 from uuid import UUID
 
+
 from faker import Faker
 
 from app.data import ConnectionType, EndpointStatus, UraNumber
@@ -80,15 +81,19 @@ def add_organization(
 
     organization = organization_service.add_one(
         OrganizationModel(
-            ura_number=UraNumber(ura_number)
-            if ura_number is not None
-            else UraNumber(fake.random_int(11111111, 99999999)),
+            ura_number=(
+                UraNumber(ura_number)
+                if ura_number is not None
+                else UraNumber(fake.random_int(11111111, 99999999))
+            ),
             active=active if active is not None else fake.boolean(50),
             name=name or fake.text(50),
             description=fake.text(50),
-            parent_organization_id=parent_organization_id.id
-            if parent_organization and parent_organization_id is not None
-            else None,
+            parent_organization_id=(
+                parent_organization_id.id
+                if parent_organization and parent_organization_id is not None
+                else None
+            ),
         )
     )
 
@@ -103,6 +108,7 @@ def add_organization(
 def add_endpoint(org_id: UUID, endpoint_service: EndpointService) -> Endpoint:
     endpoint = endpoint_service.add_one(
         name=fake.text(50),
+        identifier=str(fake.random_int(1, 8999999, 1)),
         description=fake.text(50),
         address=fake.url(),
         status_type=random.choice(list(EndpointStatus)),

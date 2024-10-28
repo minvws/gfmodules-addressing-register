@@ -33,11 +33,15 @@ class EndpointService(EntityService):
     def find(
         self,
         id: UUID | None = None,
-        identifier: UUID | None = None,
+        identifier: str | None = None,
         organization_id: UUID | None = None,
         updated_at: datetime | None = None,
     ) -> Sequence[Endpoint]:
-        params = {"id": id if id else identifier, "organization_id": organization_id}
+        params = {
+            "id": id,
+            "identifier": identifier,
+            "organization_id": organization_id,
+        }
         filtered_params = {k: v for k, v in params.items() if v is not None}
 
         with self.database.get_db_session() as session:
@@ -46,11 +50,11 @@ class EndpointService(EntityService):
 
     def add_one(
         self,
-        name: str | None,
         address: str,
         status_type: EndpointStatus,
         connection_type: ConnectionType,
         payload_type: str,
+        name: str | None = None,
         payload_mime_type: str | None = None,
         organization_id: UUID | None = None,
         identifier: str | None = None,

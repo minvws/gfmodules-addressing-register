@@ -156,15 +156,14 @@ def test_find_correct_endpoints(
         raise AssertionError
 
     endpoint_params = EndpointQueryParams(
-        identifier=expected_endpoint.id,
+        _id=expected_endpoint.id,
         organization=expected_org.id,
     )
 
     endpoints = matching_care_service.find_endpoints(endpoint_params)
-
     assert endpoints is not None
     assert check_key_value(
         endpoints, "reference", "Organization/" + str(expected_org.ura_number)
     )
-    assert check_key_value(endpoints, "value", str(expected_endpoint.id))
+    assert check_key_value(endpoints, "value", expected_endpoint.identifier)
     assert check_key_value(endpoints, "address", expected_endpoint.address)

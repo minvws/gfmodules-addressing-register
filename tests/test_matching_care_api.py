@@ -66,7 +66,7 @@ def test_endpoint_returns_correct_endpoint(
     assert response.status_code == 200
     bundle = Bundle.parse_raw(response.text)
     assert isinstance(bundle, Bundle)
-    assert check_key_value(response.json(), "value", str(expected_endpoint.id))
+    assert check_key_value(response.json(), "id", str(expected_endpoint.id))
 
 
 def test_endpoint_returns_422(client: TestClient, endpoint_endpoint: str) -> None:

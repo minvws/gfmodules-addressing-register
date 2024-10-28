@@ -32,6 +32,9 @@ class EndpointsRepository(RepositoryBase):
         if "id" in conditions:
             filter_conditions.append(Endpoint.id == conditions["id"])
 
+        if "identifier" in conditions:
+            filter_conditions.append(Endpoint.identifier == conditions["identifier"])
+
         if "organization_id" in conditions:
             filter_conditions.append(
                 Endpoint.organization_id == conditions["organization_id"]
