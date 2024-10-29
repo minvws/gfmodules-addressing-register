@@ -1,11 +1,12 @@
 import logging
-from typing import List, Optional, Sequence
+from typing import List, Sequence
 from uuid import UUID
 
 from app.data import UraNumber
 from app.db.db import Database
 from app.db.entities.endpoint.endpoint import Endpoint
 from app.db.entities.organization.organization import Organization
+from app.db.repositories.endpoints_repository import EndpointsRepository
 from app.db.repositories.organizations_repository import OrganizationsRepository
 from app.exceptions.service_exceptions import (
     ResourceNotAddedException,
@@ -124,13 +125,15 @@ class OrganizationService(EntityService):
     def update_one(
         self,
         ura_number: UraNumber,
-        active: Optional[bool],
-        name: str | None,
-        description: str | None,
-        parent_org: UUID | None,
+        active: bool | None = None,
+        name: str | None = None,
+        description: str | None = None,
+        parent_org: UUID | None = None,
+        endpoints: List[Endpoint] | None = None,
     ) -> Organization:
         with self.database.get_db_session() as session:
             organization_repository = session.get_repository(OrganizationsRepository)
+            endpoints_repository = session.get_repository(EndpointsRepository)
             entity = organization_repository.get(ura_number=str(ura_number))
             if entity is None:
                 logging.warning(f"Organization not found for {ura_number}")
@@ -148,6 +151,11 @@ class OrganizationService(EntityService):
                     )
                     raise ResourceNotFoundException("Parent organization not found")
                 entity.parent_organization_id = parent_org
+            if endpoints is not None:
+                target_endpoints = entity.endpoints
+                entity.endpoints = endpoints
+                endpoints_repository.delete_many(target_endpoints)
+
             updated_org = organization_repository.update(entity)
             self.history_service.create(updated_org, "update")
             return updated_org
