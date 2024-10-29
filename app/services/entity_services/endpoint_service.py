@@ -6,13 +6,11 @@ from uuid import UUID
 from app.data import EndpointStatus, ConnectionType
 from app.db.db import Database
 from app.db.entities.endpoint.endpoint import Endpoint
-from app.db.entities.endpoint.endpoint_payload import EndpointPayload
 from app.db.repositories.endpoint_payload_type_repository import (
     EndpointPayloadTypeRepository,
 )
 from app.db.repositories.endpoints_repository import EndpointsRepository
 from app.db.repositories.organizations_repository import OrganizationsRepository
-from app.db.repositories.repository_exception import RepositoryException
 from app.exceptions.service_exceptions import (
     ResourceNotFoundException,
 )
@@ -63,45 +61,40 @@ class EndpointService(EntityService):
         with self.database.get_db_session() as session:
             endpoint_repository = session.get_repository(EndpointsRepository)
             organization_repository = session.get_repository(OrganizationsRepository)
-            organization = None
-            new_endpoint = Endpoint(
-                name=name,
-                identifier=identifier,
-                description=description,
-                address=address,
-                status_type=str(status_type),
-                connection_type=str(connection_type),
+            endpoint_payload_type_repository = session.get_repository(
+                EndpointPayloadTypeRepository
             )
+            organization = None
+
             if organization_id is not None:
                 organization = organization_repository.get(id=organization_id)
                 if organization is None:
                     raise ResourceNotFoundException(
                         f"Organization {organization_id} was not found"
                     )
-                new_endpoint.managing_organization = organization
-            association = EndpointPayload(
-                endpoint_id=new_endpoint.id,
-                payload_type=payload_type,
-                mime_type=payload_mime_type,
+
+            payload_type_entity = endpoint_payload_type_repository.get(payload_type)
+
+            endpoint_instance = Endpoint.create_instance(
+                address=address,
+                status_type=status_type,
+                connection_type=connection_type,
+                payload_type=payload_type_entity,
+                name=name,
+                payload_mime_type=payload_mime_type,
+                description=description,
+                identifier=identifier,
+                managing_organization=organization,
             )
-            endpoint_payload_type_repository = session.get_repository(
-                EndpointPayloadTypeRepository
-            )
-            try:
-                association.payload = endpoint_payload_type_repository.get(
-                    code=payload_type
-                )
-            except RepositoryException:
-                raise ResourceNotFoundException(
-                    f"Payload type {payload_type} was not found"
-                )
-            new_endpoint.payload.append(association)
-            created_endpoint = endpoint_repository.create(new_endpoint)
+
+            new_endpoint = endpoint_repository.create(endpoint_instance)
+
             if organization is not None:
                 self.organization_history_service.create(
                     organization=organization, interaction="update"
                 )
-            return created_endpoint
+
+            return new_endpoint
 
     def delete_one(self, endpoint_id: UUID) -> None:
         with self.database.get_db_session() as session:
