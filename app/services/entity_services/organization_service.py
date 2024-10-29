@@ -1,10 +1,12 @@
 import logging
-from typing import Optional, Sequence
+from typing import List, Sequence
 from uuid import UUID
 
 from app.data import UraNumber
 from app.db.db import Database
+from app.db.entities.endpoint.endpoint import Endpoint
 from app.db.entities.organization.organization import Organization
+from app.db.repositories.endpoints_repository import EndpointsRepository
 from app.db.repositories.organizations_repository import OrganizationsRepository
 from app.exceptions.service_exceptions import (
     ResourceNotAddedException,
@@ -42,17 +44,12 @@ class OrganizationService(EntityService):
             organization_repository = session.get_repository(OrganizationsRepository)
             return organization_repository.find(**filtered_params)
 
-    def add_one(self, organization: OrganizationModel
-                ) -> Organization:
+    def add_one(
+        self, organization: OrganizationModel, endpoints: List[Endpoint] | None = None
+    ) -> Organization:
         with self.database.get_db_session() as session:
             organization_repository = session.get_repository(OrganizationsRepository)
             try:
-                if organization.parent_organization_id is not None:
-                    if organization_repository.get(id=organization.parent_organization_id) is None:
-                        logging.error(
-                            f"Failed to add organization {organization.ura_number}: Parent organization {organization.parent_organization_id} does not exist"
-                        )
-                        raise ResourceNotFoundException("Parent organization not found")
                 if (
                     organization_repository.get(ura_number=str(organization.ura_number))
                     is not None
@@ -61,13 +58,23 @@ class OrganizationService(EntityService):
                         f"Failed to add organization {organization.ura_number}: Organization with URA number already exists"
                     )
                     raise ResourceNotAddedException()
-                organization_entity = Organization(
-                    ura_number=str(organization.ura_number),
-                    active=organization.active,
-                    name=organization.name,
-                    description=organization.description,
-                    parent_organization_id=organization.parent_organization_id,
-                )
+
+                if organization.parent_organization_id is not None:
+                    if (
+                        organization_repository.get(
+                            id=organization.parent_organization_id
+                        )
+                        is None
+                    ):
+                        logging.error(
+                            f"Failed to add organization {organization.ura_number}: Parent organization {organization.parent_organization_id} does not exist"
+                        )
+                        raise ResourceNotFoundException("Parent organization not found")
+
+                organization_entity = Organization(**organization.model_dump())
+                if endpoints is not None:
+                    organization_entity.endpoints = endpoints
+
                 new_org = organization_repository.create(organization_entity)
                 self.history_service.create(new_org, "create")
                 return new_org
@@ -118,13 +125,15 @@ class OrganizationService(EntityService):
     def update_one(
         self,
         ura_number: UraNumber,
-        active: Optional[bool],
-        name: str | None,
-        description: str | None,
-        parent_org: UUID | None,
+        active: bool | None = None,
+        name: str | None = None,
+        description: str | None = None,
+        parent_org: UUID | None = None,
+        endpoints: List[Endpoint] | None = None,
     ) -> Organization:
         with self.database.get_db_session() as session:
             organization_repository = session.get_repository(OrganizationsRepository)
+            endpoints_repository = session.get_repository(EndpointsRepository)
             entity = organization_repository.get(ura_number=str(ura_number))
             if entity is None:
                 logging.warning(f"Organization not found for {ura_number}")
@@ -142,6 +151,11 @@ class OrganizationService(EntityService):
                     )
                     raise ResourceNotFoundException("Parent organization not found")
                 entity.parent_organization_id = parent_org
+            if endpoints is not None:
+                target_endpoints = entity.endpoints
+                entity.endpoints = endpoints
+                endpoints_repository.delete_many(target_endpoints)
+
             updated_org = organization_repository.update(entity)
             self.history_service.create(updated_org, "update")
             return updated_org

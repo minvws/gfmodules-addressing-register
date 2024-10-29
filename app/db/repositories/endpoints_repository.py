@@ -2,7 +2,7 @@ import logging
 from typing import Sequence, Union, Any
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import select, delete, or_
 from sqlalchemy.exc import DatabaseError
 
 from app.db.decorator import repository
@@ -71,3 +71,7 @@ class EndpointsRepository(RepositoryBase):
             self.db_session.rollback()
             logging.error(f"Failed to update Endpoint {endpoint.id}: {e}")
             raise e
+
+    def delete_many(self, endpoints: Sequence[Endpoint]) -> None:
+        stmt = delete(Endpoint).where(or_(*[Endpoint.id == endpoint.id for endpoint in endpoints]))
+        self.db_session.execute(stmt)
