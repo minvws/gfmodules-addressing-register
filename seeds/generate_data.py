@@ -35,7 +35,7 @@ from app.services.supplier_service import SupplierService
 fake = Faker("nl_nl")
 
 config = get_config()
-db = Database(dsn=config.database.dsn)
+db = Database(config=config.database)
 
 
 def run():

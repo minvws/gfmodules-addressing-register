@@ -3,24 +3,25 @@ import unittest
 from starlette.exceptions import HTTPException
 
 from app.data import UraNumber
-from app.db.db import Database
 from app.exceptions.service_exceptions import ResourceNotFoundException
 from app.models.supplier.dto import UpdateSupplierRequest
 from app.models.supplier.model import SupplierModel
 from app.services.supplier_service import SupplierService
 from app.config import set_config
-from test_config import get_test_config
+from test_config import get_test_config_with_postgres_db_connection, get_postgres_database
 
 
 class BaseTestSuite(unittest.TestCase):
-    database = Database("sqlite:///:memory:", create_tables=True) # needed here otherwise type-check fails
+    database = get_postgres_database() # needed here otherwise type-check fails
     supplier_service = SupplierService(database) # needed here otherwise type-check fails
     @classmethod
     def setUpClass(cls) -> None:
-        set_config(get_test_config())
-        cls.database = Database("sqlite:///:memory:", create_tables=True) # Set again for each class
+        set_config(get_test_config_with_postgres_db_connection())
+        cls.database = get_postgres_database() # Set again for each class
         cls.supplier_service = SupplierService(cls.database) # Set again for each class
         assert cls.database.is_healthy()
+        cls.database.generate_tables()
+        cls.database.truncate_tables()
 
     def add_supplier_endpoint(self, ura_number: str = "00000000", care_provider_name: str = "test",
                               update_supplier_endpoint: str = "test") -> SupplierModel:

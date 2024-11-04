@@ -10,7 +10,7 @@ DB_NAME=${4:-postgres}
 export PGPASSWORD=$DB_PASS
 
 echo "➡️ Generating TLS certificates"
-./tools/generate_certs.sh
+tools/./generate_certs.sh
 
 echo "➡️ Creating the configuration file"
 if [ -e app.conf ]; then

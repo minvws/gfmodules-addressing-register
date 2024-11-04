@@ -167,5 +167,5 @@ class OrganizationService(EntityService):
             if organization is None:
                 logging.warning(f"Organization not found for {ura_number}")
                 raise ResourceNotFoundException()
-            organization_repository.delete(organization)
             self.history_service.create(organization, "delete")
+            organization_repository.delete(organization)

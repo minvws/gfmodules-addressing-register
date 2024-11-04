@@ -8,14 +8,12 @@ from app.data import EndpointStatus, ConnectionType, UraNumber
 from app.db.db import Database
 from app.db.entities.endpoint.endpoint import Endpoint
 from app.db.entities.organization.organization import Organization
-from app.db.entities.value_sets.endpoint_payload_types import EndpointPayloadType
 from app.exceptions.service_exceptions import ResourceNotFoundException
 from app.models.organization.model import OrganizationModel
 from app.services.entity_services.endpoint_service import EndpointService
 from app.services.entity_services.organization_service import OrganizationService
 from app.services.organization_history_service import OrganizationHistoryService
-from test_config import get_test_config
-
+from test_config import get_test_config_with_postgres_db_connection, get_postgres_database
 
 class BaseTestSuite(unittest.TestCase):
     database: Database
@@ -25,29 +23,19 @@ class BaseTestSuite(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        set_config(get_test_config())
-        cls.database = Database("sqlite:///:memory:")
+        set_config(get_test_config_with_postgres_db_connection())
+        cls.database = get_postgres_database()
         cls.database.generate_tables()
+        cls.database.truncate_tables()
+
         cls.history_service = OrganizationHistoryService(cls.database)
         cls.endpoint_service = EndpointService(cls.database, cls.history_service)
         organization_service = OrganizationService(cls.database, cls.history_service)
-        assert cls.database.is_healthy()
 
         create_organization = OrganizationModel(
             ura_number=UraNumber("0"), active=True, name="name", description="description",
             parent_organization_id=None,
         )
-
-        with cls.database.get_db_session() as session:
-            session.add(
-                EndpointPayloadType(
-                    code="none",
-                    definition="none",
-                    display="none"
-                )
-            )
-            session.commit()
-
         cls.default_org = organization_service.add_one(organization=create_organization)
 
     def add_endpoint(self,

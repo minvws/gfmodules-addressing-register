@@ -12,12 +12,12 @@ from app.models.supplier.dto import UpdateSupplierRequest
 from app.models.supplier.model import SupplierModel, UraNumberModel
 
 from app.config import set_config
-from test_config import get_test_config
+from test_config import get_test_config_with_postgres_db_connection, get_postgres_database
 
 
 @contextmanager
 def temp_partial_config() -> Generator[None, None, None]:
-    temp_test_config = get_test_config()
+    temp_test_config = get_test_config_with_postgres_db_connection()
 
     """Context manager to temporarily update a part of the config and reset afterward."""
     try:
@@ -36,6 +36,10 @@ class BaseTestApi(unittest.TestCase):
         temp_partial_config()
         app: FastAPI = create_fastapi_app()
         self.client: TestClient = TestClient(app)
+        database = get_postgres_database()
+        assert database.is_healthy()
+        database.generate_tables()
+        database.truncate_tables()
 
     def tearDown(self) -> None:
         inject.clear()
@@ -95,7 +99,7 @@ class TestAddSupplier(BaseTestApi):
 
     def test_add_supplier(self) -> None:
         """Test adding a supplier."""
-        current_config = get_test_config()
+        current_config = get_test_config_with_postgres_db_connection()
         current_config.app.override_authentication_ura = "00000000"
         set_config(current_config)
 
