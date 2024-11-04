@@ -163,7 +163,7 @@ def test_find_correct_endpoints(
     endpoints = matching_care_service.find_endpoints(endpoint_params)
     assert endpoints is not None
     assert check_key_value(
-        endpoints, "reference", "Organization/" + str(expected_org.ura_number)
+        endpoints, "reference", "Organization/" + str(expected_org.id)
     )
     assert check_key_value(endpoints, "value", expected_endpoint.identifier)
     assert check_key_value(endpoints, "address", expected_endpoint.address)

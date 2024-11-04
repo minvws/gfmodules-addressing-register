@@ -75,7 +75,7 @@ def subsidiary_organization(
 def test_map_to_fhir_organization_should_return_a_org_fhir_resource(
     subsidiary_organization: OrganizationEntity,
 ) -> None:
-    expected = map_to_fhir_organization(subsidiary_organization, include_endpoints=True)
+    expected = map_to_fhir_organization(subsidiary_organization)
     assert isinstance(expected, Organization)
     assert isinstance(expected.identifier[0], Identifier) and isinstance(
         expected.identifier[1], Identifier
@@ -96,7 +96,7 @@ def test_map_to_fhir_organization_should_return_a_org_fhir_resource_with_endpoin
     mock_endpoint: EndpointEntity,
 ) -> None:
     subsidiary_organization.endpoints.append(mock_endpoint)
-    expected = map_to_fhir_organization(subsidiary_organization, include_endpoints=True)
+    expected = map_to_fhir_organization(subsidiary_organization)
     assert isinstance(expected, Organization)
     assert isinstance(expected.identifier[0], Identifier) and isinstance(
         expected.identifier[1], Identifier
@@ -125,7 +125,7 @@ def test_map_to_endpoint_fhir(
     assert isinstance(expected.managingOrganization, Reference)
     assert (
         expected.managingOrganization.reference
-        == f"Organization/{subsidiary_organization.ura_number}"
+        == f"Organization/{subsidiary_organization.id}"
     )
     assert isinstance(expected.period, Period)
     assert expected.period.start == mock_endpoint.period_start_date

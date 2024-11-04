@@ -16,9 +16,7 @@ from app.db.entities.organization.organization import Organization as Organizati
 from app.db.entities.endpoint.endpoint import Endpoint as EndpointEntity
 
 
-def map_to_fhir_organization(
-    entity: OrganizationEntity, include_endpoints: bool = False
-) -> Organization:
+def map_to_fhir_organization(entity: OrganizationEntity) -> Organization:
     identifiers = [
         Identifier.construct(use="usual", value=entity.id.__str__()),
         Identifier.construct(use="official", value=entity.ura_number),
@@ -40,14 +38,10 @@ def map_to_fhir_organization(
         )
         for org_type in entity.type
     ]
-    endpoints = (
-        [
-            Reference.construct(reference=f"Endpoint/{endpoint.id}")
-            for endpoint in entity.endpoints
-        ]
-        if include_endpoints
-        else None
-    )
+    endpoints = [
+        Reference.construct(reference=f"Endpoint/{endpoint.id}")
+        for endpoint in entity.endpoints
+    ]
 
     return Organization.construct(
         active=entity.active,
@@ -85,10 +79,8 @@ def map_to_endpoint_fhir(entity: EndpointEntity) -> Endpoint:
         else None
     )
     managing_organization = (
-        Reference.construct(
-            reference=f"Organization/{entity.managing_organization.ura_number}"
-        )
-        if entity.managing_organization
+        Reference.construct(reference=f"Organization/{entity.organization_id}")
+        if entity.organization_id
         else None
     )
     payload_mime_type = (
@@ -135,7 +127,6 @@ def map_to_endpoint_fhir(entity: EndpointEntity) -> Endpoint:
 def create_organization_histories_bundled_resources(
     organization_histories: Sequence[OrganizationHistory],
 ) -> list[BundleEntry]:
-
     listing = [
         BundleEntry.construct(resource=org.data) for org in organization_histories
     ]
@@ -146,21 +137,28 @@ def create_organization_histories_bundled_resources(
 def create_organization_bundled_resources(
     organizations: Sequence[OrganizationEntity], include_endpoints: bool = False
 ) -> list[BundleEntry]:
-    return [
-        BundleEntry.construct(
-            resource=(map_to_fhir_organization(org, include_endpoints))
-        )
-        for org in organizations
-    ]
+    bundled_resources = []
+    for org in organizations:
+        organization_resource = map_to_fhir_organization(org)
+        bundled_resources.append(BundleEntry.construct(resource=organization_resource))
+        if include_endpoints:
+            for endpoint in org.endpoints:
+                endpoint_resource = map_to_endpoint_fhir(endpoint)
+                bundled_resources.append(
+                    BundleEntry.construct(resource=endpoint_resource)
+                )
+
+    return bundled_resources
 
 
 def create_endpoint_bundled_resources(
     endpoints: Sequence[EndpointEntity],
 ) -> list[BundleEntry]:
-    return [
-        BundleEntry.construct(resource=map_to_endpoint_fhir(endpoint))
-        for endpoint in endpoints
-    ]
+    bundled_resources = []
+    for endpoint in endpoints:
+        endpoint_resource = map_to_endpoint_fhir(endpoint)
+        bundled_resources.append(BundleEntry.construct(resource=endpoint_resource))
+    return bundled_resources
 
 
 def create_fhir_bundle(

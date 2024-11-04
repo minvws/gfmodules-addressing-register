@@ -17,7 +17,7 @@ class OrganizationHistoryService:
         with self.database.get_db_session() as session:
             repository = session.get_repository(OrganizationHistoryRepository)
 
-            fhir_org = map_to_fhir_organization(organization, True)
+            fhir_org = map_to_fhir_organization(organization)
 
             history = OrganizationHistory(
                 organization_id=organization.id,
