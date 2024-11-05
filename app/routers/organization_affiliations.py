@@ -8,7 +8,7 @@ from app.container import (
     get_organization_affiliation_service,
 )
 from app.services.organization_affiliation_service import OrganizationAffiliationService
-from params.organization_affiliation_query_params import OrganizationAffiliationQueryParams
+from app.params.organization_affiliation_query_params import OrganizationAffiliationQueryParams
 
 router = APIRouter(
     prefix="/OrganizationAffiliation",

@@ -8,8 +8,8 @@ from app.db.db import Database
 from app.db.repositories.organization_affiliation_repository import OrganizationAffiliationRepository
 from app.db.entities.organization_affiliation.organization_affiliation import OrganizationAffiliationEntry
 from app.mappers.fhir_mapper import create_fhir_bundle, map_to_endpoint_fhir
-from db.repositories.endpoints_repository import EndpointsRepository
-from params.organization_affiliation_query_params import OrganizationAffiliationQueryParams
+from app.db.repositories.endpoints_repository import EndpointsRepository
+from app.params.organization_affiliation_query_params import OrganizationAffiliationQueryParams
 
 
 class OrganizationAffiliationService:
@@ -50,7 +50,7 @@ class OrganizationAffiliationService:
         with self.database.get_db_session() as session:
             for affiliation in fhir_entities:
                 for endpoint in affiliation.endpoint:
-                    endpoint_id = endpoint.reference.split("/")[1]
+                    endpoint_id = endpoint.reference.split("/")[1]  # type: ignore
 
                     endpoint_entity = session.get_repository(EndpointsRepository).find(identifier=endpoint_id)
                     if len(endpoint_entity) > 0:
