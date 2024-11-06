@@ -11,7 +11,7 @@ from app.services.supplier_service import SupplierService
 def container_config(binder: inject.Binder) -> None:
     config = get_config()
 
-    db = Database(dsn=config.database.dsn, create_tables=config.database.create_tables)
+    db = Database(config=config.database)
     binder.bind(Database, db)
 
     supplying_service = SupplierService(db)

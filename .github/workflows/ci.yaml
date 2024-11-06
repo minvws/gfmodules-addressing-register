@@ -96,7 +96,20 @@ jobs:
     test:
         name: Run the tests
         runs-on: ubuntu-22.04
+        container: python:3.11-bookworm
         needs: build
+        services:
+          addressing_db:
+            image: postgres:14
+            env:
+              POSTGRES_USER: postgres
+              POSTGRES_PASSWORD: postgres
+              POSTGRES_DB: testing
+            options: >-
+              --health-cmd pg_isready
+              --health-interval 10s
+              --health-timeout 5s
+              --health-retries 5
 
         steps:
             - name: Checkout repositories
@@ -107,9 +120,14 @@ jobs:
               with:
                 python_version: "3.11"
 
+            - name: Install dependencies
+              run: |
+                apt-get update
+                apt-get install --yes --no-install-recommends postgresql-client
+
             - name: Run the tests
               run: poetry run $(make test --just-print --silent)
-              
+
             - name: Upload coverage report
               uses: actions/upload-artifact@v4
               with:

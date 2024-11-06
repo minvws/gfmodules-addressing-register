@@ -7,12 +7,12 @@ from uzireader.uziserver import UziServer
 from app.authentication import authenticated_ura, enforce_cert_newlines
 from app.data import UraNumber
 from app.config import set_config
-from test_config import get_test_config
+from test_config import get_test_config_with_postgres_db_connection
 from pytest_mock import MockerFixture
 
 
 def test_ura_returns_subscriber_for_valid_cert(mocker: MockerFixture) -> None:
-    set_config(get_test_config())
+    set_config(get_test_config_with_postgres_db_connection())
 
     request = mocker.MagicMock(spec=Request)
     request.headers = {

@@ -1,13 +1,10 @@
 from app.config import Config, ConfigApp, LogLevel, ConfigDatabase, ConfigUvicorn, ConfigTelemetry, ConfigStats
+from app.db.db import Database
 
 
-def get_test_config() -> Config:
-    return Config(
-        app=ConfigApp(
-            loglevel=LogLevel.error,
-            override_authentication_ura=None,
-        ),
-        database=ConfigDatabase(
+def get_test_config(database: ConfigDatabase | None = None) -> Config:
+    if not database:
+        database = ConfigDatabase(
             dsn="sqlite:///:memory:",
             create_tables=True,
             retry_backoff=[0.1, 0.2, 0.4, 0.8, 1.6, 3.2, 4.8, 6.4, 10.0],
@@ -15,7 +12,14 @@ def get_test_config() -> Config:
             max_overflow=10,
             pool_pre_ping=False,
             pool_recycle=1
+        )
+
+    return Config(
+        app=ConfigApp(
+            loglevel=LogLevel.error,
+            override_authentication_ura=None,
         ),
+        database=database,
         uvicorn=ConfigUvicorn(
             swagger_enabled=False,
             docs_url="/docs",
@@ -41,3 +45,27 @@ def get_test_config() -> Config:
             module_name=None
         )
     )
+
+
+def get_test_config_with_postgres_db_connection() -> Config:
+    return get_test_config(database=get_database_config_postgres_db())
+
+
+def get_database_config_postgres_db() -> ConfigDatabase:
+    return ConfigDatabase(
+        dsn=get_postgres_db_connection_dsn(),
+        create_tables=True,
+        retry_backoff=[0.1, 0.2, 0.4, 0.8, 1.6, 3.2, 4.8, 6.4, 10.0],
+        pool_size=5,
+        max_overflow=10,
+        pool_pre_ping=False,
+        pool_recycle=1
+    )
+
+
+def get_postgres_db_connection_dsn() -> str:
+    return "postgresql+psycopg://postgres:postgres@addressing_db:5432/testing"
+
+
+def get_postgres_database() -> Database:
+    return Database(config=get_database_config_postgres_db())

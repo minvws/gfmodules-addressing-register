@@ -7,16 +7,12 @@ from uuid import UUID
 from faker import Faker
 
 from app.data import ConnectionType, EndpointStatus, UraNumber
-from app.db.db import Database
 from app.db.entities.endpoint.endpoint import Endpoint
 from app.db.entities.organization.organization import Organization
 from app.models.organization.model import OrganizationModel
 from app.services.entity_services.endpoint_service import EndpointService
 from app.services.entity_services.organization_service import OrganizationService
-from app.db.entities.value_sets.endpoint_payload_types import EndpointPayloadType
-from app.db.entities.value_sets.connection_type import (
-    ConnectionType as ConnectionTypeEntity,
-)
+
 
 fake = Faker("nl_nl")
 
@@ -47,17 +43,6 @@ def check_key_value(
         )
     if isinstance(data, list):
         return any(check_key_value(item, key_to_check, value_to_check) for item in data)
-
-
-def init_database_with_types(database: Database) -> None:
-    with database.get_db_session() as session:
-        session.add(
-            ConnectionTypeEntity(
-                code="dicom-wado-rs", display="some_display", definition="some_def"
-            )
-        )
-        session.add(EndpointPayloadType(code="none", definition="none", display="none"))
-        session.commit()
 
 
 # Helper function to add an organization

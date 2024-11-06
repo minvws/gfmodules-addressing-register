@@ -1,45 +1,72 @@
 import logging
+import subprocess
 
 from sqlalchemy import create_engine, text, StaticPool
 from sqlalchemy.orm import Session
 
-from app.config import get_config
+from app.config import ConfigDatabase
 from app.db.session import DbSession
-from app.db.entities.base import Base
 
 logger = logging.getLogger(__name__)
 
 
 class Database:
-    def __init__(self, dsn: str, create_tables: bool = False):
+    def __init__(self, config: ConfigDatabase):
         try:
-            if "sqlite://" in dsn:
+            if "sqlite://" in config.dsn:
                 self.engine = create_engine(
-                    dsn,
+                    config.dsn,
                     connect_args={'check_same_thread': False},
                     # This + static pool is needed for sqlite in-memory tables
                     poolclass=StaticPool
                 )
             else:
-                config = get_config()
                 self.engine = create_engine(
-                    dsn,
+                    config.dsn,
                     echo=False,
-                    pool_pre_ping=config.database.pool_pre_ping,
-                    pool_recycle=config.database.pool_recycle,
-                    pool_size=config.database.pool_size,
-                    max_overflow=config.database.max_overflow
+                    pool_pre_ping=config.pool_pre_ping,
+                    pool_recycle=config.pool_recycle,
+                    pool_size=config.pool_size,
+                    max_overflow=config.max_overflow
                 )
         except BaseException as e:
             logger.error("Error while connecting to database: %s", e)
             raise e
 
-        if create_tables:
+        if config.create_tables:
             self.generate_tables()
 
     def generate_tables(self) -> None:
+        # TODO: Only for testing purposes
         logger.info("Generating tables...")
-        Base.metadata.create_all(self.engine)
+        migrate_command = "tools/./migrate_db.sh addressing_db postgres postgres testing"
+        out = subprocess.run(migrate_command.split(), capture_output=True)
+        logger.info(out.stdout.decode('utf-8'))
+
+    def truncate_tables(self) -> None:
+        # TODO: Only for testing purposes
+        logger.info("Truncating tables...")
+
+        tables = [
+            'organization_affiliation_practice_codes',
+            'organization_affiliations_roles',
+            'organization_affiliation_endpoints',
+            'organization_affiliations',
+            'endpoint_headers',
+            'endpoints_environments',
+            'endpoints_contact_points',
+            'endpoint_payloads',
+            'endpoints',
+            'organization_contacts',
+            'organization_type_associations',
+            'organizations_history',
+            'organizations',
+            'supplier_endpoints'
+        ]
+
+        with self.get_db_session() as session:
+            session.execute(text('TRUNCATE TABLE ' + ', '.join(tables)))
+            session.commit()
 
     def is_healthy(self) -> bool:
         """

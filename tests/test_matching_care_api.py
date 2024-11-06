@@ -2,6 +2,7 @@ from fastapi.testclient import TestClient
 from fhir.resources.R4B.bundle import Bundle
 
 from app.data import ConnectionType, EndpointStatus, UraNumber
+from app.db.db import Database
 from app.models.organization.model import OrganizationModel
 from app.services.entity_services.endpoint_service import EndpointService
 from app.services.entity_services.organization_service import OrganizationService
@@ -18,8 +19,10 @@ def test_organization_returns_fhir_bundle(
 
 
 def test_organization_returns_correct_organization(
-    client: TestClient, org_endpoint: str, organization_service: OrganizationService
+    client: TestClient, org_endpoint: str, organization_service: OrganizationService, setup_database: Database
 ) -> None:
+    setup_database.truncate_tables()
+
     expected_org = organization_service.add_one(
         OrganizationModel(
             ura_number=UraNumber(00000000),
