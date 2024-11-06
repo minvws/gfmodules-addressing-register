@@ -46,9 +46,26 @@ class Database:
     def truncate_tables(self) -> None:
         # TODO: Only for testing purposes
         logger.info("Truncating tables...")
+
+        tables = [
+            'organization_affiliation_practice_codes',
+            'organization_affiliations_roles',
+            'organization_affiliation_endpoints',
+            'organization_affiliations',
+            'endpoint_headers',
+            'endpoints_environments',
+            'endpoints_contact_points',
+            'endpoint_payloads',
+            'endpoints',
+            'organization_contacts',
+            'organization_type_associations',
+            'organizations_history',
+            'organizations',
+            'supplier_endpoints'
+        ]
+
         with self.get_db_session() as session:
-            session.execute(text(
-                'TRUNCATE TABLE organization_affiliation_practice_codes, organization_affiliations_roles, organization_affiliation_endpoints, organization_affiliations, endpoint_headers, endpoints_environments, endpoints_contact_points, endpoint_payloads, endpoints, organization_contacts, organization_type_associations, organizations_history, organizations'))
+            session.execute(text('TRUNCATE TABLE ' + ', '.join(tables)))
             session.commit()
 
     def is_healthy(self) -> bool:

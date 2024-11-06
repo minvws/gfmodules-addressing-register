@@ -35,21 +35,28 @@ class BaseTestSuite(unittest.TestCase):
 
 class TestCreateSupplierEndpoint(BaseTestSuite):
     def test_create_endpoint(self) -> None:
+        self.database.truncate_tables()
+
         expected = SupplierModel(
             ura_number=UraNumber("00000000"),
             care_provider_name="test",
             update_supplier_endpoint="test"
         )
         actual = self.supplier_service.add_one(expected)
+
         # assert
         assert expected == actual
 
     def test_create_should_fail_due_to_duplicate(self) -> None:
+        self.database.truncate_tables()
+
         expected = SupplierModel(
             ura_number=UraNumber("00000000"),
             care_provider_name="test",
             update_supplier_endpoint="test"
         )
+        self.supplier_service.add_one(expected)
+
         # assert
         with self.assertRaises(expected_exception=HTTPException) as context:
             self.supplier_service.add_one(expected)
@@ -57,7 +64,9 @@ class TestCreateSupplierEndpoint(BaseTestSuite):
 
 class TestGetOneSupplierEndpoint(BaseTestSuite):
     def test_get_one_supplier_endpoint(self) -> None:
-        expected_endpoint = self.add_supplier_endpoint()
+        self.database.truncate_tables()
+
+        expected_endpoint = self.add_supplier_endpoint(ura_number="00000001")
         # act
         actual_endpoint = self.supplier_service.get_one(expected_endpoint.ura_number)
         # assert
@@ -65,6 +74,8 @@ class TestGetOneSupplierEndpoint(BaseTestSuite):
         self.assertDictEqual(expected_endpoint.model_dump(), actual_endpoint.model_dump())
 
     def test_get_should_fail_due_to_non_existent(self) -> None:
+        self.database.truncate_tables()
+
         with self.assertRaises(ResourceNotFoundException):
             self.supplier_service.get_one(UraNumber("12345678"))
 
