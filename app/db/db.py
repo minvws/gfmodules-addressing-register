@@ -48,9 +48,6 @@ class Database:
         logger.info("Truncating tables...")
 
         tables = [
-            'organization_affiliation_practice_codes',
-            'organization_affiliations_roles',
-            'organization_affiliation_endpoints',
             'organization_affiliations',
             'endpoint_headers',
             'endpoints_environments',

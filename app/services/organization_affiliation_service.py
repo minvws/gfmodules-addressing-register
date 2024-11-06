@@ -46,15 +46,20 @@ class OrganizationAffiliationService:
             affiliations,
         ))
 
+        # If endpoints are requested, find them and add them to the response (this could be optimized)
         endpoint_entities = []
-        with self.database.get_db_session() as session:
-            for affiliation in fhir_entities:
-                for endpoint in affiliation.endpoint:
-                    endpoint_id = endpoint.reference.split("/")[1]  # type: ignore
+        if affiliations_req_params.include is not None and "Organization.endpoint" in affiliations_req_params.include:
+            with self.database.get_db_session() as session:
+                for affiliation in fhir_entities:
+                    if affiliation.endpoint is None:
+                        continue
 
-                    endpoint_entity = session.get_repository(EndpointsRepository).find(identifier=endpoint_id)
-                    if len(endpoint_entity) > 0:
-                        endpoint_entities.append(map_to_endpoint_fhir(endpoint_entity[0]))
+                    for endpoint in affiliation.endpoint:
+                        endpoint_id = endpoint.reference.split("/")[1]  # type: ignore
+
+                        endpoint_entity = session.get_repository(EndpointsRepository).find(identifier=endpoint_id)
+                        if len(endpoint_entity) > 0:
+                            endpoint_entities.append(map_to_endpoint_fhir(endpoint_entity[0]))
 
         combined_entities = fhir_entities + endpoint_entities
 

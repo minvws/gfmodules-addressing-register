@@ -67,5 +67,5 @@ class OrganizationAffiliationRepository(RepositoryBase):
                 OrganizationAffiliationEntry.data["code"].contains([{"coding": [{"code": conditions["role"]}]}]) # type: ignore
             )
 
-        stmt = (stmt.where(*filter_conditions))
+        stmt = (stmt.where(*filter_conditions).limit(100))
         return self.db_session.session.execute(stmt).scalars().all()
