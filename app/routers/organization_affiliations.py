@@ -1,0 +1,38 @@
+from typing import Any, Annotated, Dict
+from uuid import UUID
+
+from fastapi import APIRouter, Depends, Body
+from fastapi.exceptions import HTTPException
+from fhir.resources.R4B.organizationaffiliation import OrganizationAffiliation
+from app.container import (
+    get_organization_affiliation_service,
+)
+from app.services.organization_affiliation_service import OrganizationAffiliationService
+from app.params.organization_affiliation_query_params import OrganizationAffiliationQueryParams
+
+router = APIRouter(
+    prefix="/OrganizationAffiliation",
+    tags=["Organization Affiliation"],
+)
+
+@router.post("")
+async def create(
+    data: Annotated[Dict[str, Any], Body()],
+    service: OrganizationAffiliationService = Depends(get_organization_affiliation_service),
+) -> Dict[str, Any]:
+    try:
+        params = OrganizationAffiliation(**data)
+        return service.add_one(params)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.get("/{_id}")
+@router.get("")
+def find_organisation_affiliates(
+    _id: UUID | None = None,
+    query_params: OrganizationAffiliationQueryParams = Depends(),
+    service: OrganizationAffiliationService = Depends(get_organization_affiliation_service),
+) -> dict[str, Any]:
+    if _id:
+        query_params.id = _id
+    return service.find_affiliations(query_params)

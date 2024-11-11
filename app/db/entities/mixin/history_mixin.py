@@ -1,5 +1,6 @@
 from typing import Any, Dict, Literal
-from sqlalchemy import JSON, Enum
+from sqlalchemy import Enum
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 from app.db.entities.mixin.common_mixin import CommonMixin
 
@@ -10,4 +11,4 @@ class HistoryMixin(CommonMixin):
     interaction: Mapped[FhirInteractions] = mapped_column(
         "interaction", Enum("create", "update", "delete", name="fhir_interactions")
     )
-    data: Mapped[Dict[str, Any]] = mapped_column("data", JSON)
+    data: Mapped[Dict[str, Any]] = mapped_column("data", JSONB)
