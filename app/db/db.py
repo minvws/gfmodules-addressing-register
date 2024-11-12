@@ -36,7 +36,8 @@ class Database:
         if config.create_tables:
             self.generate_tables()
 
-    def generate_tables(self) -> None:
+    @staticmethod
+    def generate_tables() -> None:
         # TODO: Only for testing purposes
         logger.info("Generating tables...")
         migrate_command = "tools/./migrate_db.sh addressing_db postgres postgres testing"

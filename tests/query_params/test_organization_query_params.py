@@ -7,10 +7,10 @@ from app.params.organization_query_params import OrganizationQueryParams
 
 
 @contextmanager
-def not_raise(ValidationError: Type[Exception]) -> Generator[None, Any, Any]:
+def not_raise(validation_error: Type[Exception]) -> Generator[None, Any, Any]:
     try:
         yield
-    except ValidationError as e:
+    except validation_error as e:
         pytest.fail("function did railse {0}".format(e))
 
 

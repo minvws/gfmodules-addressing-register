@@ -7,6 +7,7 @@ from app.services.matching_care_service import MatchingCareService
 from app.services.organization_history_service import OrganizationHistoryService
 from app.services.organization_affiliation_service import OrganizationAffiliationService
 from app.services.supplier_service import SupplierService
+from app.services.healthcare_service_service import HealthcareServiceService
 
 
 def container_config(binder: inject.Binder) -> None:
@@ -26,6 +27,9 @@ def container_config(binder: inject.Binder) -> None:
 
     organization_affiliation_service = OrganizationAffiliationService(db)
     binder.bind(OrganizationAffiliationService, organization_affiliation_service)
+
+    healthcare_service_service = HealthcareServiceService(db)
+    binder.bind(HealthcareServiceService, healthcare_service_service)
 
     organization_service = OrganizationService(db, organization_history_service)
     binder.bind(OrganizationService, organization_service)
@@ -50,6 +54,10 @@ def get_endpoint_service() -> EndpointService:
 
 def get_organization_affiliation_service() -> OrganizationAffiliationService:
     return inject.instance(OrganizationAffiliationService)
+
+
+def get_healthcare_service_service() -> HealthcareServiceService:
+    return inject.instance(HealthcareServiceService)
 
 
 def get_supplying_service() -> SupplierService:
