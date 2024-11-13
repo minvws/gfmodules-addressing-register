@@ -14,6 +14,10 @@ class OrganizationAffiliationQueryParams(CommonQueryParams):
     name: str | None = None
     participating_organization: str | None = None
     primary_organization: str | None = None
+    specialty: Literal[
+        "Radiology",
+        None
+    ] = None
     role: Literal[
         "BM",
         "provider",
