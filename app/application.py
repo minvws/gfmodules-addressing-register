@@ -13,6 +13,7 @@ from app.routers.health import router as health_router
 from app.routers.organizations import router as organizations_router
 from app.routers.endpoints import router as endpoints_router
 from app.routers.suppliers import router as supplier_router
+from app.routers.healthcare_service import router as healthcare_service_router
 from app.routers.organization_affiliations import router as organization_affiliations_router
 from app.config import get_config
 
@@ -90,7 +91,8 @@ def setup_fastapi() -> FastAPI:
         organizations_router,
         endpoints_router,
         supplier_router,
-        organization_affiliations_router
+        organization_affiliations_router,
+        healthcare_service_router,
     ]
     for router in routers:
         fastapi.include_router(router)

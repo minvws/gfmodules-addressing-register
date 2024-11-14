@@ -10,6 +10,7 @@ from app.db.entities.organization_affiliation.organization_affiliation import Or
 from app.mappers.fhir_mapper import create_fhir_bundle, map_to_endpoint_fhir
 from app.db.repositories.endpoints_repository import EndpointsRepository
 from app.params.organization_affiliation_query_params import OrganizationAffiliationQueryParams
+from app.services.reference_validator import ReferenceValidator
 
 
 class OrganizationAffiliationService:
@@ -19,6 +20,12 @@ class OrganizationAffiliationService:
     def add_one(self, data: OrganizationAffiliation) -> Dict[str, Any]:
         with self.database.get_db_session() as session:
             repository = session.get_repository(OrganizationAffiliationRepository)
+
+            reference_validator = ReferenceValidator()
+            if not reference_validator.validate_list(session, data.healthcareService, ["HealthcareService"]):
+                raise ValueError("Invalid reference in healthcareService")
+
+            # @todo: check if organisation / participating / primary are in the db
 
             affiliation_entity = OrganizationAffiliationEntry(id=uuid4())
             affiliation_entity.data = dict(jsonable_encoder(data.dict()))

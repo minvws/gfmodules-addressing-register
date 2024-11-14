@@ -12,7 +12,7 @@ services:
       - ./:/src
       - ./secrets:/src/secrets
     ports:
-      - 8502:8502
+      - "8502:8502"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8502/health"]
       start_period: 30s
@@ -52,11 +52,11 @@ services:
     environment:
       POSTGRES_DB: postgres
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres    
+      POSTGRES_PASSWORD: postgres
     volumes:
       - './docker/create-testing-database.sql:/docker-entrypoint-initdb.d/10-create-testing-database.sql'
     ports:
-      - 5402:5432
+      - "5402:5432"
     networks:
       - zmodules
 
