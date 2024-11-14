@@ -1,221 +1,266 @@
-import random
-from datetime import datetime
-from typing import List
+from uuid import UUID, uuid4
 
 from faker import Faker
-from sqlalchemy import select
+from fhir.resources.R4B.address import Address
+from fhir.resources.R4B.codeableconcept import CodeableConcept
+from fhir.resources.R4B.coding import Coding
+from fhir.resources.R4B.endpoint import Endpoint
+from fhir.resources.R4B.humanname import HumanName
+from fhir.resources.R4B.identifier import Identifier
+from fhir.resources.R4B.organization import Organization
+from fhir.resources.R4B.organization import OrganizationContact
+from fhir.resources.R4B.reference import Reference
 
 from app.config import get_config
-from app.data import EndpointStatus, ConnectionType
 from app.db.db import Database
-from app.db.entities.contact_point.contact_point import ContactPoint
-from app.db.entities.endpoint import (
-    endpoint_contact_point,
-    endpoint_environment,
-    endpoint_header,
-)
-from app.db.entities.organization import (
-    organization_contact,
-    organization_type_association,
-)
-from app.db.entities.value_sets import (
-    contact_point_system,
-    contact_point_use,
-    contact_type,
-    environment,
-    organization_type,
-)
-from app.models.organization.model import OrganizationModel
 from app.models.supplier.model import SupplierModel
 from app.services.entity_services.endpoint_service import EndpointService
 from app.services.entity_services.organization_service import OrganizationService
-from app.services.organization_history_service import OrganizationHistoryService
 from app.services.supplier_service import SupplierService
 
-fake = Faker("nl_nl")
 
-config = get_config()
-db = Database(config=config.database)
+class DataGenerator:
+    fake: Faker
+    db: Database
+    organization_service: OrganizationService
+    endpoint_service: EndpointService
+    supplier_service: SupplierService
+    default_uras: list[str]
+    default_metadata_urls: list[str]
 
+    def __init__(self) -> None:
+        self.fake = Faker()
 
-def run():
-    organization_history_service = OrganizationHistoryService(db)
-    organization_service = OrganizationService(
-        database=db, history_service=organization_history_service
-    )
-    endpoint_service = EndpointService(
-        database=db, organization_history_service=organization_history_service
-    )
+        config = get_config()
+        self.db = Database(config=config.database)
+        self.organization_service = OrganizationService(self.db)
+        self.endpoint_service = EndpointService(self.db)
+        self.supplier_service = SupplierService(self.db)
 
-    org_ids = []
-    endpoints_ids = []
+        self.default_uras = ["23665292", "13873620"]
+        self.default_metadata_urls = [
+            "http://metadata:8503/resource",
+            "http://metadata:9999/resource",
+        ]
 
-    # Set up default metadata resource endpoint NEEDED FOR TIMELINE SERVICE
-    default_org = organization_service.add_one(
-        OrganizationModel(
-            ura_number="23665292",
-            active=True,
-            name=fake.company(),
-            description=fake.text(50),
-            parent_organization_id=None,
+    def run(self):
+        organization_uras = self.default_uras + [
+            str(self.fake.random_number(8, True)) for _ in range(10)
+        ]
+        parent_org_id = None
+
+        for ura_number in organization_uras:
+            supplier_endpoint = self.generate_care_provider_endpoint_supplier(
+                ura_number=ura_number
+            )
+            self.supplier_service.add_one(supplier_endpoint)
+            org = self.generate_organization(
+                ura_number=ura_number,
+                part_of=parent_org_id if parent_org_id is not None and self.fake.boolean(50) else None,
+            )
+            org_entity = self.organization_service.add_one(org)
+            endpoint = self.generate_endpoint(org_entity.fhir_id)
+            self.endpoint_service.add_one(endpoint)
+            parent_org_id = org.id
+
+    def generate_care_provider_endpoint_supplier(
+        self,
+        ura_number: str | None = None,
+        care_provider_name: str | None = None,
+        update_supplier_endpoint: str | None = None,
+    ) -> SupplierModel:
+        return SupplierModel(
+            ura_number=ura_number
+            if ura_number
+            else str(self.fake.random_number(8, True)),
+            care_provider_name=care_provider_name
+            if care_provider_name
+            else self.fake.company(),
+            update_supplier_endpoint=update_supplier_endpoint
+            if update_supplier_endpoint
+            else self.fake.url(),
         )
-    )
-    default_endpoint = endpoint_service.add_one(
-        name=fake.text(20),
-        description=fake.text(50),
-        address="http://metadata:8503/resource",
-        identifier=str(fake.random_int(0, 89999999, 1)),
-        status_type=EndpointStatus.Active,
-        organization_id=default_org.id,
-        connection_type=random.choice(list(ConnectionType)),
-        payload_type="none",
-        payload_mime_type=fake.mime_type(),
-    )
-    org_ids.append(default_org.id)
-    endpoints_ids.append(default_endpoint.id)
-    default_org = organization_service.add_one(
-        OrganizationModel(
-            ura_number="13873620",
-            active=True,
-            name=fake.company(),
-            description=fake.text(50),
-            parent_organization_id=None,
-        )
-    )
-    default_endpoint = endpoint_service.add_one(
-        name=fake.text(20),
-        description=fake.text(50),
-        identifier=str(fake.random_int(0, 89999999, 1)),
-        address="http://metadata:9999/resource",
-        status_type=EndpointStatus.Active,
-        organization_id=default_org.id,
-        connection_type=random.choice(list(ConnectionType)),
-        payload_type="none",
-        payload_mime_type=fake.mime_type(),
-    )
-    org_ids.append(default_org.id)
-    endpoints_ids.append(default_endpoint.id)
 
-    for x in range(10):
-        organization_model = OrganizationModel(
-            ura_number=fake.random_int(0, 89999999, 1),
-            active=fake.boolean(75),
-            name=fake.company(),
-            description=fake.text(50),
-            parent_organization_id=(
-                random.choice(org_ids)
-                if fake.boolean(50) and len(org_ids) > 3
-                else None
+    def generate_organization(
+        self,
+        ura_number: str | None = None,
+        active: bool | None = None,
+        name: str | None = None,
+        uuid_identifier: str | None = None,
+        endpoint_id: UUID | None = None,
+        part_of: UUID | None = None,
+    ) -> Organization:
+        return Organization(
+            identifier=[
+                (
+                    Identifier(
+                        system="http://example.org/org", value=str(uuid_identifier)
+                    )
+                    if uuid_identifier
+                    else Identifier(system="http://example.org/org", value=str(uuid4()))
+                ),
+                (
+                    Identifier(
+                        system="http://fhir.nl/fhir/NamingSystem/ura", value=ura_number
+                    )
+                    if ura_number is not None
+                    else Identifier(
+                        system="http://fhir.nl/fhir/NamingSystem/ura",
+                        value=str(self.fake.random_number(8, True)),
+                    )
+                ),
+            ],
+            active=active if active is not None else self.fake.boolean(),
+            type=[
+                CodeableConcept(
+                    coding=[
+                        Coding(
+                            system="http://example.org/org-type",
+                            code=self.fake.random_element(
+                                elements=("hospital", "clinic", "pharmacy", "lab")
+                            ),
+                            display=self.fake.random_element(
+                                elements=("Hospital", "Clinic", "Pharmacy", "Lab")
+                            ),
+                        )
+                    ]
+                )
+            ],
+            name=name if name is not None else self.fake.company(),
+            contact=[self.generate_fake_contact()],
+            address=[self.generate_address()],
+            endpoint=[{"reference": f"Endpoint/{endpoint_id}"}]
+            if endpoint_id is not None
+            else None,
+            partOf={"reference": f"Organization/{part_of}"} if part_of is not None else None,
+        )
+
+    def generate_fake_contact(self) -> OrganizationContact:
+        return OrganizationContact(
+            name=HumanName(
+                use=self.fake.random_element(
+                    elements=(
+                        "usual",
+                        "official",
+                        "temp",
+                        "nickname",
+                        "anonymous",
+                        "old",
+                        "maiden",
+                    )
+                ),
+                text=self.fake.name(),
+                family=self.fake.last_name(),
+                given=[self.fake.first_name()],
+            ),
+            address=self.generate_address(),
+        )
+
+    def generate_address(self):
+        return Address(
+            use=self.fake.random_element(
+                elements=("home", "work", "temp", "old", "billing")
+            ),
+            type=self.fake.random_element(elements=("postal", "physical", "both")),
+            text=self.fake.address(),
+            city=self.fake.city(),
+            state=self.fake.state_abbr(),
+            postalCode=self.fake.postcode(),
+            country=self.fake.country(),
+        )
+
+
+    def generate_endpoint(
+        self,
+        org_fhir_id: UUID | None = None,
+        status: str | None = None,
+        name: str | None = None,
+        uuid_identifier: UUID | None = None,
+        endpoint_url: str | None = None,
+    ) -> Endpoint:
+        if org_fhir_id:
+            if (
+                self.organization_service.get_one(org_fhir_id).ura_number
+                in self.default_uras
+            ):
+                try:
+                    endpoint_url = self.default_metadata_urls[
+                        self.default_uras.index(
+                            self.organization_service.get_one(org_fhir_id).ura_number
+                        )
+                    ]
+                except ValueError:
+                    raise ValueError()
+
+        return Endpoint(
+            identifier=[
+                (
+                    Identifier(
+                        system="http://example.org/endpoint", value=str(uuid_identifier)
+                    )
+                    if uuid_identifier
+                    else Identifier(
+                        system="http://example.org/endpoint", value=str(uuid4())
+                    )
+                ),
+            ],
+            connectionType=Coding(
+                system="http://example.org/connection-type",
+                code=self.fake.random_element(
+                    elements=("hl7-fhir-rest", "hl7-fhir-messaging")
+                ),
+                display=self.fake.random_element(
+                    elements=("HL7 FHIR REST", "HL7 FHIR Messaging")
+                ),
+            ),
+            name=name if name else self.fake.company(),
+            payloadType=[
+                CodeableConcept(
+                    coding=[
+                        Coding(
+                            system="http://example.org/payload-type",
+                            code=self.fake.random_element(
+                                elements=(
+                                    "application/fhir+json",
+                                    "application/fhir+xml",
+                                )
+                            ),
+                            display=self.fake.random_element(
+                                elements=("FHIR JSON", "FHIR XML")
+                            ),
+                        )
+                    ]
+                )
+            ],
+            managingOrganization=Reference.construct(
+                reference="Organization/" + str(org_fhir_id)
+            )
+            if org_fhir_id
+            else None,
+            address=self.fake.uri() if endpoint_url is None else endpoint_url,
+            header=[
+                self.fake.random_element(
+                    elements=(
+                        "Authorization: Bearer token",
+                        "Content-Type: application/fhir+json",
+                    )
+                )
+            ],
+            payloadMimeType=[
+                self.fake.random_element(
+                    elements=("application/fhir+json", "application/fhir+xml")
+                )
+            ],
+            status=(
+                status
+                if status
+                else self.fake.random_element(
+                    elements=("active", "suspended", "error", "off", "entered-in-error")
+                )
             ),
         )
-        org = organization_service.add_one(organization_model)
-        org_ids.append(org.id)
-        ura_number = org.ura_number
-
-        endpoint = endpoint_service.add_one(
-            name=fake.text(20),
-            description=fake.text(50),
-            address=fake.url(),
-            identifier=str(fake.random_int(0, 89999999, 1)),
-            status_type=random.choice(list(EndpointStatus)),
-            organization_id=org_ids[x + 2],
-            connection_type=random.choice(list(ConnectionType)),
-            payload_type="none",
-            payload_mime_type=fake.mime_type(),
-        )
-        endpoints_ids.append(endpoint.id)
-
-        supplier_model = SupplierModel(
-            ura_number=ura_number,
-            care_provider_name=fake.text(50),
-            update_supplier_endpoint=fake.url(),
-        )
-        supplier_service = SupplierService(database=db)
-        supplier_service.add_one(supplier_model)
-
-    mass_session_commit(endpoints_ids=endpoints_ids, org_ids=org_ids)
-    generate_endpoint_contact_points(endpoints_ids)
-
-
-# Utility functions to fetch codes
-def get_codes(model) -> List:
-    with db.get_db_session() as session:
-        stmt = select(model.code)
-        return session.execute(stmt).scalars().all()
-
-
-def mass_session_commit(endpoints_ids: List, org_ids: List) -> None:
-    for x in range(len(endpoints_ids)):
-        with db.get_db_session() as session:
-            session.add(
-                endpoint_header.EndpointHeader(
-                    endpoint_id=endpoints_ids[x],
-                    data=fake.text(50),
-                )
-            )
-            session.add(
-                endpoint_environment.EndpointEnvironment(
-                    endpoint_id=endpoints_ids[x],
-                    environment_type=random.choice(
-                        list(get_codes(environment.Environment))
-                    ),
-                )
-            )
-            session.add(
-                organization_type_association.OrganizationTypeAssociation(
-                    organization_id=org_ids[x],
-                    organization_type=random.choice(
-                        list(get_codes(organization_type.OrganizationType))
-                    ),
-                )
-            )
-            session.add(
-                organization_contact.OrganizationContact(
-                    organization_id=org_ids[x],
-                    contact_type=random.choice(
-                        list(get_codes(contact_type.ContactType))
-                    ),
-                )
-            )
-            contact_point = ContactPoint(
-                system_type=random.choice(
-                    list(get_codes(contact_point_system.ContactPointSystem))
-                ),
-                use_type=random.choice(
-                    list(get_codes(contact_point_use.ContactPointUse))
-                ),
-                value=fake.text(50),
-                rank=fake.random_int(1, 5),
-                period_start_date=fake.date_time_between(
-                    start_date=datetime(2020, 1, 1), end_date=datetime(2022, 1, 1)
-                ),
-                period_end_date=fake.date_time_between(
-                    start_date=datetime(2022, 1, 2), end_date=datetime(2024, 1, 1)
-                ),
-            )
-            session.add(contact_point)
-            session.commit()
-
-
-def get_contact_points() -> List:
-    with db.get_db_session() as session:
-        stmt = select(ContactPoint.id)
-        contact_points = session.execute(stmt).scalars().all()
-        return contact_points
-
-
-def generate_endpoint_contact_points(endpoints_ids: List) -> None:
-    contact_points = get_contact_points()
-    for x in range(len(endpoints_ids)):
-        with db.get_db_session() as session:
-            session.add(
-                endpoint_contact_point.EndpointContactPoint(
-                    endpoint_id=endpoints_ids[x],
-                    contact_point_id=random.choice(list(contact_points)),
-                )
-            )
-            session.commit()
 
 
 if __name__ == "__main__":
-    run()
+    generator = DataGenerator()
+    generator.run()

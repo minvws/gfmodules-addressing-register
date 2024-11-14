@@ -1,19 +1,23 @@
 import logging
 import subprocess
 
-from sqlalchemy import create_engine, text, StaticPool
+from sqlalchemy import create_engine, text, StaticPool, Table
 from sqlalchemy.orm import Session
 
 from app.config import ConfigDatabase
+from app.db.entities.base import Base
+from app.db.entities.supplier_endpoint import SupplierEndpoint
 from app.db.session import DbSession
 
 logger = logging.getLogger(__name__)
 
 
 class Database:
+    _SQLITE_PREFIX = "sqlite://"
+
     def __init__(self, config: ConfigDatabase):
         try:
-            if "sqlite://" in config.dsn:
+            if self._SQLITE_PREFIX in config.dsn:
                 self.engine = create_engine(
                     config.dsn,
                     connect_args={'check_same_thread': False},
@@ -34,7 +38,10 @@ class Database:
             raise e
 
         if config.create_tables:
-            self.generate_tables()
+            if self._SQLITE_PREFIX in config.dsn:
+                Base.metadata.create_all(self.engine, tables=[Table("supplier_endpoints", SupplierEndpoint.metadata)])
+            else:
+                self.generate_tables()
 
     @staticmethod
     def generate_tables() -> None:
@@ -46,25 +53,19 @@ class Database:
 
     def truncate_tables(self) -> None:
         # TODO: Only for testing purposes
-        logger.info("Truncating tables...")
+        if self._SQLITE_PREFIX not in self.engine.url.__str__():
+            tables = [
+                'organization_affiliations',
+                'endpoints',
+                'organizations',
+                'supplier_endpoints'
+            ]
 
-        tables = [
-            'organization_affiliations',
-            'endpoint_headers',
-            'endpoints_environments',
-            'endpoints_contact_points',
-            'endpoint_payloads',
-            'endpoints',
-            'organization_contacts',
-            'organization_type_associations',
-            'organizations_history',
-            'organizations',
-            'supplier_endpoints'
-        ]
-
-        with self.get_db_session() as session:
-            session.execute(text('TRUNCATE TABLE ' + ', '.join(tables)))
-            session.commit()
+            with self.get_db_session() as session:
+                session.execute(text('TRUNCATE TABLE ' + ', '.join(tables)))
+                session.commit()
+        else:
+            Base.metadata.drop_all(self.engine)
 
     def is_healthy(self) -> bool:
         """

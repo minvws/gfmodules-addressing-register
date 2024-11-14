@@ -1,49 +1,15 @@
-from typing import Optional, List
-from uuid import UUID, uuid4
-
-from sqlalchemy import types, Boolean, String, Text, ForeignKey, PrimaryKeyConstraint
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import String, PrimaryKeyConstraint
+from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.entities.base import Base
-from app.db.entities.endpoint import endpoint
-from app.db.entities.mixin.common_mixin import BaseMixin
-from app.db.entities.organization.organization_type_association import (
-    OrganizationTypeAssociation,
-)
-from app.db.entities.organization.organization_contact import OrganizationContact
-from app.db.entities.organization.history import OrganizationHistory
+from app.db.entities.mixin.common_mixin import CommonMixin
 
 
-class Organization(BaseMixin, Base):
+class Organization(CommonMixin, Base):
     """
     Representation of a FHIR Organization definition. see: https://hl7.org/fhir/organization.html
     """
 
     __tablename__ = "organizations"
     __table_args__ = (PrimaryKeyConstraint("id"),)
-
-    id: Mapped[UUID] = mapped_column(
-        "id",
-        types.Uuid,
-        nullable=False,
-        default=uuid4,
-    )
     ura_number: Mapped[str] = mapped_column("ura_number", String, unique=True)
-    active: Mapped[bool] = mapped_column(
-        "active", Boolean, default=True, nullable=False
-    )
-    parent_organization_id: Mapped[UUID | None] = mapped_column(
-        ForeignKey("organizations.id")
-    )
-    name: Mapped[str] = mapped_column("name", String(150), nullable=False)
-    description: Mapped[Optional[str]] = mapped_column("description", Text)
-
-    part_of: Mapped[Optional["Organization"]] = relationship(
-        "Organization", remote_side=[id], lazy="joined", join_depth=2
-    )
-    type: Mapped[List["OrganizationTypeAssociation"]] = relationship(lazy="selectin")
-    contact: Mapped[List["OrganizationContact"]] = relationship()
-    endpoints: Mapped[List["endpoint.Endpoint"]] = relationship(
-        back_populates="managing_organization", lazy="selectin"
-    )
-    history: Mapped[List["OrganizationHistory"]] = relationship()

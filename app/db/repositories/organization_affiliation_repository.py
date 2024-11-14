@@ -1,5 +1,5 @@
 import logging
-from typing import Sequence, Union, Any, List
+from typing import Sequence, Any, List
 from uuid import UUID
 
 from sqlalchemy import select, Boolean
@@ -47,7 +47,7 @@ class OrganizationAffiliationRepository(RepositoryBase):
             raise e
 
     def find(
-        self, **conditions: Union[bool, str, UUID, dict[str, Any]]
+        self, **conditions: bool|str|UUID|dict[str, Any]
     ) -> Sequence[OrganizationAffiliationEntry]:
         stmt = select(OrganizationAffiliationEntry)
 

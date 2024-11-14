@@ -23,10 +23,6 @@ class EntityService(metaclass=ABCMeta):
         ...
 
     @abstractmethod
-    def get_many(self, *args: Any, **kwargs: Any) -> Sequence[Base]:
-        ...
-
-    @abstractmethod
     def update_one(self, *args: Any, **kwargs: Any) -> Base:
         ...
 

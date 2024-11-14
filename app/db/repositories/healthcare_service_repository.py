@@ -1,5 +1,5 @@
 import logging
-from typing import Sequence, Union, Any
+from typing import Sequence, Any
 from uuid import UUID
 
 from sqlalchemy import select, Boolean
@@ -34,7 +34,7 @@ class HealthcareServiceRepository(RepositoryBase):
             raise e
 
     def find(
-        self, **conditions: Union[bool, str, UUID, dict[str, Any]]
+        self, **conditions: bool|str|UUID|dict[str, Any]
     ) -> Sequence[HealthcareServiceEntry]:
         stmt = select(HealthcareServiceEntry)
 

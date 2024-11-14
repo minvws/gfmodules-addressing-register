@@ -19,16 +19,16 @@ router = APIRouter(
 async def create(
     data: Annotated[Dict[str, Any], Body()],
     service: OrganizationAffiliationService = Depends(get_organization_affiliation_service),
-) -> Dict[str, Any]:
+) -> Dict[str, Any]|None:
     try:
         params = OrganizationAffiliation(**data)
-        return service.add_one(params)
+        return service.add_one(params).data
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.get("/{_id}")
 @router.get("")
-def find_organisation_affiliates(
+def find_organization_affiliates(
     _id: UUID | None = None,
     query_params: OrganizationAffiliationQueryParams = Depends(),
     service: OrganizationAffiliationService = Depends(get_organization_affiliation_service),

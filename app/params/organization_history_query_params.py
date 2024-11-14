@@ -8,9 +8,9 @@ from app.params.common_query_params import CommonQueryParams
 
 class OrganizationHistoryRequest(CommonQueryParams):
     active: bool | None = None
-    endpoint_id: str | None = Field(
+    endpoint: str | None = Field(
         alias="endpoint",
-        validation_alias=AliasChoices("endpoint_id", "endpoint"),
+        validation_alias=AliasChoices("endpoint", "endpoint"),
         default=None,
     )
     identifier: str | None = None
