@@ -1,5 +1,5 @@
 import logging
-from typing import Sequence, Union, Any
+from typing import Sequence, Union, Any, List
 from uuid import UUID
 
 from sqlalchemy import select, Boolean
@@ -13,6 +13,17 @@ from app.db.repositories.repository_base import RepositoryBase
 
 logger = logging.getLogger(__name__)
 
+
+def convert_specialty_to_code(specialty: str) -> List[str]|None:
+    conversion_table = {
+        "Radiology": ["http://snomed.info/sct", "394914008"],
+        "General medical practice": ["http://snomed.info/sct", "408443003"],
+    }
+
+    if specialty in conversion_table:
+        return conversion_table[specialty]
+
+    return None
 
 @repository(OrganizationAffiliationEntry)
 class OrganizationAffiliationRepository(RepositoryBase):
@@ -66,6 +77,17 @@ class OrganizationAffiliationRepository(RepositoryBase):
             filter_conditions.append(
                 OrganizationAffiliationEntry.data["code"].contains([{"coding": [{"code": conditions["role"]}]}]) # type: ignore
             )
+        if "specialty" in conditions and conditions["specialty"] is not None:
+            coding = convert_specialty_to_code(str(conditions["specialty"]))
+            if coding:
+                filter_conditions.append(
+                    OrganizationAffiliationEntry.data["specialty"].contains([{
+                        "coding": [
+                            {"system": coding[0]},
+                            {"code": coding[1]}
+                        ]
+                    }])  # type: ignore
+                )
 
         stmt = (stmt.where(*filter_conditions).limit(100))
         return self.db_session.session.execute(stmt).scalars().all()
