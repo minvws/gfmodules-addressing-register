@@ -1,18 +1,18 @@
 # Helper function to check whether Bundle result contains the correct key and value
-import random
 from typing import Any, Optional
 from uuid import UUID
 
-
 from faker import Faker
 
-from app.data import ConnectionType, EndpointStatus, UraNumber
+from app.data import EndpointStatus, UraNumber
 from app.db.entities.endpoint.endpoint import Endpoint
 from app.db.entities.organization.organization import Organization
-from app.models.organization.model import OrganizationModel
+from app.models.supplier.model import SupplierModel
 from app.services.entity_services.endpoint_service import EndpointService
 from app.services.entity_services.organization_service import OrganizationService
-
+from app.services.supplier_service import SupplierService
+from seeds.generate_data import DataGenerator
+from fhir.resources.R4B.endpoint import Endpoint as FhirEndpoint
 
 fake = Faker("nl_nl")
 
@@ -34,7 +34,7 @@ def check_key_value(
     """
     if isinstance(data, dict):
         return any(
-            (key == key_to_check and value == value_to_check)
+            (str(key) == str(key_to_check) and str(value) == str(value_to_check))
             or (
                 isinstance(value, (dict, list))
                 and check_key_value(value, key_to_check, value_to_check)
@@ -45,61 +45,53 @@ def check_key_value(
         return any(check_key_value(item, key_to_check, value_to_check) for item in data)
 
 
+def create_supplier(ura_number: str = "12345678",
+                 care_provider_name: str = "test",
+                 update_supplier_endpoint: str = "test") -> SupplierModel:
+    return SupplierModel(
+        ura_number=UraNumber(ura_number),
+        care_provider_name=care_provider_name,
+        update_supplier_endpoint=update_supplier_endpoint
+    )
+
+# Helper function to add a supplier
+def add_supplier(supplier_service: SupplierService) -> SupplierModel:
+    return supplier_service.add_one(create_supplier())
+
+
 # Helper function to add an organization
 def add_organization(
     organization_service: OrganizationService,
-    endpoint_service: EndpointService,
     active: Optional[bool] = None,
-    ura_number: Optional[int] = None,
+    ura_number: Optional[str] = None,
     name: Optional[str] = None,
-    parent_organization: Optional[bool] = None,
-    include: Optional[str] = None,
-) -> tuple[Organization, Endpoint | None]:
-    parent_organization_id: Optional[Organization] = None
-    endpoint = None
-    if parent_organization is True:
-        parent_organization_id = add_organization(
-            parent_organization=None,
-            organization_service=organization_service,
-            endpoint_service=endpoint_service,
-        )[0]
-
-    organization = organization_service.add_one(
-        OrganizationModel(
-            ura_number=(
-                UraNumber(ura_number)
-                if ura_number is not None
-                else UraNumber(fake.random_int(11111111, 99999999))
-            ),
-            active=active if active is not None else fake.boolean(50),
-            name=name or fake.text(50),
-            description=fake.text(50),
-            parent_organization_id=(
-                parent_organization_id.id
-                if parent_organization and parent_organization_id is not None
-                else None
-            ),
-        )
+    uuid: Optional[str] = None,
+    endpoint_id: Optional[UUID] = None,
+    part_of: Optional[UUID] = None
+) -> Organization:
+    dg = DataGenerator()
+    return organization_service.add_one(
+        dg.generate_organization(ura_number, active, name, uuid, endpoint_id, part_of)
     )
-
-    if include is not None:
-        endpoint = add_endpoint(
-            org_id=organization.id, endpoint_service=endpoint_service
-        )
-    return organization, endpoint
 
 
 # Helper function to add an endpoint
-def add_endpoint(org_id: UUID, endpoint_service: EndpointService) -> Endpoint:
-    endpoint = endpoint_service.add_one(
-        name=fake.text(50),
-        identifier=str(fake.random_int(1, 8999999, 1)),
-        description=fake.text(50),
-        address=fake.url(),
-        status_type=random.choice(list(EndpointStatus)),
-        organization_id=org_id,
-        connection_type=ConnectionType.DicomWadoRs,
-        payload_type="none",
-        payload_mime_type="application/json",
-    )
-    return endpoint
+def add_endpoint(
+    endpoint_service: EndpointService,
+    status: Optional[EndpointStatus] = None,
+    uuid: Optional[UUID] = None,
+    org_fhir_id: Optional[UUID] = None,
+    name: Optional[str] = None,
+    endpoint_url: Optional[str] = None,
+    complete_endpoint: FhirEndpoint|None = None
+) -> Endpoint:
+    dg = DataGenerator()
+    return endpoint_service.add_one(
+        dg.generate_endpoint(
+            org_fhir_id=org_fhir_id,
+            status=str(status),
+            name=name,
+            uuid_identifier=uuid,
+            endpoint_url=endpoint_url,
+        )
+    ) if complete_endpoint is None else endpoint_service.add_one(complete_endpoint)

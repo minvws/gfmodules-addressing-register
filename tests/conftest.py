@@ -6,62 +6,85 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from app.application import create_fastapi_app
-from app.config import set_config
+from app.config import set_config, get_config
 from app.db.db import Database
 from app.services.entity_services.endpoint_service import EndpointService
 from app.services.entity_services.organization_service import OrganizationService
 from app.services.matching_care_service import MatchingCareService
-from app.services.organization_history_service import OrganizationHistoryService
-from test_config import get_test_config_with_postgres_db_connection, get_postgres_database
+from app.services.supplier_service import SupplierService
+from tests.test_config import get_test_config_with_postgres_db_connection, get_postgres_database, get_test_config
 
 
 @pytest.fixture
-def app() -> Generator[FastAPI, None, None]:
+def postgres_app() -> Generator[FastAPI, None, None]:
     set_config(get_test_config_with_postgres_db_connection())
+    app = create_fastapi_app()
+    yield app
+    inject.clear()
+
+@pytest.fixture
+def sqlite_app() -> Generator[FastAPI, None, None]:
+    set_config(get_test_config())
     app = create_fastapi_app()
     yield app
     inject.clear()
 
 
 @pytest.fixture
-def setup_database() -> Database:
+def setup_postgres_database() -> Database:
+    set_config(get_test_config_with_postgres_db_connection())
+    try:
+        # first use the database from the injector
+        db = inject.instance(Database)
+        db.truncate_tables()
+        return db
+    except inject.InjectorException:
+        pass
+    db = get_postgres_database()
+    db.truncate_tables()
+    return db
+
+@pytest.fixture
+def setup_sqlite_database() -> Database:
+    set_config(get_test_config())
     try:
         # first use the database from the injector
         db = inject.instance(Database)
         return db
     except inject.InjectorException:
         pass
+    db = Database(config=get_test_config().database)
+    return db
 
-    # else use the testing database
-    return get_postgres_database()
+@pytest.fixture
+def postgres_client(postgres_app: FastAPI) -> TestClient:
+    return TestClient(postgres_app)
+
+@pytest.fixture
+def sqlite_client(sqlite_app: FastAPI) -> TestClient:
+    return TestClient(sqlite_app)
 
 
 @pytest.fixture
-def client(app: FastAPI) -> TestClient:
-    return TestClient(app)
+def supplier_service(setup_sqlite_database: Database) -> SupplierService:
+    return SupplierService(setup_sqlite_database)
 
 
 @pytest.fixture
-def history_service(setup_database: Database) -> OrganizationHistoryService:
-    return OrganizationHistoryService(setup_database)
+def endpoint_service(setup_postgres_database: Database) -> EndpointService:
+    return EndpointService(setup_postgres_database)
 
 
 @pytest.fixture
-def endpoint_service(setup_database: Database, history_service: OrganizationHistoryService) -> EndpointService:
-    return EndpointService(setup_database, history_service)
-
-
-@pytest.fixture
-def organization_service(setup_database: Database, history_service: OrganizationHistoryService) -> OrganizationService:
-    return OrganizationService(setup_database, history_service)
+def organization_service(setup_postgres_database: Database) -> OrganizationService:
+    return OrganizationService(setup_postgres_database)
 
 
 @pytest.fixture
 def matching_care_service(
-    organization_service: OrganizationService, endpoint_service: EndpointService,
-    history_service: OrganizationHistoryService
+    organization_service: OrganizationService, endpoint_service: EndpointService
 ) -> MatchingCareService:
-    return MatchingCareService(organization_service, endpoint_service, history_service)
+    return MatchingCareService(organization_service, endpoint_service)
 
 
 @pytest.fixture
@@ -71,4 +94,22 @@ def org_endpoint() -> str:
 
 @pytest.fixture
 def endpoint_endpoint() -> str:
-    return "/Endpoint/"
+    return "/Endpoint"
+
+@pytest.fixture
+def supplier_endpoint() -> str:
+    return "/supplier"
+
+@pytest.fixture
+def override_ura() -> Generator[None, None, None]:
+    temp_test_config = get_config()
+
+    """Context manager to temporarily update a part of the config and reset afterward."""
+    try:
+        temp_test_config.app.override_authentication_ura = "00000000"
+        set_config(temp_test_config)
+        yield None
+    finally:
+        # Revert to the original configuration
+        temp_test_config.app.override_authentication_ura = None
+        set_config(temp_test_config)

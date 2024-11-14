@@ -4,7 +4,6 @@ from app.config import get_config
 from app.services.entity_services.endpoint_service import EndpointService
 from app.services.entity_services.organization_service import OrganizationService
 from app.services.matching_care_service import MatchingCareService
-from app.services.organization_history_service import OrganizationHistoryService
 from app.services.organization_affiliation_service import OrganizationAffiliationService
 from app.services.supplier_service import SupplierService
 from app.services.healthcare_service_service import HealthcareServiceService
@@ -19,10 +18,7 @@ def container_config(binder: inject.Binder) -> None:
     supplying_service = SupplierService(db)
     binder.bind(SupplierService, supplying_service)
 
-    organization_history_service = OrganizationHistoryService(db)
-    binder.bind(OrganizationHistoryService, organization_history_service)
-
-    endpoint_service = EndpointService(db, organization_history_service)
+    endpoint_service = EndpointService(db)
     binder.bind(EndpointService, endpoint_service)
 
     organization_affiliation_service = OrganizationAffiliationService(db)
@@ -31,17 +27,21 @@ def container_config(binder: inject.Binder) -> None:
     healthcare_service_service = HealthcareServiceService(db)
     binder.bind(HealthcareServiceService, healthcare_service_service)
 
-    organization_service = OrganizationService(db, organization_history_service)
+    organization_service = OrganizationService(db)
     binder.bind(OrganizationService, organization_service)
 
     matching_care_service = MatchingCareService(
-        organization_service, endpoint_service, organization_history_service
+        organization_service, endpoint_service
     )
     binder.bind(MatchingCareService, matching_care_service)
 
 
 def get_database() -> Database:
     return inject.instance(Database)
+
+
+def get_supplying_service() -> SupplierService:
+    return inject.instance(SupplierService)
 
 
 def get_organization_service() -> OrganizationService:
@@ -55,14 +55,8 @@ def get_endpoint_service() -> EndpointService:
 def get_organization_affiliation_service() -> OrganizationAffiliationService:
     return inject.instance(OrganizationAffiliationService)
 
-
 def get_healthcare_service_service() -> HealthcareServiceService:
     return inject.instance(HealthcareServiceService)
-
-
-def get_supplying_service() -> SupplierService:
-    return inject.instance(SupplierService)
-
 
 def get_matching_care_service() -> MatchingCareService:
     return inject.instance(MatchingCareService)

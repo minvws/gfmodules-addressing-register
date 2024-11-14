@@ -21,7 +21,7 @@ def not_raise(validation_error: Type[Exception]) -> Generator[None, Any, Any]:
             "id": uuid4(),
             "active": True,
             "ura_number": "some identifier",
-            "parent_organization_id": uuid4(),
+            "parent_organization_id": "abc",
             "name": "Just a regular query parameter",
         },
         {

@@ -1,5 +1,4 @@
 from typing import Literal
-from uuid import UUID
 
 from pydantic import Field, AliasChoices
 
@@ -14,7 +13,7 @@ class OrganizationQueryParams(CommonQueryParams):
         default=None,
     )
     name: str | None = None
-    parent_organization_id: UUID | None = Field(
+    parent_organization_id: str | None = Field(
         alias="partOf",
         validation_alias=AliasChoices("parent_organization_id", "partOf"),
         default=None,
@@ -49,3 +48,12 @@ class OrganizationQueryParams(CommonQueryParams):
         validation_alias=AliasChoices("rev_include", "_revInclude"),
         default=None,
     )
+    address: str | None = None
+    address_city: str | None = None
+    address_country: str | None = None
+    address_postal_code: str | None = None
+    address_state: str | None = None
+    address_use: str | None = None
+    phonetic: str | None = None
+    endpoint: str | None = None
+

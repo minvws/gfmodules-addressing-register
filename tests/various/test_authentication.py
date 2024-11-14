@@ -7,7 +7,7 @@ from uzireader.uziserver import UziServer
 from app.authentication import authenticated_ura, enforce_cert_newlines
 from app.data import UraNumber
 from app.config import set_config
-from test_config import get_test_config_with_postgres_db_connection
+from tests.test_config import get_test_config_with_postgres_db_connection
 from pytest_mock import MockerFixture
 
 
