@@ -3,7 +3,7 @@ from typing import Sequence, Any, Dict
 from uuid import UUID
 
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy import select, func, literal_column
+from sqlalchemy import select, func, literal_column, or_
 from sqlalchemy.exc import DatabaseError
 
 from app.db.decorator import repository
@@ -16,9 +16,7 @@ logger = logging.getLogger(__name__)
 
 @repository(Endpoint)
 class EndpointsRepository(RepositoryBase):
-    def get_one(
-        self, **kwargs: bool|str|UUID|dict[str, str]
-    ) -> Endpoint | None:
+    def get_one(self, **kwargs: bool | str | UUID | dict[str, str]) -> Endpoint | None:
         stmt = (
             select(Endpoint)
             .where(
@@ -30,7 +28,7 @@ class EndpointsRepository(RepositoryBase):
         return self.db_session.session.execute(stmt).scalars().first()
 
     def get(
-        self, **kwargs: bool|str|UUID|dict[str, str]|int
+        self, **kwargs: bool | str | UUID | dict[str, str] | int
     ) -> Endpoint | None:
         """
         does not apply filters on latest and deleted columns.
@@ -39,13 +37,13 @@ class EndpointsRepository(RepositoryBase):
         return self.db_session.session.execute(stmt).scalars().first()
 
     def get_many(
-        self, **kwargs: bool|str|UUID|dict[str, str]
+        self, **kwargs: bool | str | UUID | dict[str, str]
     ) -> Sequence[Endpoint]:
         stmt = select(Endpoint).filter_by(**kwargs)
         return self.db_session.session.execute(stmt).scalars().all()
 
     def find(
-        self, **conditions: bool|str|UUID|dict[str, Any]
+        self, **conditions: bool | str | UUID | dict[str, Any]
     ) -> Sequence[Endpoint]:
         stmt = select(Endpoint)
         filter_conditions: list[Any] = []
@@ -83,9 +81,28 @@ class EndpointsRepository(RepositoryBase):
             )
 
         if "payloadType" in conditions:
-            filter_conditions.append(
-                Endpoint.data["payloadType"]["coding"]["code"].astext
-                == conditions["payloadType"]
+            stmt = (
+                stmt.select_from(
+                    Endpoint,
+                    func.jsonb_array_elements(Endpoint.data["payloadType"]).alias(
+                        "payload_type"
+                    ),
+                )
+                .select_from(
+                    func.jsonb_array_elements(
+                        literal_column("payload_type->'coding'")
+                    ).alias("coding")
+                )
+                .where(
+                    or_(
+                        literal_column("coding->>'system'").ilike(
+                            f"%{conditions['payloadType']}%"
+                        ),
+                        literal_column("coding->>'code'").ilike(
+                            f"%{conditions['payloadType']}%"
+                        ),
+                    )
+                )
             )
 
         if "status" in conditions:
