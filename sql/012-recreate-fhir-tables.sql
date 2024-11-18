@@ -1,23 +1,23 @@
-DROP TABLE IF EXISTS organizations CASCADE;
-DROP TABLE IF EXISTS organizations_history CASCADE;
-DROP TABLE IF EXISTS practice_codes CASCADE;
-DROP TABLE IF EXISTS affiliation_roles CASCADE;
-DROP TABLE IF EXISTS endpoint_payloads CASCADE;
-DROP TABLE IF EXISTS endpoint_payload_types CASCADE;
-DROP TABLE IF EXISTS endpoints_contact_points CASCADE;
-DROP TABLE IF EXISTS contact_points CASCADE;;
-DROP TABLE IF EXISTS contact_point_use CASCADE;
-DROP TABLE IF EXISTS contact_point_systems CASCADE;
-DROP TABLE IF EXISTS endpoints_environments CASCADE;
-DROP TABLE IF EXISTS endpoint_headers CASCADE;
-DROP TABLE IF EXISTS endpoints CASCADE;
-DROP TABLE IF EXISTS connection_types CASCADE;
-DROP TABLE IF EXISTS environments CASCADE;
-DROP TABLE IF EXISTS statuses CASCADE;
-DROP TABLE IF EXISTS organization_contacts CASCADE;
-DROP TABLE IF EXISTS organization_type_associations CASCADE;
-DROP TABLE IF EXISTS contact_types CASCADE;
-DROP TABLE IF EXISTS organization_types CASCADE;
+DROP TABLE IF EXISTS practice_codes;
+DROP TABLE IF EXISTS affiliation_roles;
+DROP TABLE IF EXISTS endpoint_payloads;
+DROP TABLE IF EXISTS endpoint_payload_types;
+DROP TABLE IF EXISTS endpoints_contact_points;
+DROP TABLE IF EXISTS contact_points;
+DROP TABLE IF EXISTS contact_point_use;
+DROP TABLE IF EXISTS contact_point_systems;
+DROP TABLE IF EXISTS endpoints_environments;
+DROP TABLE IF EXISTS endpoint_headers;
+DROP TABLE IF EXISTS endpoints;
+DROP TABLE IF EXISTS connection_types;
+DROP TABLE IF EXISTS environments;
+DROP TABLE IF EXISTS statuses;
+DROP TABLE IF EXISTS organization_contacts;
+DROP TABLE IF EXISTS organization_type_associations;
+DROP TABLE IF EXISTS contact_types;
+DROP TABLE IF EXISTS organization_types;
+DROP TABLE IF EXISTS organizations_history;
+DROP TABLE IF EXISTS organizations;
 
 -- https://hl7.org/fhir/organization.html
 CREATE TABLE organizations
@@ -68,6 +68,9 @@ ALTER COLUMN created_at TYPE TIMESTAMP WITH TIME ZONE USING created_at AT TIME Z
 ALTER COLUMN modified_at TYPE TIMESTAMP WITH TIME ZONE USING modified_at AT TIME ZONE 'Europe/Paris';
 
 ALTER TABLE healthcare_services
-ADD COLUMN fhir_id uuid NOT NULL default gen_random_uuid(),
+ALTER COLUMN fhir_id TYPE uuid USING fhir_id::uuid,
+ALTER COLUMN fhir_id SET NOT NULL,
+ALTER COLUMN fhir_id DROP DEFAULT,
+ALTER COLUMN fhir_id SET DEFAULT gen_random_uuid(),
 ALTER COLUMN created_at TYPE TIMESTAMP WITH TIME ZONE USING created_at AT TIME ZONE 'Europe/Paris',
 ALTER COLUMN modified_at TYPE TIMESTAMP WITH TIME ZONE USING modified_at AT TIME ZONE 'Europe/Paris';
