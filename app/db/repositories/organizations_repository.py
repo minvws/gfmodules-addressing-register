@@ -201,8 +201,8 @@ class OrganizationsRepository(RepositoryBase):
 
     def create(self, organization: Organization) -> Organization:
         try:
-            update_resource_meta(organization, method="create")
-            self.db_session.add(organization)
+            entry = update_resource_meta(organization, method="create")
+            self.db_session.add(entry)
             self.db_session.commit()
         except DatabaseError as e:
             self.db_session.rollback()
@@ -219,8 +219,8 @@ class OrganizationsRepository(RepositoryBase):
                 data=None,
                 version=organization.version,
             )
-            update_resource_meta(updated_organization, method="delete")
-            self.db_session.add(updated_organization)
+            entry = update_resource_meta(updated_organization, method="delete")
+            self.db_session.add(entry)
             self.db_session.commit()
         except DatabaseError as e:
             self.db_session.rollback()
@@ -238,8 +238,8 @@ class OrganizationsRepository(RepositoryBase):
                 data=jsonable_encoder(fhir_data),
                 version=organization.version,
             )
-            update_resource_meta(target_org, method="update")
-            self.db_session.add(target_org)
+            entry = update_resource_meta(target_org, method="update")
+            self.db_session.add(entry)
             self.db_session.commit()
             return target_org
         except DatabaseError as e:

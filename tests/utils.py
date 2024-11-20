@@ -14,6 +14,7 @@ from app.services.supplier_service import SupplierService
 from seeds.generate_data import DataGenerator
 from fhir.resources.R4B.endpoint import Endpoint as FhirEndpoint
 
+
 fake = Faker("nl_nl")
 
 

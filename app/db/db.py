@@ -58,7 +58,8 @@ class Database:
                 'organization_affiliations',
                 'endpoints',
                 'organizations',
-                'supplier_endpoints'
+                'supplier_endpoints',
+                'healthcare_services',
             ]
 
             with self.get_db_session() as session:
