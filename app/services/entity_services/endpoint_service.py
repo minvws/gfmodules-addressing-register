@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from typing import Sequence
 from uuid import UUID, uuid4
 
@@ -38,6 +39,7 @@ class EndpointService:
         status: str | None = None,
         latest_version: bool | None = None,
         sort_history: bool | None = None,
+        since: datetime | None = None,
     ) -> Sequence[Endpoint]:
         params = {
             "id": id,
@@ -50,6 +52,7 @@ class EndpointService:
             "status": status,
             "latest": latest_version,
             "sort_history": sort_history,
+            "since": since,
         }
         filtered_params = {k: v for k, v in params.items() if v is not None}
         with self.database.get_db_session() as session:

@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from typing import Sequence
 from uuid import UUID, uuid4
 
@@ -44,6 +45,7 @@ class OrganizationService(EntityService):
         type: str | None = None,
         latest_version: bool | None = None,
         sort_history: bool = False,
+        since: datetime | None = None,
     ) -> Sequence[Organization]:
         params = {
             "id": id,
@@ -63,6 +65,7 @@ class OrganizationService(EntityService):
             "type": type,
             "latest": latest_version,
             "sort_history": sort_history,
+            "since": since,
         }
 
         filtered_params = {k: v for k, v in params.items() if v is not None}

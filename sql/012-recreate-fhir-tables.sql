@@ -30,8 +30,8 @@ CREATE TABLE organizations
   deleted                BOOLEAN      NOT NULL DEFAULT FALSE,
   data                   JSONB,
   bundle_meta            JSONB NOT NULL,
-  created_at             TIMESTAMP WITH TIME ZONE DEFAULT (NOW() AT TIME ZONE 'Europe/Paris'),
-  modified_at            TIMESTAMP WITH TIME ZONE DEFAULT (NOW() AT TIME ZONE 'Europe/Paris'),
+  created_at             TIMESTAMP DEFAULT (NOW() AT TIME ZONE 'UTC'),
+  modified_at            TIMESTAMP DEFAULT (NOW() AT TIME ZONE 'UTC'),
 
   PRIMARY KEY (id)
 );
@@ -46,31 +46,31 @@ CREATE TABLE endpoints
   deleted                BOOLEAN      NOT NULL DEFAULT FALSE,
   data                   JSONB,
   bundle_meta            JSONB NOT NULL,
-  created_at             TIMESTAMP WITH TIME ZONE DEFAULT (NOW() AT TIME ZONE 'Europe/Paris'),
-  modified_at            TIMESTAMP WITH TIME ZONE DEFAULT (NOW() AT TIME ZONE 'Europe/Paris'),
+  created_at             TIMESTAMP DEFAULT (NOW() AT TIME ZONE 'UTC'),
+  modified_at            TIMESTAMP DEFAULT (NOW() AT TIME ZONE 'UTC'),
 
   PRIMARY KEY (id)
 
 );
 
 ALTER TABLE supplier_endpoints
-ALTER COLUMN created_at TYPE TIMESTAMP WITH TIME ZONE USING created_at AT TIME ZONE 'Europe/Paris',
-ALTER COLUMN modified_at TYPE TIMESTAMP WITH TIME ZONE USING modified_at AT TIME ZONE 'Europe/Paris';
+ALTER COLUMN created_at TYPE TIMESTAMP WITH TIME ZONE USING created_at AT TIME ZONE 'UTC',
+ALTER COLUMN modified_at TYPE TIMESTAMP WITH TIME ZONE USING modified_at AT TIME ZONE 'UTC';
 
 ALTER TABLE organization_affiliations
 ADD COLUMN bundle_meta JSONB,
-ALTER COLUMN modified_at TYPE TIMESTAMP WITH TIME ZONE USING modified_at AT TIME ZONE 'Europe/Paris',
-ALTER COLUMN created_at TYPE TIMESTAMP WITH TIME ZONE USING created_at AT TIME ZONE 'Europe/Paris';
+ALTER COLUMN modified_at TYPE TIMESTAMP WITH TIME ZONE USING modified_at AT TIME ZONE 'UTC',
+ALTER COLUMN created_at TYPE TIMESTAMP WITH TIME ZONE USING created_at AT TIME ZONE 'UTC';
 
 ALTER TABLE locations
 ADD COLUMN fhir_id uuid NOT NULL default gen_random_uuid(),
-ALTER COLUMN created_at TYPE TIMESTAMP WITH TIME ZONE USING created_at AT TIME ZONE 'Europe/Paris',
-ALTER COLUMN modified_at TYPE TIMESTAMP WITH TIME ZONE USING modified_at AT TIME ZONE 'Europe/Paris';
+ALTER COLUMN created_at TYPE TIMESTAMP WITH TIME ZONE USING created_at AT TIME ZONE 'UTC',
+ALTER COLUMN modified_at TYPE TIMESTAMP WITH TIME ZONE USING modified_at AT TIME ZONE 'UTC';
 
 ALTER TABLE healthcare_services
 ALTER COLUMN fhir_id TYPE uuid USING fhir_id::uuid,
 ALTER COLUMN fhir_id SET NOT NULL,
 ALTER COLUMN fhir_id DROP DEFAULT,
 ALTER COLUMN fhir_id SET DEFAULT gen_random_uuid(),
-ALTER COLUMN created_at TYPE TIMESTAMP WITH TIME ZONE USING created_at AT TIME ZONE 'Europe/Paris',
-ALTER COLUMN modified_at TYPE TIMESTAMP WITH TIME ZONE USING modified_at AT TIME ZONE 'Europe/Paris';
+ALTER COLUMN created_at TYPE TIMESTAMP WITH TIME ZONE USING created_at AT TIME ZONE 'UTC',
+ALTER COLUMN modified_at TYPE TIMESTAMP WITH TIME ZONE USING modified_at AT TIME ZONE 'UTC';

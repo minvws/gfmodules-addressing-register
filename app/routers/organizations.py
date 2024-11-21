@@ -7,6 +7,7 @@ from fhir.resources.R4B.organization import Organization as FhirOrganization
 
 from app.container import get_organization_service, get_matching_care_service
 from app.exceptions.service_exceptions import InvalidResourceException
+from app.params.history_query_params import HistoryRequest
 from app.params.organization_query_params import OrganizationQueryParams
 
 from app.services.entity_services.organization_service import OrganizationService
@@ -93,9 +94,10 @@ def get_organization_version(
 @router.get("/_history")
 def find_organization_history(
     _id: UUID | None = None,
+    _since: HistoryRequest = Depends(),
     service: MatchingCareService = Depends(get_matching_care_service),
 ) -> dict[str, Any]:
-    return service.find_organizations_history(organization_id=_id)
+    return service.find_organizations_history(organization_id=_id, since=_since.since)
 
 
 @router.get("/{_id}")

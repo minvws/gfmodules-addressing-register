@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from typing import Sequence, Any, Dict
 from uuid import UUID
 
@@ -43,7 +44,7 @@ class EndpointsRepository(RepositoryBase):
         return self.db_session.session.execute(stmt).scalars().all()
 
     def find(
-        self, **conditions: bool | str | UUID | dict[str, Any]
+        self, **conditions: bool | str | UUID | dict[str, Any] | datetime | None
     ) -> Sequence[Endpoint]:
         stmt = select(Endpoint)
         filter_conditions: list[Any] = []
@@ -111,9 +112,17 @@ class EndpointsRepository(RepositoryBase):
             )
 
         if "sort_history" in conditions and conditions["sort_history"] is True:
-            stmt = stmt.order_by(Endpoint.fhir_id.desc(), Endpoint.version.desc())
+            # sorted with oldest versions last
+            stmt = stmt.order_by(Endpoint.modified_at.desc(), Endpoint.version.desc())
+
+        if "since" in conditions:
+            filter_conditions.append(
+                # TODO : Filter on meta->>lastUpdated instead
+                Endpoint.modified_at >= conditions["since"],
+            )
 
         stmt = stmt.where(*filter_conditions)
+
         return self.db_session.session.execute(stmt).scalars().all()
 
     def create(self, endpoint: Endpoint) -> Endpoint:

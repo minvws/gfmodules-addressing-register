@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from typing import Sequence, Any, Dict
 from uuid import UUID
 
@@ -42,7 +43,7 @@ class OrganizationsRepository(RepositoryBase):
         return self.db_session.session.execute(stmt).scalars().all()
 
     def find(
-        self, **conditions: bool|str|UUID|dict[str, Any]|None
+        self, **conditions: bool|str|UUID|dict[str, Any]|None|datetime
     ) -> Sequence[Organization]:
         stmt = select(Organization)
         filter_conditions: list[Any] = []
@@ -99,15 +100,21 @@ class OrganizationsRepository(RepositoryBase):
             )
 
         if "sort_history" in conditions and conditions["sort_history"] is True:
-            stmt = stmt.order_by(
-                Organization.fhir_id.desc(), Organization.version.desc()
+            stmt = stmt.order_by( # sorted with oldest versions last
+                Organization.modified_at.desc(), Organization.version.desc()
+            )
+
+        if "since" in conditions:
+            filter_conditions.append(
+                # TODO : Filter on meta->>lastUpdated instead
+                Organization.modified_at >= conditions["since"],
             )
 
         stmt = stmt.where(*filter_conditions)
         return self.db_session.session.execute(stmt).scalars().all()
 
     @staticmethod
-    def _add_address_filter_conditions(stmt: Any, **conditions: bool | str | UUID | dict[str, Any]|None) -> Any:
+    def _add_address_filter_conditions(stmt: Any, **conditions: bool | str | UUID | dict[str, Any]|datetime|None) -> Any:
         if "address" in conditions:
             stmt = stmt.select_from(
                 Organization,

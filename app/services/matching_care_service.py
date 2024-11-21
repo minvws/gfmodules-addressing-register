@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any, Sequence, List
 from uuid import UUID
 
@@ -29,10 +30,10 @@ class MatchingCareService:
         self._endpoint_service = endpoint_service
 
     def find_organizations_history(
-        self, organization_id: UUID | None = None
+        self, organization_id: UUID | None = None, since: datetime|None=None
     ) -> dict[str, Any]:
         organization_entries = self._organization_service.find(
-            id=organization_id, sort_history=True
+            id=organization_id, sort_history=True, since=since
         )
 
         bundle_entries = create_organization_histories_bundled_resources(
@@ -84,8 +85,8 @@ class MatchingCareService:
         bundled_endpoint_resources = create_endpoint_bundled_resources(endpoints)
         return create_fhir_bundle(bundled_entries=bundled_endpoint_resources)
 
-    def find_endpoint_history(self, endpoint_id: UUID | None = None) -> dict[str, Any]:
-        endpoints = self._endpoint_service.find(id=endpoint_id, sort_history=True)
+    def find_endpoint_history(self, endpoint_id: UUID | None = None, since: datetime|None=None) -> dict[str, Any]:
+        endpoints = self._endpoint_service.find(id=endpoint_id, sort_history=True, since=since)
 
         bundled_resources = []
         for endpoint in endpoints:

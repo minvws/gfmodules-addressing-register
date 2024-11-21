@@ -9,13 +9,13 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 class BaseMixin:
     created_at: Mapped[datetime] = mapped_column(
-        "created_at", TIMESTAMP(timezone=True), nullable=False, default=func.now()
+        "created_at", TIMESTAMP(timezone=True), nullable=False, server_default=func.now()
     )
     modified_at: Mapped[datetime] = mapped_column(
         "modified_at",
         TIMESTAMP(timezone=True),
         nullable=False,
-        default=func.now(),
+        server_default=func.now(),
         onupdate=func.now(),
     )
 
