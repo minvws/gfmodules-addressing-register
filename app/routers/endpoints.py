@@ -8,6 +8,7 @@ from fhir.resources.R4B.endpoint import Endpoint as FhirEndpoint
 from app.container import get_endpoint_service, get_matching_care_service
 from app.exceptions.service_exceptions import InvalidResourceException
 from app.params.endpoint_query_params import EndpointQueryParams
+from app.params.history_query_params import HistoryRequest
 from app.services.entity_services.endpoint_service import EndpointService
 from app.services.matching_care_service import MatchingCareService
 
@@ -87,9 +88,10 @@ def get_endpoint_version(
 @router.get("/_history")
 def get_endpoint_history(
     _id: UUID | None = None,
+    _since: HistoryRequest = Depends(),
     service: MatchingCareService = Depends(get_matching_care_service),
 ) -> Dict[str, Any]:
-    history = service.find_endpoint_history(endpoint_id=_id)
+    history = service.find_endpoint_history(endpoint_id=_id, since=_since.since)
     return history
 
 

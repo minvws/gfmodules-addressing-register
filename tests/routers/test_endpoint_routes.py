@@ -89,6 +89,27 @@ def test_history_endpoint(
     bundle = Bundle(**data)
     assert isinstance(bundle, Bundle)
 
+    endpoint_2 = add_endpoint(endpoint_service)
+    response = postgres_client.request(
+        "GET", f"{endpoint_endpoint}/_history", params={"_since": endpoint_2.modified_at.isoformat()}
+    )
+    assert response.status_code == 200
+    bundle = Bundle(**response.json())
+    assert isinstance(bundle, Bundle)
+    assert bundle.type == "history"
+    assert bundle.total == 1  # Only org_2 as it was created later than org 1
+    assert bundle.entry[0].resource.id == endpoint_2.fhir_id.__str__() # type: ignore
+
+    response = postgres_client.request("GET", f"{endpoint_endpoint}/_history",
+                                       params={"_since": endpoint.modified_at.isoformat()})  # Since creation of 1st org
+    assert response.status_code == 200
+    bundle = Bundle(**response.json())
+    assert isinstance(bundle, Bundle)
+    assert bundle.type == "history"
+    assert bundle.total == 2  # Both, because since is time of creation of first org
+    assert bundle.entry[0].resource.id == endpoint_2.fhir_id.__str__() # type: ignore
+    assert bundle.entry[1].resource.id == endpoint.fhir_id.__str__() # type: ignore
+
 
 def test_endpoint_version(
     postgres_client: TestClient,

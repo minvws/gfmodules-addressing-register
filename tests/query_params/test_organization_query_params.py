@@ -11,7 +11,7 @@ def not_raise(validation_error: Type[Exception]) -> Generator[None, Any, Any]:
     try:
         yield
     except validation_error as e:
-        pytest.fail("function did railse {0}".format(e))
+        pytest.fail("function did raise {0}".format(e))
 
 
 @pytest.mark.parametrize(
@@ -62,7 +62,7 @@ def test_correct_query_params_should_succeed(expected_params: dict[str, Any]) ->
         },
     ],
 )
-def test_using_alias_as_params_should_succed(
+def test_using_alias_as_params_should_succeed(
     alias_params: dict[str, Any],
 ) -> None:
     with not_raise(ValidationError):
