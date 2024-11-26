@@ -91,22 +91,23 @@ def test_history_endpoint(
 
     endpoint_2 = add_endpoint(endpoint_service)
     response = postgres_client.request(
-        "GET", f"{endpoint_endpoint}/_history", params={"_since": endpoint_2.modified_at.isoformat()}
+        "GET", f"{endpoint_endpoint}/_history",
+        params={"_since": endpoint_2.data.get("meta").get("lastUpdated")}  # type: ignore
     )
     assert response.status_code == 200
     bundle = Bundle(**response.json())
     assert isinstance(bundle, Bundle)
     assert bundle.type == "history"
-    assert bundle.total == 1  # Only org_2 as it was created later than org 1
+    assert bundle.total == 1  # Only endpoint_2 as it was created later than endpoint 1
     assert bundle.entry[0].resource.id == endpoint_2.fhir_id.__str__() # type: ignore
 
-    response = postgres_client.request("GET", f"{endpoint_endpoint}/_history",
-                                       params={"_since": endpoint.modified_at.isoformat()})  # Since creation of 1st org
+    response = postgres_client.request("GET", f"{endpoint_endpoint}/_history", # Since creation of 1st endpoint
+                                       params={"_since": endpoint.data.get("meta").get("lastUpdated")})  # type: ignore
     assert response.status_code == 200
     bundle = Bundle(**response.json())
     assert isinstance(bundle, Bundle)
     assert bundle.type == "history"
-    assert bundle.total == 2  # Both, because since is time of creation of first org
+    assert bundle.total == 2  # Both, because since is time of creation of first endpoint
     assert bundle.entry[0].resource.id == endpoint_2.fhir_id.__str__() # type: ignore
     assert bundle.entry[1].resource.id == endpoint.fhir_id.__str__() # type: ignore
 

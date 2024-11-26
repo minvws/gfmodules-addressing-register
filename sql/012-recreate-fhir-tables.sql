@@ -30,8 +30,8 @@ CREATE TABLE organizations
   deleted                BOOLEAN      NOT NULL DEFAULT FALSE,
   data                   JSONB,
   bundle_meta            JSONB NOT NULL,
-  created_at             TIMESTAMP DEFAULT (NOW() AT TIME ZONE 'UTC'),
-  modified_at            TIMESTAMP DEFAULT (NOW() AT TIME ZONE 'UTC'),
+  created_at             TIMESTAMP with time zone DEFAULT (NOW() AT TIME ZONE 'UTC'),
+  modified_at            TIMESTAMP with time zone DEFAULT (NOW() AT TIME ZONE 'UTC'),
 
   PRIMARY KEY (id)
 );
@@ -46,8 +46,8 @@ CREATE TABLE endpoints
   deleted                BOOLEAN      NOT NULL DEFAULT FALSE,
   data                   JSONB,
   bundle_meta            JSONB NOT NULL,
-  created_at             TIMESTAMP DEFAULT (NOW() AT TIME ZONE 'UTC'),
-  modified_at            TIMESTAMP DEFAULT (NOW() AT TIME ZONE 'UTC'),
+  created_at             TIMESTAMP with time zone DEFAULT (NOW() AT TIME ZONE 'UTC'),
+  modified_at            TIMESTAMP with time zone DEFAULT (NOW() AT TIME ZONE 'UTC'),
 
   PRIMARY KEY (id)
 

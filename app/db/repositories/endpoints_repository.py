@@ -4,7 +4,7 @@ from typing import Sequence, Any, Dict
 from uuid import UUID
 
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy import select, func, literal_column, or_
+from sqlalchemy import select, func, literal_column, or_, cast, TIMESTAMP
 from sqlalchemy.exc import DatabaseError
 
 from app.db.decorator import repository
@@ -113,12 +113,11 @@ class EndpointsRepository(RepositoryBase):
 
         if "sort_history" in conditions and conditions["sort_history"] is True:
             # sorted with oldest versions last
-            stmt = stmt.order_by(Endpoint.modified_at.desc(), Endpoint.version.desc())
+            stmt = stmt.order_by(cast(Endpoint.data['meta']['lastUpdated'].astext, TIMESTAMP(timezone=True)).desc(), Endpoint.version.desc())
 
         if "since" in conditions:
             filter_conditions.append(
-                # TODO : Filter on meta->>lastUpdated instead
-                Endpoint.modified_at >= conditions["since"],
+                cast(Endpoint.data['meta']['lastUpdated'].astext, TIMESTAMP(timezone=True)) >= conditions["since"]
             )
 
         stmt = stmt.where(*filter_conditions)

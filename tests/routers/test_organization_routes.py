@@ -88,8 +88,8 @@ def test_organization_history(
     assert isinstance(bundle, Bundle)
 
     org_2 = add_organization(organization_service)
-    response = postgres_client.request("GET", f"{org_endpoint}/_history",
-                                       params={"_since": org_2.modified_at.isoformat()}) # Since creation of 2nd org
+    response = postgres_client.request("GET", f"{org_endpoint}/_history", # Since creation of 2nd org
+                                       params={"_since": org_2.data.get("meta").get("lastUpdated")}) # type: ignore
     assert response.status_code == 200
     bundle = Bundle(**response.json())
     assert isinstance(bundle, Bundle)
@@ -97,8 +97,8 @@ def test_organization_history(
     assert bundle.total == 1 # Only org_2 as it was created later than org 1
     assert bundle.entry[0].resource.id == org_2.fhir_id.__str__() # type: ignore
 
-    response = postgres_client.request("GET", f"{org_endpoint}/_history",
-                                       params={"_since": org.modified_at.isoformat()}) # Since creation of 1st org
+    response = postgres_client.request("GET", f"{org_endpoint}/_history", # Since creation of 1st org
+                                       params={"_since": org.data.get("meta").get("lastUpdated")})   # type: ignore
     assert response.status_code == 200
     bundle = Bundle(**response.json())
     assert isinstance(bundle, Bundle)
