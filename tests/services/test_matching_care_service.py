@@ -1,5 +1,4 @@
 from typing import Literal, Union
-from uuid import uuid4
 
 import pytest
 
@@ -95,7 +94,7 @@ def test_find_correct_organizations(
     setup_postgres_database.truncate_tables()
 
     expected_endpoint = add_endpoint(endpoint_service) if include else None
-    part_of_id = uuid4() if parent_organization else None
+    part_of_id = add_organization(organization_service).fhir_id if parent_organization else None
 
     expected_org = add_organization(
         organization_service=organization_service,
@@ -138,11 +137,8 @@ def test_find_correct_endpoints(
     setup_postgres_database: Database
 ) -> None:
     setup_postgres_database.truncate_tables()
-    expected_endpoint = add_endpoint(endpoint_service)
-    expected_org = add_organization(
-        organization_service=organization_service,
-        endpoint_id=expected_endpoint.fhir_id,
-    )
+    expected_org = add_organization(organization_service)
+    expected_endpoint = add_endpoint(endpoint_service, org_fhir_id=expected_org.fhir_id)
 
     endpoint_params = EndpointQueryParams(
         _id=expected_endpoint.fhir_id,

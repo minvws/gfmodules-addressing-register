@@ -1,16 +1,21 @@
+import logging
 from typing import List
 
-from fhir.resources.R4B.reference import Reference
 from fhir.resources.R4B.fhirtypes import ReferenceType
+from fhir.resources.R4B.reference import Reference
+from sqlalchemy import select
 
+from app.db.entities.endpoint.endpoint import Endpoint
 from app.db.entities.healthcare_service.healthcare_service import HealthcareServiceEntry
+from app.db.entities.organization.organization import Organization
 from app.db.entities.organization_affiliation.organization_affiliation import OrganizationAffiliationEntry
 from app.db.session import DbSession
+from app.exceptions.service_exceptions import ResourceNotFoundException
 
 
 class ReferenceValidator:
     @staticmethod
-    def validate_reference(session: DbSession, data: ReferenceType|Reference, reference_types: List[str]|None = None, all_allowed: bool = False) -> bool:
+    def validate_reference(session: DbSession, data: ReferenceType | Reference, match_on: str) -> None:
         if not isinstance(data, Reference):
             raise ValueError(f"Invalid reference {data}")
 
@@ -21,23 +26,29 @@ class ReferenceValidator:
         reference_type = parts[0]
         reference_id = parts[1]
 
-        if not all_allowed:
-            if reference_types is None:
-                raise ValueError("Need at least one reference type")
-            if reference_type not in reference_types:
-                raise ValueError(f"Invalid reference {data.reference}, expected {reference_types}")
+        if reference_type != match_on:
+            raise ValueError(f"Invalid reference {data.reference}, expected {match_on}")
 
-        if reference_type == "HealthcareService":
-            found = session.query(HealthcareServiceEntry).filter(HealthcareServiceEntry.fhir_id == reference_id).first() is not None
-        elif reference_type == "OrganizationAffiliation":
-            found = session.query(OrganizationAffiliationEntry).filter(OrganizationAffiliationEntry.fhir_id == reference_id).first() is not None
-        else:
-            raise ValueError(f"Invalid reference type {reference_type}")
+        match reference_type:
+            case "HealthcareService":
+                found = session.execute(select(HealthcareServiceEntry).where(
+                    HealthcareServiceEntry.fhir_id == reference_id).limit(1)).first()
+            case "OrganizationAffiliation":
+                found = session.execute(select(OrganizationAffiliationEntry).where(
+                    OrganizationAffiliationEntry.fhir_id == reference_id).limit(1)).first()
+            case "Organization":
+                found = session.execute(select(Organization).where(
+                    Organization.fhir_id == reference_id).limit(1)).first()
+            case "Endpoint":
+                found = session.execute(select(Endpoint).where(
+                    Endpoint.fhir_id == reference_id).limit(1)).first()
+            case _:
+                raise ValueError(f"Invalid reference type {reference_type}")
 
-        return found
+        if found is None:
+            logging.warning("Invalid resource, reference %s is not resolvable", data.reference)
+            raise ResourceNotFoundException(f"Invalid resource, reference {data.reference} is not resolvable")
 
-    def validate_list(self, session: DbSession, data: List[ReferenceType]|List[Reference], reference_types: List[str]|None = None, all_allowed: bool = False) -> bool:
+    def validate_list(self, session: DbSession, data: List[ReferenceType] | List[Reference], match_on: str) -> None:
         for reference_data in data:
-            if not self.validate_reference(session, reference_data, reference_types, all_allowed):
-                return False
-        return True
+            self.validate_reference(session, reference_data, match_on=match_on)
