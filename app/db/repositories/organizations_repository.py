@@ -65,9 +65,10 @@ class OrganizationsRepository(RepositoryBase):
             )
 
         if "endpoint" in conditions:
+            ref_id = str(conditions["endpoint"])
             filter_conditions.append(
                 Organization.data["endpoint"].contains(
-                    [{"reference": conditions["endpoint"]}]
+                    [{"reference": f"Endpoint/{ref_id}"}]
                 )
             )
 
@@ -85,8 +86,9 @@ class OrganizationsRepository(RepositoryBase):
             )
 
         if "part_of" in conditions:
+            ref_id = str(conditions["part_of"])
             filter_conditions.append(
-                Organization.data["partOf"]["reference"].astext == conditions["part_of"]
+                Organization.data["partOf"]["reference"].astext == f"Organization/{ref_id}"
             )
 
         if "phonetic" in conditions:

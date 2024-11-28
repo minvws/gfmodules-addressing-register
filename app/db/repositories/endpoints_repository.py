@@ -76,9 +76,10 @@ class EndpointsRepository(RepositoryBase):
             )
 
         if "managingOrganization" in conditions:
+            ref_id = str(conditions["managingOrganization"])
             filter_conditions.append(
                 Endpoint.data["managingOrganization"]["reference"].astext
-                == conditions["managingOrganization"]
+                == f"Organization/{ref_id}"
             )
 
         if "payloadType" in conditions:
