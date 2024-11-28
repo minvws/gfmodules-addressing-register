@@ -54,13 +54,15 @@ class DataGenerator:
                 ura_number=ura_number
             )
             self.supplier_service.add_one(supplier_endpoint)
+            endpoint = self.generate_endpoint()
+            endpoint_entity = self.endpoint_service.add_one(endpoint)
             org = self.generate_organization(
                 ura_number=ura_number,
                 part_of=parent_org_id if parent_org_id is not None and self.fake.boolean(50) else None,
+                endpoint_id=endpoint_entity.fhir_id,
             )
-            org_entity = self.organization_service.add_one(org)
-            endpoint = self.generate_endpoint(org_entity.fhir_id)
-            self.endpoint_service.add_one(endpoint)
+            self.organization_service.add_one(org)
+            
             parent_org_id = org.id
 
     def generate_care_provider_endpoint_supplier(
@@ -178,20 +180,6 @@ class DataGenerator:
         uuid_identifier: UUID | None = None,
         endpoint_url: str | None = None,
     ) -> Endpoint:
-        if org_fhir_id:
-            if (
-                self.organization_service.get_one(org_fhir_id).ura_number
-                in self.default_uras
-            ):
-                try:
-                    endpoint_url = self.default_metadata_urls[
-                        self.default_uras.index(
-                            self.organization_service.get_one(org_fhir_id).ura_number
-                        )
-                    ]
-                except ValueError:
-                    raise ValueError()
-
         return Endpoint(
             identifier=[
                 (
