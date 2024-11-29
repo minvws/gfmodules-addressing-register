@@ -231,18 +231,18 @@ class OrganizationService(EntityService):
             endpoint_repo = session.get_repository(EndpointsRepository)
             org_repo = session.get_repository(OrganizationsRepository)
             if delete:
-                endpoints_with_org = endpoint_repo.find(managingOrganization=str(organization.id))
+                endpoints_with_org = endpoint_repo.find(latest=True, managingOrganization=str(organization.id))
                 if len(endpoints_with_org) > 0:
                         logging.warning("Cannot delete, Endpoint %s has active reference to this resource",
-                                        endpoints_with_org[0].id)
+                                        endpoints_with_org[0].fhir_id)
                         raise ResourceNotDeletedException(
-                            f"Cannot delete, Endpoint {endpoints_with_org[0].id} has active reference to this resource")
-                orgs_part_of = org_repo.find(part_of=str(organization.id))
+                            f"Cannot delete, Endpoint {endpoints_with_org[0].fhir_id} has active reference to this resource")
+                orgs_part_of = org_repo.find(latest=True, part_of=str(organization.id))
                 if len(orgs_part_of) > 0:
                     logging.warning("Cannot delete, Organization %s has active reference to this resource",
-                                    orgs_part_of[0].id)
+                                    orgs_part_of[0].fhir_id)
                     raise ResourceNotDeletedException(
-                        f"Cannot delete, Organization {orgs_part_of[0].id} has active reference to this resource")
+                        f"Cannot delete, Organization {orgs_part_of[0].fhir_id} has active reference to this resource")
                 return
 
             reference_validator = ReferenceValidator()

@@ -154,12 +154,12 @@ class EndpointService:
         with self.database.get_db_session() as session:
             org_repo = session.get_repository(OrganizationsRepository)
             if delete:
-                orgs_with_ref_to_endpoint = org_repo.find(endpoint=str(data.id))
+                orgs_with_ref_to_endpoint = org_repo.find(latest=True, endpoint=str(data.id))
                 if len(orgs_with_ref_to_endpoint) > 0:
                     logging.warning("Cannot delete, Organization %s has active reference to this resource",
-                                    orgs_with_ref_to_endpoint[0].id)
+                                    orgs_with_ref_to_endpoint[0].fhir_id)
                     raise ResourceNotDeletedException(
-                        f"Cannot delete, Organization {orgs_with_ref_to_endpoint[0].id} has active reference to this resource")
+                        f"Cannot delete, Organization {orgs_with_ref_to_endpoint[0].fhir_id} has active reference to this resource")
                 return
 
             if data.managingOrganization is not None:
