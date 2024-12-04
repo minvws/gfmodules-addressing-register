@@ -6,8 +6,8 @@ from fhir.resources.R4B.reference import Reference
 from sqlalchemy import select
 
 from app.db.entities.endpoint.endpoint import Endpoint
-from app.db.entities.healthcare_service.healthcare_service import HealthcareServiceEntry
 from app.db.entities.organization.organization import Organization
+from app.db.entities.healthcare_service.healthcare_service import HealthcareService
 from app.db.entities.organization_affiliation.organization_affiliation import OrganizationAffiliationEntry
 from app.db.session import DbSession
 from app.exceptions.service_exceptions import ResourceNotFoundException
@@ -31,8 +31,8 @@ class ReferenceValidator:
 
         match reference_type:
             case "HealthcareService":
-                found = session.execute(select(HealthcareServiceEntry).where(
-                    HealthcareServiceEntry.fhir_id == reference_id).limit(1)).first()
+                found = session.execute(select(HealthcareService).where(
+                    HealthcareService.fhir_id == reference_id).limit(1)).first()
             case "OrganizationAffiliation":
                 found = session.execute(select(OrganizationAffiliationEntry).where(
                     OrganizationAffiliationEntry.fhir_id == reference_id).limit(1)).first()

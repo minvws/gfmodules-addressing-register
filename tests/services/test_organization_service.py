@@ -39,7 +39,8 @@ def test_add_one_correctly_adds_organization(organization_service: OrganizationS
     assert actual.data.get("name") == expected.name # type: ignore
 
 
-def test_add_one_correctly_adds_organization_with_endpoint(organization_service: OrganizationService, endpoint_service: EndpointService,
+def test_add_one_correctly_adds_organization_with_endpoint(organization_service: OrganizationService,
+                                                           endpoint_service: EndpointService,
                                                            setup_postgres_database: Database) -> None:
     setup_postgres_database.truncate_tables()
     created_endpoint = add_endpoint(endpoint_service)

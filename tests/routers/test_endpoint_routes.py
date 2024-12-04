@@ -18,7 +18,7 @@ from tests.utils import check_key_value, add_endpoint
     ],
 )
 def test_endpoint_routes(
-    postgres_client: TestClient,
+    api_client: TestClient,
     endpoint_endpoint: str,
     endpoint_service: EndpointService,
     url_suffix: str,
@@ -28,7 +28,7 @@ def test_endpoint_routes(
     setup_postgres_database.truncate_tables()
     expected = add_endpoint(endpoint_service)
     endpoint = endpoint_endpoint + url_suffix.format(id=expected.fhir_id)
-    response = postgres_client.get(endpoint)
+    response = api_client.get(endpoint)
     assert response.status_code == 200
     data = response.json()
     if expected_type == "searchset":
@@ -42,19 +42,19 @@ def test_endpoint_routes(
 
 
 def test_delete_endpoint(
-    postgres_client: TestClient,
+    api_client: TestClient,
     endpoint_endpoint: str,
     endpoint_service: EndpointService,
 ) -> None:
     expected = add_endpoint(endpoint_service)
-    response = postgres_client.request(
+    response = api_client.request(
         "DELETE", f"{endpoint_endpoint}/{expected.fhir_id}"
     )
     assert response.status_code == 200
 
 
 def test_update_endpoint(
-    postgres_client: TestClient,
+    api_client: TestClient,
     endpoint_endpoint: str,
     endpoint_service: EndpointService,
 ) -> None:
@@ -62,7 +62,7 @@ def test_update_endpoint(
     dg = DataGenerator()
     new_endpoint = dg.generate_endpoint()
     new_endpoint.id = str(old.fhir_id)  # type: ignore
-    response = postgres_client.put(
+    response = api_client.put(
         f"{endpoint_endpoint}/{old.fhir_id}",
         json=dict(jsonable_encoder(new_endpoint.dict())),
     )
@@ -72,12 +72,12 @@ def test_update_endpoint(
 
 
 def test_history_endpoint(
-    postgres_client: TestClient,
+    api_client: TestClient,
     endpoint_endpoint: str,
     endpoint_service: EndpointService,
 ) -> None:
     endpoint = add_endpoint(endpoint_service)
-    response = postgres_client.request(
+    response = api_client.request(
         "GET", f"{endpoint_endpoint}/{endpoint.fhir_id}/_history"
     )
     assert response.status_code == 200
@@ -90,7 +90,7 @@ def test_history_endpoint(
     assert isinstance(bundle, Bundle)
 
     endpoint_2 = add_endpoint(endpoint_service)
-    response = postgres_client.request(
+    response = api_client.request(
         "GET", f"{endpoint_endpoint}/_history",
         params={"_since": endpoint_2.data.get("meta").get("lastUpdated")}  # type: ignore
     )
@@ -101,7 +101,7 @@ def test_history_endpoint(
     assert bundle.total == 1  # Only endpoint_2 as it was created later than endpoint 1
     assert bundle.entry[0].resource.id == endpoint_2.fhir_id.__str__() # type: ignore
 
-    response = postgres_client.request("GET", f"{endpoint_endpoint}/_history", # Since creation of 1st endpoint
+    response = api_client.request("GET", f"{endpoint_endpoint}/_history", # Since creation of 1st endpoint
                                        params={"_since": endpoint.data.get("meta").get("lastUpdated")})  # type: ignore
     assert response.status_code == 200
     bundle = Bundle(**response.json())
@@ -113,12 +113,12 @@ def test_history_endpoint(
 
 
 def test_endpoint_version(
-    postgres_client: TestClient,
+    api_client: TestClient,
     endpoint_endpoint: str,
     endpoint_service: EndpointService,
 ) -> None:
     endpoint = add_endpoint(endpoint_service)
-    response = postgres_client.request(
+    response = api_client.request(
         "GET", f"{endpoint_endpoint}/{endpoint.fhir_id}/_history/{endpoint.version}"
     )
     assert response.status_code == 200

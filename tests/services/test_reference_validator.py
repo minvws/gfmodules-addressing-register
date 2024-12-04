@@ -4,7 +4,7 @@ from unittest.mock import Mock, MagicMock
 from fhir.resources.R4B.reference import Reference
 
 from app.db.session import DbSession
-from app.db.entities.healthcare_service.healthcare_service import HealthcareServiceEntry
+from app.db.entities.healthcare_service.healthcare_service import HealthcareService
 from app.exceptions.service_exceptions import ResourceNotFoundException
 from app.services.reference_validator import ReferenceValidator
 
@@ -17,7 +17,7 @@ def session() -> Mock:
     return Mock(spec=DbSession)
 
 def test_validate_reference_healthcare_service_valid(validator: ReferenceValidator, session: Mock) -> None:
-    session.execute.return_value.first.return_value = HealthcareServiceEntry(fhir_id="123")
+    session.execute.return_value.first.return_value = HealthcareService(fhir_id="123")
 
     data = Reference.construct(reference="HealthcareService/123")
     validator.validate_reference(session, data, "HealthcareService")
@@ -39,8 +39,8 @@ def test_validate_reference_invalid_reference_type(validator: ReferenceValidator
 
 def test_validate_list_of_same_typed_references(validator: ReferenceValidator, session: Mock) -> None:
     session.execute.side_effect = [
-        MagicMock(first=Mock(return_value=HealthcareServiceEntry(fhir_id="123"))),
-        MagicMock(first=Mock(return_value=HealthcareServiceEntry(fhir_id="456")))
+        MagicMock(first=Mock(return_value=HealthcareService(fhir_id="123"))),
+        MagicMock(first=Mock(return_value=HealthcareService(fhir_id="456")))
     ]
 
     data = [
@@ -53,7 +53,7 @@ def test_validate_list_of_same_typed_references(validator: ReferenceValidator, s
 
 def test_validate_list_with_missing_reference(validator: ReferenceValidator, session: Mock) -> None:
     session.execute.side_effect = [
-        MagicMock(first=Mock(return_value=HealthcareServiceEntry(fhir_id="123"))),
+        MagicMock(first=Mock(return_value=HealthcareService(fhir_id="123"))),
         MagicMock(first=Mock(return_value=None))
     ]
 
@@ -67,7 +67,7 @@ def test_validate_list_with_missing_reference(validator: ReferenceValidator, ses
 
 def test_validate_list_mixed_references_only_allow_single_type(validator: ReferenceValidator, session: Mock) -> None:
     session.execute.side_effect = [
-        MagicMock(first=Mock(return_value=HealthcareServiceEntry(fhir_id="123"))),
+        MagicMock(first=Mock(return_value=HealthcareService(fhir_id="123"))),
     ]
 
     data = [

@@ -3,17 +3,12 @@ from typing import Any, Sequence, List
 from uuid import UUID
 
 from fhir.resources.R4B.bundle import BundleEntry, Bundle
-from fhir.resources.R4B.endpoint import Endpoint as FhirEndpoint
 from fhir.resources.R4B.organization import Organization as FhirOrganization
 from fhir.resources.R4B.reference import Reference
 
 from app.db.entities.organization.organization import Organization
 from app.exceptions.service_exceptions import ResourceNotFoundException
-from app.mappers.fhir_mapper import (
-    create_fhir_bundle,
-    create_endpoint_bundled_resources,
-    create_organization_histories_bundled_resources,
-)
+from app.mappers.fhir_mapper import (create_fhir_bundle, create_bundle_entries, BundleType)
 from app.params.endpoint_query_params import EndpointQueryParams
 from app.params.organization_query_params import OrganizationQueryParams
 from app.services.entity_services.endpoint_service import EndpointService
@@ -36,13 +31,9 @@ class MatchingCareService:
             id=organization_id, sort_history=True, since=since
         )
 
-        bundle_entries = create_organization_histories_bundled_resources(
-            organization_entries
-        )
-
         return create_fhir_bundle(  # type: ignore
-            bundled_entries=bundle_entries,
-            bundle_type="history",
+            bundled_entries=create_bundle_entries(organization_entries, with_req_resp=True),
+            bundle_type=BundleType.HISTORY,
         ).dict()
 
     def find_organizations(self, org_query_request: OrganizationQueryParams) -> Bundle:
@@ -53,17 +44,7 @@ class MatchingCareService:
             ),
         )
 
-        bundled_resources = []
-        for org in organizations:
-            if org.bundle_meta is None:
-                raise ResourceNotFoundException("Bundle meta data not found")
-            bundled_resources.append(
-                BundleEntry.construct(
-                    resource=org.data,
-                    request=org.bundle_meta.get("request"),
-                    response=org.bundle_meta.get("response"),
-                )
-            )
+        bundled_resources = create_bundle_entries(organizations, with_req_resp=True)
 
         include_endpoints = True if org_query_request.include is not None else False
         if include_endpoints:
@@ -71,38 +52,25 @@ class MatchingCareService:
                 bundled_resources, organizations
             )
 
-        return create_fhir_bundle(bundled_entries=bundled_resources)
+        return create_fhir_bundle(
+            bundled_entries=bundled_resources,
+            bundle_type=BundleType.SEARCHSET
+        )
 
     def find_endpoints(self, endpoints_req_params: EndpointQueryParams) -> Bundle:
-        endpoints = []
-        for endpoint in self._endpoint_service.find(
-            latest_version=True, **endpoints_req_params.model_dump()
-        ):
-            if endpoint.data is None:
-                raise ResourceNotFoundException("Data not found in resource")
-            endpoints.append(FhirEndpoint(**endpoint.data))
+        endpoints = self._endpoint_service.find(latest_version=True, **endpoints_req_params.model_dump())
 
-        bundled_endpoint_resources = create_endpoint_bundled_resources(endpoints)
-        return create_fhir_bundle(bundled_entries=bundled_endpoint_resources)
+        return create_fhir_bundle(
+            bundled_entries=create_bundle_entries(endpoints, with_req_resp=False),
+            bundle_type=BundleType.SEARCHSET
+        )
 
     def find_endpoint_history(self, endpoint_id: UUID | None = None, since: datetime|None=None) -> dict[str, Any]:
         endpoints = self._endpoint_service.find(id=endpoint_id, sort_history=True, since=since)
 
-        bundled_resources = []
-        for endpoint in endpoints:
-            if endpoint.bundle_meta is None:
-                raise ResourceNotFoundException("Bundle meta data not found")
-            bundled_resources.append(
-                BundleEntry.construct(
-                    resource=endpoint.data,
-                    request=endpoint.bundle_meta.get("request"),
-                    response=endpoint.bundle_meta.get("response"),
-                )
-            )
-
         return create_fhir_bundle(  # type: ignore
-            bundled_entries=bundled_resources,
-            bundle_type="history",
+            bundled_entries=create_bundle_entries(endpoints, with_req_resp=True),
+            bundle_type=BundleType.HISTORY,
         ).dict()
 
     def _include_endpoints(

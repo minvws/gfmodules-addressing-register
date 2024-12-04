@@ -49,6 +49,9 @@ FROM base as final
 
 COPY --chown=${APP_USER}:${APP_GROUP} --from=builder /usr/local /usr/local
 
+# Somehow packages in this dir are not owned by the app user
+RUN chown -R ${APP_USER}:${APP_GROUP} /usr/local/lib/python3.11/site-packages
+
 USER ${APP_USER}
 
 EXPOSE 8504:8504

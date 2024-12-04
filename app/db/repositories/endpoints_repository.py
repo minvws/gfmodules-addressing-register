@@ -127,10 +127,10 @@ class EndpointsRepository(RepositoryBase):
 
     def create(self, endpoint: Endpoint) -> Endpoint:
         try:
-            update_resource_meta(endpoint, method="create")
-            self.db_session.add(endpoint)
+            entry = update_resource_meta(endpoint, method="create")
+            self.db_session.add(entry)
             self.db_session.commit()
-            return endpoint
+            return entry
         except DatabaseError as e:
             self.db_session.rollback()
             logging.error(f"Failed to add Endpoint {endpoint.id}: {e}")
@@ -144,9 +144,9 @@ class EndpointsRepository(RepositoryBase):
                 version=endpoint.version,
                 data=None,
             )
-            update_resource_meta(updated_endpoint, method="delete")
+            entry = update_resource_meta(updated_endpoint, method="delete")
 
-            self.db_session.add(updated_endpoint)
+            self.db_session.add(entry)
             self.db_session.commit()
         except DatabaseError as e:
             self.db_session.rollback()
@@ -161,9 +161,9 @@ class EndpointsRepository(RepositoryBase):
                 version=endpoint.version,
                 data=jsonable_encoder(fhir_data),
             )
-            update_resource_meta(updated_endpoint, method="update")
+            entry = update_resource_meta(updated_endpoint, method="update")
 
-            self.db_session.add(updated_endpoint)
+            self.db_session.add(entry)
             self.db_session.commit()
             return updated_endpoint
         except DatabaseError as e:

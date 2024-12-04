@@ -20,7 +20,7 @@ from tests.utils import check_key_value, add_organization
     ],
 )
 def test_organization_routes(
-    postgres_client: TestClient,
+    api_client: TestClient,
     org_endpoint: str,
     organization_service: OrganizationService,
     endpoint_suffix: str,
@@ -32,7 +32,7 @@ def test_organization_routes(
     endpoint = org_endpoint + endpoint_suffix.format(
         id=expected.fhir_id, ura=expected.ura_number
     )
-    response = postgres_client.get(endpoint)
+    response = api_client.get(endpoint)
     assert response.status_code == 200
     data = response.json()
     if expected_type == "searchset" or expected_type == "history":
@@ -46,17 +46,17 @@ def test_organization_routes(
 
 
 def test_delete_organization(
-    postgres_client: TestClient,
+        api_client: TestClient,
     org_endpoint: str,
     organization_service: OrganizationService,
 ) -> None:
     expected = add_organization(organization_service)
-    response = postgres_client.request("DELETE", f"{org_endpoint}/{expected.fhir_id}")
+    response = api_client.request("DELETE", f"{org_endpoint}/{expected.fhir_id}")
     assert response.status_code == 200
 
 
 def test_update_organization(
-    postgres_client: TestClient,
+        api_client: TestClient,
     org_endpoint: str,
     organization_service: OrganizationService,
 ) -> None:
@@ -64,7 +64,7 @@ def test_update_organization(
     dg = DataGenerator()
     new_org = dg.generate_organization(ura_number=old.ura_number)
     new_org.id = str(old.fhir_id)  # type: ignore
-    response = postgres_client.put(
+    response = api_client.put(
         f"{org_endpoint}/{old.fhir_id}", json=dict(jsonable_encoder(new_org.dict()))
     )
     assert response.status_code == 200
@@ -73,12 +73,12 @@ def test_update_organization(
 
 
 def test_organization_history(
-    postgres_client: TestClient,
+        api_client: TestClient,
     org_endpoint: str,
     organization_service: OrganizationService,
 ) -> None:
     org = add_organization(organization_service)
-    response = postgres_client.request("GET", f"{org_endpoint}/{org.fhir_id}/_history")
+    response = api_client.request("GET", f"{org_endpoint}/{org.fhir_id}/_history")
     assert response.status_code == 200
     data = response.json()
     assert data["resourceType"] == "Bundle"
@@ -88,7 +88,7 @@ def test_organization_history(
     assert isinstance(bundle, Bundle)
 
     org_2 = add_organization(organization_service)
-    response = postgres_client.request("GET", f"{org_endpoint}/_history", # Since creation of 2nd org
+    response = api_client.request("GET", f"{org_endpoint}/_history", # Since creation of 2nd org
                                        params={"_since": org_2.data.get("meta").get("lastUpdated")}) # type: ignore
     assert response.status_code == 200
     bundle = Bundle(**response.json())
@@ -97,7 +97,7 @@ def test_organization_history(
     assert bundle.total == 1 # Only org_2 as it was created later than org 1
     assert bundle.entry[0].resource.id == org_2.fhir_id.__str__() # type: ignore
 
-    response = postgres_client.request("GET", f"{org_endpoint}/_history", # Since creation of 1st org
+    response = api_client.request("GET", f"{org_endpoint}/_history", # Since creation of 1st org
                                        params={"_since": org.data.get("meta").get("lastUpdated")})   # type: ignore
     assert response.status_code == 200
     bundle = Bundle(**response.json())
@@ -110,12 +110,12 @@ def test_organization_history(
 
 
 def test_organization_version(
-    postgres_client: TestClient,
+        api_client: TestClient,
     org_endpoint: str,
     organization_service: OrganizationService,
 ) -> None:
     org = add_organization(organization_service)
-    response = postgres_client.request(
+    response = api_client.request(
         "GET", f"{org_endpoint}/{org.fhir_id}/_history/{org.version}"
     )
     assert response.status_code == 200

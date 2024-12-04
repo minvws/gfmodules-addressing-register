@@ -147,3 +147,9 @@ class DbSession:
             logger.info("Retrying operation in %s seconds", backoff[0])
             sleep(backoff[0] + random.uniform(0, 0.1))
             backoff = backoff[1:]
+
+    def scalars(self, stmt: Any, execution_options: Any) -> Any:
+        """
+        Execute a statement and return a scalar result
+        """
+        return self.session.scalars(stmt, execution_options=execution_options)
