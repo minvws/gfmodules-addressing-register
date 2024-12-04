@@ -52,21 +52,17 @@ class Database:
         logger.info(out.stdout.decode('utf-8'))
 
     def truncate_tables(self) -> None:
-        # TODO: Only for testing purposes
-        if self._SQLITE_PREFIX not in self.engine.url.__str__():
-            tables = [
-                'organization_affiliations',
-                'endpoints',
-                'organizations',
-                'supplier_endpoints',
-                'healthcare_services',
-            ]
+        tables = [
+            'organization_affiliations',
+            'endpoints',
+            'organizations',
+            'supplier_endpoints',
+            'healthcare_services',
+        ]
 
-            with self.get_db_session() as session:
-                session.execute(text('TRUNCATE TABLE ' + ', '.join(tables)))
-                session.commit()
-        else:
-            Base.metadata.drop_all(self.engine)
+        with self.get_db_session() as session:
+            session.execute(text('TRUNCATE TABLE ' + ', '.join(tables)))
+            session.commit()
 
     def is_healthy(self) -> bool:
         """
