@@ -12,15 +12,16 @@ from app.params.history_query_params import HistoryRequest
 from app.services.entity_services.endpoint_service import EndpointService
 from app.services.matching_care_service import MatchingCareService
 
+logger = logging.getLogger(__name__)
 router = APIRouter(
     prefix="/Endpoint",
     tags=["Endpoints"],
 )
 
-
 @router.post("")
-def create_endpoint(
-    data: Dict[str, Any], service: EndpointService = Depends(get_endpoint_service)
+def create(
+    data: Dict[str, Any],
+    service: EndpointService = Depends(get_endpoint_service)
 ) -> Dict[str, Any] | None:
     fhir_data = FhirEndpoint(**data)
     if fhir_data.id is not None:

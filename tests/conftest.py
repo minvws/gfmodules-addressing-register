@@ -13,6 +13,7 @@ from app.services.entity_services.organization_service import OrganizationServic
 from app.services.matching_care_service import MatchingCareService
 from app.services.supplier_service import SupplierService
 from app.services.entity_services.healthcare_service_service import HealthcareServiceService
+from app.services.entity_services.organization_affiliation_service import OrganizationAffiliationService
 from tests.test_config import get_test_config_with_postgres_db_connection, get_postgres_database, get_test_config
 
 
@@ -45,6 +46,7 @@ def setup_postgres_database() -> Database:
     db.truncate_tables()
     return db
 
+
 @pytest.fixture
 def setup_sqlite_database() -> Database:
     set_config(get_test_config())
@@ -57,9 +59,11 @@ def setup_sqlite_database() -> Database:
     db = Database(config=get_test_config().database)
     return db
 
+
 @pytest.fixture
 def api_client(postgres_app: FastAPI) -> TestClient:
     return TestClient(postgres_app)
+
 
 @pytest.fixture
 def sqlite_client(sqlite_app: FastAPI) -> TestClient:
@@ -75,6 +79,7 @@ def supplier_service(setup_sqlite_database: Database) -> SupplierService:
 def endpoint_service(setup_postgres_database: Database) -> EndpointService:
     return EndpointService(setup_postgres_database)
 
+
 @pytest.fixture
 def healthcareservice_service(setup_postgres_database: Database) -> HealthcareServiceService:
     return HealthcareServiceService(setup_postgres_database)
@@ -83,6 +88,11 @@ def healthcareservice_service(setup_postgres_database: Database) -> HealthcareSe
 @pytest.fixture
 def organization_service(setup_postgres_database: Database) -> OrganizationService:
     return OrganizationService(setup_postgres_database)
+
+
+@pytest.fixture
+def organization_affiliation_service(setup_postgres_database: Database) -> OrganizationAffiliationService:
+    return OrganizationAffiliationService(setup_postgres_database)
 
 
 @pytest.fixture
@@ -95,6 +105,11 @@ def matching_care_service(
 @pytest.fixture
 def org_endpoint() -> str:
     return "/Organization"
+
+
+@pytest.fixture
+def org_aff_endpoint() -> str:
+    return "/OrganizationAffiliation"
 
 
 @pytest.fixture

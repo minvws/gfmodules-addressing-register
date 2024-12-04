@@ -7,9 +7,11 @@ from faker import Faker
 from app.data import EndpointStatus, UraNumber
 from app.db.entities.endpoint.endpoint import Endpoint
 from app.db.entities.organization.organization import Organization
+from app.db.entities.organization_affiliation.organization_affiliation import OrganizationAffiliation
 from app.models.supplier.model import SupplierModel
 from app.services.entity_services.endpoint_service import EndpointService
 from app.services.entity_services.organization_service import OrganizationService
+from app.services.entity_services.organization_affiliation_service import OrganizationAffiliationService
 from app.services.supplier_service import SupplierService
 from seeds.generate_data import DataGenerator
 from fhir.resources.R4B.endpoint import Endpoint as FhirEndpoint
@@ -55,6 +57,7 @@ def create_supplier(ura_number: str = "12345678",
         update_supplier_endpoint=update_supplier_endpoint
     )
 
+
 # Helper function to add a supplier
 def add_supplier(supplier_service: SupplierService) -> SupplierModel:
     return supplier_service.add_one(create_supplier())
@@ -73,6 +76,19 @@ def add_organization(
     dg = DataGenerator()
     return organization_service.add_one(
         dg.generate_organization(ura_number, active, name, uuid, endpoint_id, part_of)
+    )
+
+
+# Helper function to add an organization affiliation
+def add_organization_affiliation(
+    organization_affiliation_service: OrganizationAffiliationService,
+    active: Optional[bool] = None,
+    organization: Optional[UUID] = None,
+    participation_organization: Optional[UUID] = None,
+) -> OrganizationAffiliation:
+    dg = DataGenerator()
+    return organization_affiliation_service.add_one(
+        dg.generate_organization_affiliation(active, organization, participation_organization)
     )
 
 
