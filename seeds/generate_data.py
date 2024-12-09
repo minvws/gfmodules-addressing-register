@@ -9,6 +9,7 @@ from fhir.resources.R4B.fhirtypes import Id
 from fhir.resources.R4B.humanname import HumanName
 from fhir.resources.R4B.identifier import Identifier
 from fhir.resources.R4B.organization import Organization
+from fhir.resources.R4B.organizationaffiliation import OrganizationAffiliation
 from fhir.resources.R4B.organization import OrganizationContact
 from fhir.resources.R4B.reference import Reference
 from fhir.resources.healthcareservice import HealthcareService
@@ -64,7 +65,7 @@ class DataGenerator:
                 endpoint_id=endpoint_entity.fhir_id,
             )
             self.organization_service.add_one(org)
-            
+
             parent_org_id = org.id
 
     def generate_care_provider_endpoint_supplier(
@@ -83,6 +84,18 @@ class DataGenerator:
             update_supplier_endpoint=update_supplier_endpoint
             if update_supplier_endpoint
             else self.fake.url(),
+        )
+
+    def generate_organization_affiliation(
+        self,
+        active: bool | None = None,
+        organization: UUID | None = None,
+        participation_organization: UUID | None = None,
+    ) -> OrganizationAffiliation:
+        return OrganizationAffiliation(
+            active=active if active is not None else self.fake.boolean(),
+            organization={"reference": f"Organization/{organization}"} if organization is not None else None,
+            participatingOrganization={"reference": f"Organization/{participation_organization}"} if participation_organization is not None else None,
         )
 
     def generate_organization(

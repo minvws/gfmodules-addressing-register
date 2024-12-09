@@ -40,7 +40,7 @@ spelling-fix: ## Fix spelling mistakes
 test: ## Runs automated tests
 	$(RUN_PREFIX) pytest --cov --cov-report=term --cov-report=xml
 
-check: lint type-check safety-check spelling-check test ## Runs all checks
+check: lint type-check spelling-check test safety-check ## Runs all checks
 fix: lint-fix spelling-fix ## Runs all fixers
 
 help: ## Display available commands
