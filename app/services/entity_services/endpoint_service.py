@@ -4,20 +4,17 @@ from typing import Sequence
 from uuid import UUID, uuid4
 
 from fastapi.encoders import jsonable_encoder
-from fhir.resources.R4B.fhirtypes import Id, ReferenceType
-from fhir.resources.R4B.organization import Organization as FhirOrganization
 from fhir.resources.R4B.endpoint import Endpoint as FhirEndpoint
-from fhir.resources.R4B.reference import Reference
+from fhir.resources.R4B.fhirtypes import Id
 
 from app.db.db import Database
 from app.db.entities.endpoint.endpoint import Endpoint
-from app.db.entities.organization.organization import Organization
 from app.db.repositories.endpoints_repository import EndpointsRepository
 from app.db.repositories.organizations_repository import OrganizationsRepository
 from app.exceptions.service_exceptions import (
-    ResourceNotFoundException,
-    InvalidResourceException,
+    ResourceNotFoundException, ResourceNotDeletedException,
 )
+from app.services.reference_validator import ReferenceValidator
 
 
 class EndpointService:
@@ -74,18 +71,15 @@ class EndpointService:
     ) -> Endpoint:
         with self.database.get_db_session() as session:
             endpoint_repo = session.get_repository(EndpointsRepository)
-            org_repository = session.get_repository(OrganizationsRepository)
 
             endpoint_fhir.meta = None  # type: ignore
 
             resource_id = uuid4()
             endpoint_fhir.id = Id(str(resource_id))
 
-            managing_org = self._get_managing_organization(
-                endpoint_fhir, org_repository
+            self._check_references(
+                endpoint_fhir
             )
-            if managing_org is not None:
-                self._add_org_reference(managing_org, resource_id, org_repository)
 
             endpoint = Endpoint(
                 version=1,
@@ -100,26 +94,13 @@ class EndpointService:
     def delete_one(self, endpoint_id: UUID) -> None:
         with self.database.get_db_session() as session:
             endpoint_repo = session.get_repository(EndpointsRepository)
-            org_repository = session.get_repository(OrganizationsRepository)
 
             endpoint = endpoint_repo.get_one(fhir_id=endpoint_id)
             if endpoint is None or endpoint.data is None:
                 logging.warning("Endpoint not found for %s", endpoint_id)
                 raise ResourceNotFoundException(f"Endpoint not found for {endpoint_id}")
 
-            endpoint_fhir = FhirEndpoint(**endpoint.data)
-            managing_org_reference = endpoint_fhir.managingOrganization
-            if managing_org_reference is not None:
-                if not isinstance(managing_org_reference, Reference):
-                    raise TypeError("managing_org must be Reference")
-
-                managing_org = self._get_managing_organization(
-                    endpoint_fhir, org_repository
-                )
-                if managing_org is not None:
-                    self._remove_org_reference(
-                        managing_org, endpoint_id, org_repository
-                    )
+            self._check_references(FhirEndpoint(**endpoint.data), delete=True)
 
             endpoint_repo.delete(endpoint)
 
@@ -130,7 +111,6 @@ class EndpointService:
     ) -> Endpoint:
         with self.database.get_db_session() as session:
             endpoint_repo = session.get_repository(EndpointsRepository)
-            org_repository = session.get_repository(OrganizationsRepository)
 
             endpoint_fhir.meta = None  # type: ignore
 
@@ -146,27 +126,9 @@ class EndpointService:
                 # They are the same, no need to update
                 return update_endpoint
 
-            new_managing_org = self._get_managing_organization(
-                endpoint_fhir, org_repository
+            self._check_references(
+                endpoint_fhir
             )
-            old_managing_org = self._get_managing_organization(
-                FhirEndpoint(**update_endpoint.data), org_repository
-            )
-
-            if old_managing_org is not None and new_managing_org is None:
-                self._remove_org_reference(
-                    old_managing_org, endpoint_id, org_repository
-                )
-            elif old_managing_org is None and new_managing_org is not None:
-                self._add_org_reference(new_managing_org, endpoint_id, org_repository)
-            elif old_managing_org is not None and new_managing_org is not None:
-                if new_managing_org.ura_number != old_managing_org.ura_number:
-                    self._remove_org_reference(
-                        old_managing_org, endpoint_id, org_repository
-                    )
-                    self._add_org_reference(
-                        new_managing_org, endpoint_id, org_repository
-                    )
 
             updated_endpoint = endpoint_repo.update(
                 update_endpoint, endpoint_fhir.dict()
@@ -186,64 +148,21 @@ class EndpointService:
 
             return version
 
-    @staticmethod
-    def _get_managing_organization(
-        data: FhirEndpoint, repository: OrganizationsRepository
-    ) -> Organization | None:
-        if data.managingOrganization is None:
-            return
-
-        if not isinstance(data.managingOrganization, Reference):
-            raise InvalidResourceException(
-                "Managing organization reference was not found"
-            )
-
-        try:
-            organization_id = UUID(
-                data.managingOrganization.reference.replace("Organization/", "")
-            )
-        except ValueError as e:
-            raise InvalidResourceException(
-                f"Could not create UUID from organization id {e}"
-            )
-        organization = repository.get_one(fhir_id=organization_id)
-        if organization is None or organization.data is None:
-            raise ResourceNotFoundException(
-                f"Organization {organization_id} was not found"
-            )
-
-        return organization
-
-    @staticmethod
-    def _add_org_reference(
-        org: Organization,
-        endpoint_fhir_id: UUID,
-        repository: OrganizationsRepository,
+    def _check_references(
+        self, data: FhirEndpoint, delete: bool = False
     ) -> None:
-        if org.data is None:
-            raise ResourceNotFoundException(f"Organization {org.fhir_id} was not found")
-        fhir_managing_org = FhirOrganization(**org.data)
-        fhir_managing_org.meta = None  # type: ignore
-        if fhir_managing_org.endpoint is None:
-            fhir_managing_org.endpoint = []
+        with self.database.get_db_session() as session:
+            org_repo = session.get_repository(OrganizationsRepository)
+            if delete:
+                orgs_with_ref_to_endpoint = org_repo.find(latest=True, endpoint=str(data.id))
+                if len(orgs_with_ref_to_endpoint) > 0:
+                    logging.warning("Cannot delete, Organization %s has active reference to this resource",
+                                    orgs_with_ref_to_endpoint[0].fhir_id)
+                    raise ResourceNotDeletedException(
+                        f"Cannot delete, Organization {orgs_with_ref_to_endpoint[0].fhir_id} has active reference to this resource")
+                return
 
-        ref = Reference.construct(reference=f"Endpoint/{str(endpoint_fhir_id)}")
-        fhir_managing_org.endpoint.append(ref)  # type: ignore
+            if data.managingOrganization is not None:
+                reference_validator = ReferenceValidator()
+                reference_validator.validate_reference(session, data.managingOrganization, match_on="Organization")
 
-        repository.update(org, fhir_managing_org.dict())
-
-    @staticmethod
-    def _remove_org_reference(
-        org: Organization,
-        endpoint_fhir_id: UUID,
-        repository: OrganizationsRepository,
-    ) -> None:
-        if org.data is None:
-            raise ResourceNotFoundException(f"Organization {org.fhir_id} was not found")
-        new_org_fhir = FhirOrganization(**org.data)
-        new_org_fhir.meta = None  # type: ignore
-        ref = ReferenceType(reference=f"Endpoint/{str(endpoint_fhir_id)}")
-        index = new_org_fhir.endpoint.index(ref)
-        new_org_fhir.endpoint.pop(index)
-
-        repository.update(org, new_org_fhir.dict())

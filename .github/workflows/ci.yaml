@@ -126,7 +126,9 @@ jobs:
                 apt-get install --yes --no-install-recommends postgresql-client
 
             - name: Run the tests
-              run: make POETRY=true test
+              run: |
+                ./tools/migrate_db.sh addressing_db postgres postgres testing
+                make POETRY=true test
 
             - name: Upload coverage report
               uses: actions/upload-artifact@v4

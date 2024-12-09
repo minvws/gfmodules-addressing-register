@@ -1,20 +1,20 @@
 from datetime import datetime
-from typing import Literal
+from typing import Literal, TypeVar
 from zoneinfo import ZoneInfo
 
-from app.db.entities.endpoint.endpoint import Endpoint
-from app.db.entities.organization.organization import Organization
+from app.db.entities.mixin.common_mixin import CommonMixin
 
+T = TypeVar("T", bound=CommonMixin)
 
-def update_resource_meta(res: Organization|Endpoint, method: Literal["create", "update", "delete"]) -> None:
+def update_resource_meta(res: T, method: Literal["create", "update", "delete"]) -> T:
     res.version = res.version+1 if method != "create" else 1
     if isinstance(res.data, dict):
         res.data.update(
             {
                 "meta": {
                     "versionId": res.version,
-                    "lastUpdated": datetime.now(ZoneInfo("Europe/Paris")).isoformat(),
-                    "source": f"https://example.org/{res.__class__.__name__}",
+                    "lastUpdated": datetime.now(ZoneInfo("UTC")).isoformat(),
+                    "source": f"{res.__class__.__name__}/{res.fhir_id}",
                 }
             }
         )
@@ -37,4 +37,6 @@ def update_resource_meta(res: Organization|Endpoint, method: Literal["create", "
         },
         "response": {"status": response_status, "etag": f'W/"{res.version}"'},
     }
+
+    return res
 

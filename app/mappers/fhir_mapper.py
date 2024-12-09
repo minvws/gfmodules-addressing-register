@@ -1,41 +1,40 @@
+from enum import Enum
 from typing import Sequence
 
 from fhir.resources.R4B.bundle import Bundle, BundleEntry
-from fhir.resources.R4B.endpoint import Endpoint
+from fhir.resources.R4B.fhirtypes import Uri
 
-from app.db.entities.organization.organization import Organization
 from app.exceptions.service_exceptions import ResourceNotFoundException
+from app.db.entities.mixin.common_mixin import CommonMixin
 
-
-def create_organization_histories_bundled_resources(
-    organization_entries: Sequence[Organization],
-) -> list[BundleEntry]:
-    listing = []
-    for org in organization_entries:
-        if org.bundle_meta is None:
-            raise ResourceNotFoundException(f"Organization {org.fhir_id} bundle meta not found")
-        listing.append(
-            BundleEntry.construct(
-                resource=org.data,
-                request=org.bundle_meta.get("request"),
-                response=org.bundle_meta.get("response"),
-            )
-        )
-    return listing
-
-
-def create_endpoint_bundled_resources(
-    endpoints: Sequence[Endpoint],
-) -> list[BundleEntry]:
-    bundled_resources = []
-    for endpoint in endpoints:
-        bundled_resources.append(BundleEntry.construct(resource=endpoint))
-    return bundled_resources
+class BundleType(str, Enum):
+    SEARCHSET = "searchset"
+    HISTORY = "history"
 
 
 def create_fhir_bundle(
-    bundled_entries: list[BundleEntry], bundle_type: str = "searchset"
+    bundled_entries: list[BundleEntry], bundle_type: BundleType = BundleType.SEARCHSET
 ) -> Bundle:
     return Bundle.construct(
         type=bundle_type, entry=bundled_entries, total=len(bundled_entries)
     )
+
+def create_bundle_entries(
+    entries: Sequence[CommonMixin],
+    with_req_resp: bool = False,
+) -> list[BundleEntry]:
+    listing = []
+    for entry in entries:
+        if entry.bundle_meta is None:
+            raise ResourceNotFoundException(f"Entry {entry.fhir_id} bundle meta not found")
+
+        params = {
+            "fullUrl": Uri(f"{entry.fhir_id}/_history/{entry.version}"),
+            "resource": entry.data,
+        }
+        if with_req_resp:
+            params["request"] = entry.bundle_meta.get("request")
+            params["response"] = entry.bundle_meta.get("response")
+
+        listing.append(BundleEntry.construct(**params)) # type: ignore
+    return listing

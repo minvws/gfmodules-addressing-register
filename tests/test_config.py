@@ -54,7 +54,7 @@ def get_test_config_with_postgres_db_connection() -> Config:
 def get_database_config_postgres_db() -> ConfigDatabase:
     return ConfigDatabase(
         dsn=get_postgres_db_connection_dsn(),
-        create_tables=True,
+        create_tables=False,
         retry_backoff=[0.1, 0.2, 0.4, 0.8, 1.6, 3.2, 4.8, 6.4, 10.0],
         pool_size=5,
         max_overflow=10,

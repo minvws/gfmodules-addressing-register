@@ -1,5 +1,4 @@
 from typing import Literal, Union
-from uuid import uuid4
 
 import pytest
 
@@ -95,7 +94,7 @@ def test_find_correct_organizations(
     setup_postgres_database.truncate_tables()
 
     expected_endpoint = add_endpoint(endpoint_service) if include else None
-    part_of_id = uuid4() if parent_organization else None
+    part_of_id = add_organization(organization_service).fhir_id if parent_organization else None
 
     expected_org = add_organization(
         organization_service=organization_service,
@@ -110,10 +109,10 @@ def test_find_correct_organizations(
         active=active if active is not None else None,
         identifier=expected_org.ura_number if ura else None,
         name=name if name is not None else None,
-        partOf=f"Organization/{part_of_id}" if parent_organization else None,
+        partOf=str(part_of_id) if parent_organization else None,
         _include=include if include is not None else None,
         # _revInclude=rev_include,
-        endpoint=f"Endpoint/{expected_endpoint.fhir_id}" if include is not None else None # type: ignore
+        endpoint=str(expected_endpoint.fhir_id) if include is not None else None # type: ignore
     )
 
     result = matching_care_service.find_organizations(query_params)
@@ -138,15 +137,12 @@ def test_find_correct_endpoints(
     setup_postgres_database: Database
 ) -> None:
     setup_postgres_database.truncate_tables()
-    expected_endpoint = add_endpoint(endpoint_service)
-    expected_org = add_organization(
-        organization_service=organization_service,
-        endpoint_id=expected_endpoint.fhir_id,
-    )
+    expected_org = add_organization(organization_service)
+    expected_endpoint = add_endpoint(endpoint_service, org_fhir_id=expected_org.fhir_id)
 
     endpoint_params = EndpointQueryParams(
         _id=expected_endpoint.fhir_id,
-        organization="Organization/" + str(expected_org.fhir_id),
+        organization=str(expected_org.fhir_id),
     )
 
     endpoints = matching_care_service.find_endpoints(endpoint_params)

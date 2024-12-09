@@ -24,8 +24,7 @@ class OrganizationAffiliationService:
             repository = session.get_repository(OrganizationAffiliationRepository)
 
             reference_validator = ReferenceValidator()
-            if not reference_validator.validate_list(session, data.healthcareService, ["HealthcareService"]):
-                raise ValueError("Invalid reference in healthcareService")
+            reference_validator.validate_list(session, data.healthcareService, match_on="HealthcareService")
 
             # @todo: check if organisation / participating / primary are in the db
 

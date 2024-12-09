@@ -5,11 +5,13 @@ from fhir.resources.R4B.address import Address
 from fhir.resources.R4B.codeableconcept import CodeableConcept
 from fhir.resources.R4B.coding import Coding
 from fhir.resources.R4B.endpoint import Endpoint
+from fhir.resources.R4B.fhirtypes import Id
 from fhir.resources.R4B.humanname import HumanName
 from fhir.resources.R4B.identifier import Identifier
 from fhir.resources.R4B.organization import Organization
 from fhir.resources.R4B.organization import OrganizationContact
 from fhir.resources.R4B.reference import Reference
+from fhir.resources.healthcareservice import HealthcareService
 
 from app.config import get_config
 from app.db.db import Database
@@ -54,13 +56,15 @@ class DataGenerator:
                 ura_number=ura_number
             )
             self.supplier_service.add_one(supplier_endpoint)
+            endpoint = self.generate_endpoint()
+            endpoint_entity = self.endpoint_service.add_one(endpoint)
             org = self.generate_organization(
                 ura_number=ura_number,
                 part_of=parent_org_id if parent_org_id is not None and self.fake.boolean(50) else None,
+                endpoint_id=endpoint_entity.fhir_id,
             )
-            org_entity = self.organization_service.add_one(org)
-            endpoint = self.generate_endpoint(org_entity.fhir_id)
-            self.endpoint_service.add_one(endpoint)
+            self.organization_service.add_one(org)
+            
             parent_org_id = org.id
 
     def generate_care_provider_endpoint_supplier(
@@ -169,6 +173,12 @@ class DataGenerator:
             country=self.fake.country(),
         )
 
+    def generate_healthcare_service(self, id: UUID, comment = None):
+        return HealthcareService(
+            id=Id(str(id)),
+            comment=comment if comment else None,
+        )
+
 
     def generate_endpoint(
         self,
@@ -178,20 +188,6 @@ class DataGenerator:
         uuid_identifier: UUID | None = None,
         endpoint_url: str | None = None,
     ) -> Endpoint:
-        if org_fhir_id:
-            if (
-                self.organization_service.get_one(org_fhir_id).ura_number
-                in self.default_uras
-            ):
-                try:
-                    endpoint_url = self.default_metadata_urls[
-                        self.default_uras.index(
-                            self.organization_service.get_one(org_fhir_id).ura_number
-                        )
-                    ]
-                except ValueError:
-                    raise ValueError()
-
         return Endpoint(
             identifier=[
                 (

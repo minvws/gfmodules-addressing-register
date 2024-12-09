@@ -12,6 +12,7 @@ from app.services.entity_services.endpoint_service import EndpointService
 from app.services.entity_services.organization_service import OrganizationService
 from app.services.matching_care_service import MatchingCareService
 from app.services.supplier_service import SupplierService
+from app.services.entity_services.healthcare_service_service import HealthcareServiceService
 from tests.test_config import get_test_config_with_postgres_db_connection, get_postgres_database, get_test_config
 
 
@@ -57,7 +58,7 @@ def setup_sqlite_database() -> Database:
     return db
 
 @pytest.fixture
-def postgres_client(postgres_app: FastAPI) -> TestClient:
+def api_client(postgres_app: FastAPI) -> TestClient:
     return TestClient(postgres_app)
 
 @pytest.fixture
@@ -73,6 +74,10 @@ def supplier_service(setup_sqlite_database: Database) -> SupplierService:
 @pytest.fixture
 def endpoint_service(setup_postgres_database: Database) -> EndpointService:
     return EndpointService(setup_postgres_database)
+
+@pytest.fixture
+def healthcareservice_service(setup_postgres_database: Database) -> HealthcareServiceService:
+    return HealthcareServiceService(setup_postgres_database)
 
 
 @pytest.fixture
@@ -95,6 +100,10 @@ def org_endpoint() -> str:
 @pytest.fixture
 def endpoint_endpoint() -> str:
     return "/Endpoint"
+
+@pytest.fixture
+def healthcareservice_endpoint() -> str:
+    return "/HealthcareService"
 
 @pytest.fixture
 def supplier_endpoint() -> str:
