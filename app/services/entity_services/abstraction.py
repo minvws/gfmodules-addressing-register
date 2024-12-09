@@ -1,6 +1,5 @@
-from abc import abstractmethod, ABCMeta
-from typing import Sequence, Any
-
+from abc import ABCMeta, abstractmethod
+from typing import Any, Sequence
 
 from app.db.db import Database
 from app.db.entities.base import Base
@@ -11,21 +10,16 @@ class EntityService(metaclass=ABCMeta):
         self.database = database
 
     @abstractmethod
-    def find(self, *args: Any, **kwargs: Any) -> Sequence[Base]:
-        ...
+    def find(self, *args: Any, **kwargs: Any) -> Sequence[Base]: ...
 
     @abstractmethod
-    def get_one(self, *args: Any, **kwargs: Any) -> Base:
-        ...
+    def get_one(self, *args: Any, **kwargs: Any) -> Base: ...
 
     @abstractmethod
-    def add_one(self, *args: Any, **kwargs: Any) -> Base:
-        ...
+    def add_one(self, *args: Any, **kwargs: Any) -> Base: ...
 
     @abstractmethod
-    def update_one(self, *args: Any, **kwargs: Any) -> Base:
-        ...
+    def update_one(self, *args: Any, **kwargs: Any) -> Base: ...
 
     @abstractmethod
-    def delete_one(self, *args: Any, **kwargs: Any) -> None:
-        ...
+    def delete_one(self, *args: Any, **kwargs: Any) -> None: ...

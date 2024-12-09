@@ -6,15 +6,23 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from app.application import create_fastapi_app
-from app.config import set_config, get_config
+from app.config import get_config, set_config
 from app.db.db import Database
 from app.services.entity_services.endpoint_service import EndpointService
+from app.services.entity_services.healthcare_service_service import (
+    HealthcareServiceService,
+)
+from app.services.entity_services.organization_affiliation_service import (
+    OrganizationAffiliationService,
+)
 from app.services.entity_services.organization_service import OrganizationService
 from app.services.matching_care_service import MatchingCareService
 from app.services.supplier_service import SupplierService
-from app.services.entity_services.healthcare_service_service import HealthcareServiceService
-from app.services.entity_services.organization_affiliation_service import OrganizationAffiliationService
-from tests.test_config import get_test_config_with_postgres_db_connection, get_postgres_database, get_test_config
+from tests.test_config import (
+    get_postgres_database,
+    get_test_config,
+    get_test_config_with_postgres_db_connection,
+)
 
 
 @pytest.fixture
@@ -23,6 +31,7 @@ def postgres_app() -> Generator[FastAPI, None, None]:
     app = create_fastapi_app()
     yield app
     inject.clear()
+
 
 @pytest.fixture
 def sqlite_app() -> Generator[FastAPI, None, None]:
@@ -81,7 +90,9 @@ def endpoint_service(setup_postgres_database: Database) -> EndpointService:
 
 
 @pytest.fixture
-def healthcareservice_service(setup_postgres_database: Database) -> HealthcareServiceService:
+def healthcareservice_service(
+    setup_postgres_database: Database,
+) -> HealthcareServiceService:
     return HealthcareServiceService(setup_postgres_database)
 
 
@@ -91,7 +102,9 @@ def organization_service(setup_postgres_database: Database) -> OrganizationServi
 
 
 @pytest.fixture
-def organization_affiliation_service(setup_postgres_database: Database) -> OrganizationAffiliationService:
+def organization_affiliation_service(
+    setup_postgres_database: Database,
+) -> OrganizationAffiliationService:
     return OrganizationAffiliationService(setup_postgres_database)
 
 
@@ -116,13 +129,16 @@ def org_aff_endpoint() -> str:
 def endpoint_endpoint() -> str:
     return "/Endpoint"
 
+
 @pytest.fixture
 def healthcareservice_endpoint() -> str:
     return "/HealthcareService"
 
+
 @pytest.fixture
 def supplier_endpoint() -> str:
     return "/supplier"
+
 
 @pytest.fixture
 def override_ura() -> Generator[None, None, None]:

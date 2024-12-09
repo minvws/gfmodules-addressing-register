@@ -1,4 +1,12 @@
-from app.config import Config, ConfigApp, LogLevel, ConfigDatabase, ConfigUvicorn, ConfigTelemetry, ConfigStats
+from app.config import (
+    Config,
+    ConfigApp,
+    ConfigDatabase,
+    ConfigStats,
+    ConfigTelemetry,
+    ConfigUvicorn,
+    LogLevel,
+)
 from app.db.db import Database
 
 
@@ -11,7 +19,7 @@ def get_test_config(database: ConfigDatabase | None = None) -> Config:
             pool_size=5,
             max_overflow=10,
             pool_pre_ping=False,
-            pool_recycle=1
+            pool_recycle=1,
         )
 
     return Config(
@@ -38,12 +46,7 @@ def get_test_config(database: ConfigDatabase | None = None) -> Config:
             service_name=None,
             tracer_name=None,
         ),
-        stats=ConfigStats(
-            enabled=False,
-            host=None,
-            port=None,
-            module_name=None
-        )
+        stats=ConfigStats(enabled=False, host=None, port=None, module_name=None),
     )
 
 
@@ -59,7 +62,7 @@ def get_database_config_postgres_db() -> ConfigDatabase:
         pool_size=5,
         max_overflow=10,
         pool_pre_ping=False,
-        pool_recycle=1
+        pool_recycle=1,
     )
 
 

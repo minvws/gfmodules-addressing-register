@@ -6,7 +6,7 @@ from fhir.resources.R4B.bundle import Bundle
 from app.db.db import Database
 from app.services.entity_services.organization_service import OrganizationService
 from seeds.generate_data import DataGenerator
-from tests.utils import check_key_value, add_organization
+from tests.utils import add_organization, check_key_value
 
 
 @pytest.mark.parametrize(
@@ -46,7 +46,7 @@ def test_organization_routes(
 
 
 def test_delete_organization(
-        api_client: TestClient,
+    api_client: TestClient,
     org_endpoint: str,
     organization_service: OrganizationService,
 ) -> None:
@@ -56,7 +56,7 @@ def test_delete_organization(
 
 
 def test_update_organization(
-        api_client: TestClient,
+    api_client: TestClient,
     org_endpoint: str,
     organization_service: OrganizationService,
 ) -> None:
@@ -73,7 +73,7 @@ def test_update_organization(
 
 
 def test_organization_history(
-        api_client: TestClient,
+    api_client: TestClient,
     org_endpoint: str,
     organization_service: OrganizationService,
 ) -> None:
@@ -88,29 +88,34 @@ def test_organization_history(
     assert isinstance(bundle, Bundle)
 
     org_2 = add_organization(organization_service)
-    response = api_client.request("GET", f"{org_endpoint}/_history", # Since creation of 2nd org
-                                       params={"_since": org_2.data.get("meta").get("lastUpdated")}) # type: ignore
+    response = api_client.request(
+        "GET",
+        f"{org_endpoint}/_history",  # Since creation of 2nd org
+        params={"_since": org_2.data.get("meta").get("lastUpdated")},
+    )  # type: ignore
     assert response.status_code == 200
     bundle = Bundle(**response.json())
     assert isinstance(bundle, Bundle)
     assert bundle.type == "history"
-    assert bundle.total == 1 # Only org_2 as it was created later than org 1
-    assert bundle.entry[0].resource.id == org_2.fhir_id.__str__() # type: ignore
+    assert bundle.total == 1  # Only org_2 as it was created later than org 1
+    assert bundle.entry[0].resource.id == org_2.fhir_id.__str__()  # type: ignore
 
-    response = api_client.request("GET", f"{org_endpoint}/_history", # Since creation of 1st org
-                                       params={"_since": org.data.get("meta").get("lastUpdated")})   # type: ignore
+    response = api_client.request(
+        "GET",
+        f"{org_endpoint}/_history",  # Since creation of 1st org
+        params={"_since": org.data.get("meta").get("lastUpdated")},
+    )  # type: ignore
     assert response.status_code == 200
     bundle = Bundle(**response.json())
     assert isinstance(bundle, Bundle)
     assert bundle.type == "history"
-    assert bundle.total == 2 # Both, because since is time of creation of first org
-    assert bundle.entry[0].resource.id == org_2.fhir_id.__str__() # type: ignore
-    assert bundle.entry[1].resource.id == org.fhir_id.__str__() # type: ignore
-
+    assert bundle.total == 2  # Both, because since is time of creation of first org
+    assert bundle.entry[0].resource.id == org_2.fhir_id.__str__()  # type: ignore
+    assert bundle.entry[1].resource.id == org.fhir_id.__str__()  # type: ignore
 
 
 def test_organization_version(
-        api_client: TestClient,
+    api_client: TestClient,
     org_endpoint: str,
     organization_service: OrganizationService,
 ) -> None:

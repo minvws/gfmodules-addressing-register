@@ -4,11 +4,15 @@ from app.data import UraNumber
 from app.db.db import Database
 from app.db.entities.supplier_endpoint import SupplierEndpoint
 from app.db.repositories.suppliers_repository import SuppliersRepository
-from app.exceptions.service_exceptions import ResourceNotFoundException, ResourceNotAddedException
+from app.exceptions.service_exceptions import (
+    ResourceNotAddedException,
+    ResourceNotFoundException,
+)
 from app.models.supplier.dto import UpdateSupplierRequest
 from app.models.supplier.model import SupplierModel
 
 logger = logging.getLogger(__name__)
+
 
 class SupplierService:
     def __init__(self, database: Database):
@@ -26,7 +30,9 @@ class SupplierService:
         with self.database.get_db_session() as session:
             supply_repository = session.get_repository(SuppliersRepository)
             if supply_repository.get(str(supplier.ura_number)) is not None:
-                raise ResourceNotAddedException(detail="Care provider already has an update supplier endpoint set up, cannot have more than one")
+                raise ResourceNotAddedException(
+                    detail="Care provider already has an update supplier endpoint set up, cannot have more than one"
+                )
             new_supplier = SupplierEndpoint(
                 ura_number=str(supplier.ura_number),
                 care_provider_name=supplier.care_provider_name,

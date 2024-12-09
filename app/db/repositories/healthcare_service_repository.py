@@ -1,10 +1,10 @@
 import logging
-from datetime import datetime, UTC
-from typing import Sequence, Any, Dict
+from datetime import UTC, datetime
+from typing import Any, Dict, Sequence
 from uuid import UUID
 
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy import select, Boolean, func, cast, TIMESTAMP
+from sqlalchemy import TIMESTAMP, Boolean, cast, func, select
 from sqlalchemy.dialects.postgresql import JSONPATH
 from sqlalchemy.exc import DatabaseError
 
@@ -19,17 +19,20 @@ logger = logging.getLogger(__name__)
 @repository(HealthcareService)
 class HealthcareServiceRepository(RepositoryBase):
     def get_one(
-        self, **kwargs: bool|str|UUID|dict[str, str]
+        self, **kwargs: bool | str | UUID | dict[str, str]
     ) -> HealthcareService | None:
         stmt = (
             select(HealthcareService)
-            .where(HealthcareService.latest.__eq__(True), HealthcareService.deleted.__eq__(False))
+            .where(
+                HealthcareService.latest.__eq__(True),
+                HealthcareService.deleted.__eq__(False),
+            )
             .filter_by(**kwargs)
         )
         return self.db_session.session.execute(stmt).scalars().first()
 
     def get(
-        self, **kwargs: bool|str|UUID|dict[str, str]|int
+        self, **kwargs: bool | str | UUID | dict[str, str] | int
     ) -> HealthcareService | None:
         """
         does not apply filters on latest and deleted columns.
@@ -38,14 +41,14 @@ class HealthcareServiceRepository(RepositoryBase):
         return self.db_session.session.execute(stmt).scalars().first()
 
     def get_many(
-        self, **kwargs: bool|str|UUID|dict[str, str]
+        self, **kwargs: bool | str | UUID | dict[str, str]
     ) -> Sequence[HealthcareService]:
         stmt = select(HealthcareService).filter_by(**kwargs)
         return self.db_session.session.execute(stmt).scalars().all()
 
     def find(
         self,
-        **conditions: bool|str|UUID|dict[str, Any]|None,
+        **conditions: bool | str | UUID | dict[str, Any] | None,
     ) -> Sequence[HealthcareService]:
         stmt = select(HealthcareService)
         filter_conditions: list[Any] = []
@@ -61,34 +64,30 @@ class HealthcareServiceRepository(RepositoryBase):
 
         if "active" in conditions:
             filter_conditions.append(
-                HealthcareService.data["active"].astext.cast(Boolean) == conditions["active"]
+                HealthcareService.data["active"].astext.cast(Boolean)
+                == conditions["active"]
             )
 
         if "organization" in conditions:
             filter_conditions.append(
-                HealthcareService.data["providedBy"]["reference"].astext == "Organization/" + str(conditions["organization"])
+                HealthcareService.data["providedBy"]["reference"].astext
+                == "Organization/" + str(conditions["organization"])
             )
 
         if "service_type" in conditions:
             json_path = cast("$.type[*].coding[*] ? (@.code == $code)", JSONPATH)
             vars = func.jsonb_build_object("code", conditions["service_type"])
             filter_conditions.append(
-                func.jsonb_path_exists(
-                    HealthcareService.data,
-                    json_path,
-                    vars
-                )
+                func.jsonb_path_exists(HealthcareService.data, json_path, vars)
             )
 
         if "location" in conditions:
             json_path = cast("$.location[*] ? (@.reference == $location_ref)", JSONPATH)
-            vars = func.jsonb_build_object("location_ref", "Location/" + str(conditions["location"]))
+            vars = func.jsonb_build_object(
+                "location_ref", "Location/" + str(conditions["location"])
+            )
             filter_conditions.append(
-                func.jsonb_path_exists(
-                    HealthcareService.data,
-                    json_path,
-                    vars
-                )
+                func.jsonb_path_exists(HealthcareService.data, json_path, vars)
             )
 
         if "name" in conditions:
@@ -98,14 +97,22 @@ class HealthcareServiceRepository(RepositoryBase):
 
         if "sort_history" in conditions and conditions["sort_history"] is True:
             # sorted with oldest versions last
-            stmt = stmt.order_by(cast(HealthcareService.data['meta']['lastUpdated'].astext, TIMESTAMP(timezone=True)).desc(),
-                                 HealthcareService.version.desc())
+            stmt = stmt.order_by(
+                cast(
+                    HealthcareService.data["meta"]["lastUpdated"].astext,
+                    TIMESTAMP(timezone=True),
+                ).desc(),
+                HealthcareService.version.desc(),
+            )
 
         if "since" in conditions:
             filter_conditions.append(
-                cast(HealthcareService.data['meta']['lastUpdated'].astext, TIMESTAMP(timezone=True)) >= conditions["since"]
+                cast(
+                    HealthcareService.data["meta"]["lastUpdated"].astext,
+                    TIMESTAMP(timezone=True),
+                )
+                >= conditions["since"]
             )
-
 
         stmt = stmt.where(*filter_conditions)
         return self.db_session.session.execute(stmt).scalars().all()
@@ -117,7 +124,9 @@ class HealthcareServiceRepository(RepositoryBase):
             self.db_session.commit()
         except DatabaseError as e:
             self.db_session.rollback()
-            logging.error(f"Failed to add healthcare_service {healthcare_service.id}: {e}")
+            logging.error(
+                f"Failed to add healthcare_service {healthcare_service.id}: {e}"
+            )
             raise e
         return healthcare_service
 
@@ -134,7 +143,9 @@ class HealthcareServiceRepository(RepositoryBase):
             self.db_session.commit()
         except DatabaseError as e:
             self.db_session.rollback()
-            logging.error(f"Failed to delete healthcare_service {healthcare_service.id}: {e}")
+            logging.error(
+                f"Failed to delete healthcare_service {healthcare_service.id}: {e}"
+            )
             raise e
 
     def update(
@@ -159,12 +170,17 @@ class HealthcareServiceRepository(RepositoryBase):
             return entry
         except DatabaseError as e:
             self.db_session.rollback()
-            logging.error(f"Failed to update healthcare_service {healthcare_service.id}: {e}")
+            logging.error(
+                f"Failed to update healthcare_service {healthcare_service.id}: {e}"
+            )
             raise e
 
     def _update_entry_latest(self, healthcare_service: HealthcareService) -> None:
         (
             self.db_session.query(HealthcareService)
-            .filter(HealthcareService.fhir_id == healthcare_service.fhir_id, HealthcareService.latest)
+            .filter(
+                HealthcareService.fhir_id == healthcare_service.fhir_id,
+                HealthcareService.latest,
+            )
             .update({HealthcareService.latest: False})
         )

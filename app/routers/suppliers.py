@@ -28,16 +28,19 @@ router = APIRouter(
 def get(
     ura_number: UraNumberModel,
     supplying_service: SupplierService = Depends(get_supplying_service),
-    _: UraNumber = Depends(authenticated_ura)
+    _: UraNumber = Depends(authenticated_ura),
 ) -> SupplierModel:
     """
     Get the supplier's address by URA number. Authentication is done via UZI-server certificates
     """
     span = trace.get_current_span()
-    span.update_name(f"POST {router.prefix}/get-update-supplier ura_number={str(ura_number.ura_number)}")
+    span.update_name(
+        f"POST {router.prefix}/get-update-supplier ura_number={str(ura_number.ura_number)}"
+    )
     supplier = supplying_service.get_one(ura_number=ura_number.ura_number)
     span.set_attribute("data.supplier", str(supplier))
     return supplier
+
 
 @router.post(
     "",
@@ -48,7 +51,7 @@ def get(
 def post(
     supplier: SupplierModel,
     supplying_service: SupplierService = Depends(get_supplying_service),
-    _: UraNumber = Depends(authenticated_ura)
+    _: UraNumber = Depends(authenticated_ura),
 ) -> SupplierModel:
     """
     Adds an address to a supplier. Authentication is done via UZI-server certificates
@@ -60,17 +63,17 @@ def post(
     span.set_attribute("data.supplier", str(supplier))
     return supplier
 
+
 @router.patch(
     "",
     summary="Update an existing update supplier endpoint",
     response_model=SupplierModel,
     status_code=status.HTTP_200_OK,
-
 )
 def patch(
     supplier: UpdateSupplierRequest,
     supplying_service: SupplierService = Depends(get_supplying_service),
-    _: UraNumber = Depends(authenticated_ura)
+    _: UraNumber = Depends(authenticated_ura),
 ) -> SupplierModel:
     """
     Updates an address of a supplier. Authentication is done via UZI-server certificates
@@ -81,6 +84,7 @@ def patch(
     span.set_attribute("data.supplier", str(updated_supplier))
     return updated_supplier
 
+
 @router.delete(
     "",
     summary="Delete an existing update supplier endpoint",
@@ -89,7 +93,7 @@ def patch(
 def delete(
     ura_number: UraNumberModel,
     supplying_service: SupplierService = Depends(get_supplying_service),
-    _: UraNumber = Depends(authenticated_ura)
+    _: UraNumber = Depends(authenticated_ura),
 ) -> Response:
     """
     Deletes a supplier's address. Authentication is done via UZI-server certificates

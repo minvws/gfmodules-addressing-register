@@ -1,4 +1,4 @@
-from typing import Any, Type, Dict
+from typing import Any, Dict, Type
 
 from app.db.entities.base import Base
 from app.db.repositories.repository_base import RepositoryBase

@@ -19,11 +19,8 @@ def health(db: Database = Depends(container.get_database)) -> dict[str, Any]:
     logger.info("Checking database health")
 
     components = {
-        'database': ok_or_error(db.is_healthy()),
+        "database": ok_or_error(db.is_healthy()),
     }
     healthy = ok_or_error(all(value == "ok" for value in components.values()))
 
-    return {
-        "status": healthy,
-        "components": components
-    }
+    return {"status": healthy, "components": components}

@@ -3,19 +3,22 @@ from typing import Any, Optional
 from uuid import UUID
 
 from faker import Faker
+from fhir.resources.R4B.endpoint import Endpoint as FhirEndpoint
 
 from app.data import EndpointStatus, UraNumber
 from app.db.entities.endpoint.endpoint import Endpoint
 from app.db.entities.organization.organization import Organization
-from app.db.entities.organization_affiliation.organization_affiliation import OrganizationAffiliation
+from app.db.entities.organization_affiliation.organization_affiliation import (
+    OrganizationAffiliation,
+)
 from app.models.supplier.model import SupplierModel
 from app.services.entity_services.endpoint_service import EndpointService
+from app.services.entity_services.organization_affiliation_service import (
+    OrganizationAffiliationService,
+)
 from app.services.entity_services.organization_service import OrganizationService
-from app.services.entity_services.organization_affiliation_service import OrganizationAffiliationService
 from app.services.supplier_service import SupplierService
 from seeds.generate_data import DataGenerator
-from fhir.resources.R4B.endpoint import Endpoint as FhirEndpoint
-
 
 fake = Faker("nl_nl")
 
@@ -48,13 +51,15 @@ def check_key_value(
         return any(check_key_value(item, key_to_check, value_to_check) for item in data)
 
 
-def create_supplier(ura_number: str = "12345678",
-                 care_provider_name: str = "test",
-                 update_supplier_endpoint: str = "test") -> SupplierModel:
+def create_supplier(
+    ura_number: str = "12345678",
+    care_provider_name: str = "test",
+    update_supplier_endpoint: str = "test",
+) -> SupplierModel:
     return SupplierModel(
         ura_number=UraNumber(ura_number),
         care_provider_name=care_provider_name,
-        update_supplier_endpoint=update_supplier_endpoint
+        update_supplier_endpoint=update_supplier_endpoint,
     )
 
 
@@ -71,7 +76,7 @@ def add_organization(
     name: Optional[str] = None,
     uuid: Optional[str] = None,
     endpoint_id: Optional[UUID] = None,
-    part_of: Optional[UUID] = None
+    part_of: Optional[UUID] = None,
 ) -> Organization:
     dg = DataGenerator()
     return organization_service.add_one(
@@ -88,7 +93,9 @@ def add_organization_affiliation(
 ) -> OrganizationAffiliation:
     dg = DataGenerator()
     return organization_affiliation_service.add_one(
-        dg.generate_organization_affiliation(active, organization, participation_organization)
+        dg.generate_organization_affiliation(
+            active, organization, participation_organization
+        )
     )
 
 
@@ -100,15 +107,19 @@ def add_endpoint(
     org_fhir_id: Optional[UUID] = None,
     name: Optional[str] = None,
     endpoint_url: Optional[str] = None,
-    complete_endpoint: FhirEndpoint|None = None
+    complete_endpoint: FhirEndpoint | None = None,
 ) -> Endpoint:
     dg = DataGenerator()
-    return endpoint_service.add_one(
-        dg.generate_endpoint(
-            org_fhir_id=org_fhir_id,
-            status=str(status),
-            name=name,
-            uuid_identifier=uuid,
-            endpoint_url=endpoint_url,
+    return (
+        endpoint_service.add_one(
+            dg.generate_endpoint(
+                org_fhir_id=org_fhir_id,
+                status=str(status),
+                name=name,
+                uuid_identifier=uuid,
+                endpoint_url=endpoint_url,
+            )
         )
-    ) if complete_endpoint is None else endpoint_service.add_one(complete_endpoint)
+        if complete_endpoint is None
+        else endpoint_service.add_one(complete_endpoint)
+    )

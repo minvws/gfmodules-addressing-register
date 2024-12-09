@@ -1,5 +1,5 @@
 import time
-from typing import Callable, Awaitable
+from typing import Awaitable, Callable
 
 import statsd
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -80,11 +80,14 @@ class StatsdMiddleware(BaseHTTPMiddleware):
     """
     Middleware to record request info and response time for each request
     """
+
     def __init__(self, app: ASGIApp, module_name: str):
         super().__init__(app)
         self.module_name = module_name
 
-    async def dispatch(self, request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
+    async def dispatch(
+        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
         key = f"{self.module_name}.http.request.{request.method.lower()}.{request.url.path}"
         get_stats().inc(key)
 
@@ -96,4 +99,3 @@ class StatsdMiddleware(BaseHTTPMiddleware):
         get_stats().timing(f"{self.module_name}.http.response_time", response_time)
 
         return response
-

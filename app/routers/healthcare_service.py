@@ -1,24 +1,35 @@
 import logging
-from uuid import UUID
 from typing import Any, Dict
+from uuid import UUID
 
 from fastapi import APIRouter, Depends
-from fhir.resources.R4B.healthcareservice import HealthcareService as FhirHealthcareService
+from fhir.resources.R4B.healthcareservice import (
+    HealthcareService as FhirHealthcareService,
+)
 from starlette.responses import Response
 
 from app.container import get_healthcare_service_service
+from app.exceptions.service_exceptions import (
+    InvalidResourceException,
+    ResourceNotFoundException,
+)
+from app.mappers.fhir_mapper import (
+    BundleType,
+    create_bundle_entries,
+    create_fhir_bundle,
+)
 from app.params.healthcare_service_query_params import HealthcareServiceQueryParams
-from app.services.entity_services.healthcare_service_service import HealthcareServiceService
-from app.exceptions.service_exceptions import InvalidResourceException
-from app.mappers.fhir_mapper import create_fhir_bundle, BundleType, create_bundle_entries
-from app.exceptions.service_exceptions import ResourceNotFoundException
-from app.routers.utils import FhirEntityResponse, FhirBundleResponse
+from app.routers.utils import FhirBundleResponse, FhirEntityResponse
+from app.services.entity_services.healthcare_service_service import (
+    HealthcareServiceService,
+)
 
 logger = logging.getLogger(__name__)
 router = APIRouter(
     prefix="/HealthcareService",
     tags=["Healthcare Service"],
 )
+
 
 @router.post("")
 def create(
@@ -39,6 +50,7 @@ def create(
 
     entry = service.add_one(fhir_data)
     return FhirEntityResponse(entry, status_code=201)
+
 
 @router.get("/_search")
 def find(
@@ -67,7 +79,9 @@ def update(
         raise ResourceNotFoundException("Healthcare Service resource is invalid")
 
     if _id != UUID(fhir_data.id):
-        logging.error(f"Healthcare Service ID not found in healthcare service resource: {_id}")
+        logging.error(
+            f"Healthcare Service ID not found in healthcare service resource: {_id}"
+        )
         raise InvalidResourceException(
             "Healthcare Service ID not found in healthcare service resource"
         )
@@ -93,7 +107,8 @@ def delete(
     )
 
 
-@router.get("/{_id}/_history/{version_id}",
+@router.get(
+    "/{_id}/_history/{version_id}",
     summary="Find a specific history version for the given resource",
 )
 def get_history_version(
@@ -108,14 +123,17 @@ def get_history_version(
 
     return FhirEntityResponse(entry)
 
-@router.get("/{_id}/_history",
+
+@router.get(
+    "/{_id}/_history",
     summary="Find all versions for the given resource",
 )
-@router.get("/_history",
+@router.get(
+    "/_history",
     summary="Find all versions for the all resources",
 )
 def get_history(
-    _id: UUID|None = None,
+    _id: UUID | None = None,
     service: HealthcareServiceService = Depends(get_healthcare_service_service),
 ) -> Response:
     if _id is None:

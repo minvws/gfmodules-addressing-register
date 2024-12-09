@@ -1,10 +1,9 @@
-from typing import TypeVar, Dict, Any
+from typing import Any, Dict, TypeVar
 
 from sqlalchemy.orm import DeclarativeBase
 
 
 class Base(DeclarativeBase):
-
     def to_dict(self) -> Dict[str, Any]:
         return {col.name: getattr(self, col.name) for col in self.__table__.columns}
 

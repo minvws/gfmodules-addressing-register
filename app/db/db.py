@@ -1,7 +1,7 @@
 import logging
 import subprocess
 
-from sqlalchemy import create_engine, text, StaticPool, Table
+from sqlalchemy import StaticPool, Table, create_engine, text
 from sqlalchemy.orm import Session
 
 from app.config import ConfigDatabase
@@ -20,9 +20,9 @@ class Database:
             if self._SQLITE_PREFIX in config.dsn:
                 self.engine = create_engine(
                     config.dsn,
-                    connect_args={'check_same_thread': False},
+                    connect_args={"check_same_thread": False},
                     # This + static pool is needed for sqlite in-memory tables
-                    poolclass=StaticPool
+                    poolclass=StaticPool,
                 )
             else:
                 self.engine = create_engine(
@@ -31,7 +31,7 @@ class Database:
                     pool_pre_ping=config.pool_pre_ping,
                     pool_recycle=config.pool_recycle,
                     pool_size=config.pool_size,
-                    max_overflow=config.max_overflow
+                    max_overflow=config.max_overflow,
                 )
         except BaseException as e:
             logger.error("Error while connecting to database: %s", e)
@@ -39,7 +39,10 @@ class Database:
 
         if config.create_tables:
             if self._SQLITE_PREFIX in config.dsn:
-                Base.metadata.create_all(self.engine, tables=[Table("supplier_endpoints", SupplierEndpoint.metadata)])
+                Base.metadata.create_all(
+                    self.engine,
+                    tables=[Table("supplier_endpoints", SupplierEndpoint.metadata)],
+                )
             else:
                 self.generate_tables()
 
@@ -47,21 +50,23 @@ class Database:
     def generate_tables() -> None:
         # TODO: Only for testing purposes
         logger.info("Generating tables...")
-        migrate_command = "tools/./migrate_db.sh addressing_db postgres postgres testing"
+        migrate_command = (
+            "tools/./migrate_db.sh addressing_db postgres postgres testing"
+        )
         out = subprocess.run(migrate_command.split(), capture_output=True)
-        logger.info(out.stdout.decode('utf-8'))
+        logger.info(out.stdout.decode("utf-8"))
 
     def truncate_tables(self) -> None:
         tables = [
-            'organization_affiliations',
-            'endpoints',
-            'organizations',
-            'supplier_endpoints',
-            'healthcare_services',
+            "organization_affiliations",
+            "endpoints",
+            "organizations",
+            "supplier_endpoints",
+            "healthcare_services",
         ]
 
         with self.get_db_session() as session:
-            session.execute(text('TRUNCATE TABLE ' + ', '.join(tables)))
+            session.execute(text("TRUNCATE TABLE " + ", ".join(tables)))
             session.commit()
 
     def is_healthy(self) -> bool:

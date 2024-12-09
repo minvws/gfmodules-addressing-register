@@ -1,18 +1,31 @@
 import logging
-from typing import Any, Annotated, Dict
+from typing import Annotated, Any, Dict
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Body
-from fhir.resources.R4B.organizationaffiliation import OrganizationAffiliation as FhirOrganizationAffiliation
+from fastapi import APIRouter, Body, Depends
+from fhir.resources.R4B.organizationaffiliation import (
+    OrganizationAffiliation as FhirOrganizationAffiliation,
+)
 from starlette.responses import Response
 
 from app.container import get_organization_affiliation_service
-from app.services.entity_services.organization_affiliation_service import OrganizationAffiliationService
-from app.exceptions.service_exceptions import ResourceNotFoundException, InvalidResourceException
-from app.routers.utils import FhirEntityResponse, FhirBundleResponse
-from app.mappers.fhir_mapper import BundleType, create_bundle_entries, create_fhir_bundle
-from app.params.organization_affiliation_query_params import OrganizationAffiliationQueryParams
+from app.exceptions.service_exceptions import (
+    InvalidResourceException,
+    ResourceNotFoundException,
+)
+from app.mappers.fhir_mapper import (
+    BundleType,
+    create_bundle_entries,
+    create_fhir_bundle,
+)
 from app.params.history_query_params import HistoryRequest
+from app.params.organization_affiliation_query_params import (
+    OrganizationAffiliationQueryParams,
+)
+from app.routers.utils import FhirBundleResponse, FhirEntityResponse
+from app.services.entity_services.organization_affiliation_service import (
+    OrganizationAffiliationService,
+)
 
 logger = logging.getLogger(__name__)
 router = APIRouter(
@@ -20,10 +33,13 @@ router = APIRouter(
     tags=["Organization Affiliation"],
 )
 
+
 @router.post("")
 async def create(
     data: Annotated[Dict[str, Any], Body()],
-    service: OrganizationAffiliationService = Depends(get_organization_affiliation_service),
+    service: OrganizationAffiliationService = Depends(
+        get_organization_affiliation_service
+    ),
 ) -> Response:
     fhir_data = FhirOrganizationAffiliation(**data)
     if fhir_data is None:
@@ -44,13 +60,18 @@ async def create(
 @router.get("/_search")
 def find(
     query_params: OrganizationAffiliationQueryParams = Depends(),
-    service: OrganizationAffiliationService = Depends(get_organization_affiliation_service),
+    service: OrganizationAffiliationService = Depends(
+        get_organization_affiliation_service
+    ),
 ) -> Response:
     entries = list(service.find(query_params.model_dump()))
 
-    if query_params.include is not None and query_params.include == "OrganizationAffiliation.endpoint":
+    if (
+        query_params.include is not None
+        and query_params.include == "OrganizationAffiliation.endpoint"
+    ):
         endpoint_entities = service.get_endpoints(entries)
-        entries.extend(endpoint_entities) # type: ignore
+        entries.extend(endpoint_entities)  # type: ignore
 
     bundle = create_fhir_bundle(
         bundled_entries=create_bundle_entries(entries, with_req_resp=False),
@@ -64,7 +85,9 @@ def find(
 def update(
     _id: UUID,
     data: Dict[str, Any],
-    service: OrganizationAffiliationService = Depends(get_organization_affiliation_service),
+    service: OrganizationAffiliationService = Depends(
+        get_organization_affiliation_service
+    ),
 ) -> Response:
     fhir_data = FhirOrganizationAffiliation(**data)
     if fhir_data is None:
@@ -84,7 +107,9 @@ def update(
 @router.delete("/{_id}")
 def delete(
     _id: UUID,
-    service: OrganizationAffiliationService = Depends(get_organization_affiliation_service),
+    service: OrganizationAffiliationService = Depends(
+        get_organization_affiliation_service
+    ),
 ) -> Response:
     if not service.get_one(_id):
         logger.error(f"Organization Affiliate resource is invalid: {_id}")
@@ -98,13 +123,16 @@ def delete(
     )
 
 
-@router.get("/{_id}/_history/{version_id}",
+@router.get(
+    "/{_id}/_history/{version_id}",
     summary="Find a specific history version for the given resource",
 )
 def get_history_version(
     _id: UUID,
     version_id: int,
-    service: OrganizationAffiliationService = Depends(get_organization_affiliation_service),
+    service: OrganizationAffiliationService = Depends(
+        get_organization_affiliation_service
+    ),
 ) -> Response:
     entry = service.get_one_version(resource_id=_id, version_id=version_id)
     if entry is None:
@@ -113,16 +141,21 @@ def get_history_version(
 
     return FhirEntityResponse(entry)
 
-@router.get("/{_id}/_history",
+
+@router.get(
+    "/{_id}/_history",
     summary="Find all versions for the given resource",
 )
-@router.get("/_history",
+@router.get(
+    "/_history",
     summary="Find all versions for the all resources",
 )
 def get_history(
-    _id: UUID|None = None,
+    _id: UUID | None = None,
     _since: HistoryRequest = Depends(),
-    service: OrganizationAffiliationService = Depends(get_organization_affiliation_service),
+    service: OrganizationAffiliationService = Depends(
+        get_organization_affiliation_service
+    ),
 ) -> Response:
     if _id is None:
         # Fetch all history entries
@@ -142,7 +175,9 @@ def get_history(
 @router.get("/{_id}")
 def get(
     _id: UUID,
-    service: OrganizationAffiliationService = Depends(get_organization_affiliation_service),
+    service: OrganizationAffiliationService = Depends(
+        get_organization_affiliation_service
+    ),
 ) -> Response:
     entry = service.get_one(_id)
     if entry is None:

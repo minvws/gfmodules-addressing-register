@@ -1,7 +1,8 @@
 from datetime import datetime
 from typing import Literal
 
-from pydantic import Field, AliasChoices
+from pydantic import AliasChoices, Field
+
 from app.params.common_query_params import CommonQueryParams
 
 
@@ -14,10 +15,7 @@ class OrganizationAffiliationQueryParams(CommonQueryParams):
     name: str | None = None
     participating_organization: str | None = None
     primary_organization: str | None = None
-    specialty: Literal[
-        "Radiology",
-        None
-    ] = None
+    specialty: Literal["Radiology", None] = None
     role: Literal[
         "BM",
         "provider",

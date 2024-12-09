@@ -1,15 +1,18 @@
-from datetime import datetime, UTC
-from typing import Dict, Any, Optional
+from datetime import UTC, datetime
+from typing import Any, Dict, Optional
 from uuid import UUID, uuid4
 
-from sqlalchemy import TIMESTAMP, types, BOOLEAN, INTEGER
+from sqlalchemy import BOOLEAN, INTEGER, TIMESTAMP, types
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 
 class BaseMixin:
     created_at: Mapped[datetime] = mapped_column(
-        "created_at", TIMESTAMP(timezone=True), nullable=False, default=datetime.now(UTC)
+        "created_at",
+        TIMESTAMP(timezone=True),
+        nullable=False,
+        default=datetime.now(UTC),
     )
     modified_at: Mapped[datetime] = mapped_column(
         "modified_at",

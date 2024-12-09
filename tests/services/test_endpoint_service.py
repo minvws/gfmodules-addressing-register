@@ -44,7 +44,9 @@ def test_add_one_correctly_adds_endpoint_with_managing_org(
     expected = dg.generate_endpoint(org_fhir_id=org.fhir_id)
     actual = endpoint_service.add_one(expected)
     assert actual.data.get("address") == expected.address  # type: ignore
-    assert actual.data.get("managingOrganization") == {"reference": f"Organization/{org.fhir_id}"}  # type: ignore
+    assert actual.data.get("managingOrganization") == {
+        "reference": f"Organization/{org.fhir_id}"
+    }  # type: ignore
 
 
 def test_add_one_fails_correctly_when_managing_org_does_not_exist(
@@ -117,7 +119,9 @@ def test_update_one_fails_correctly_managing_org_is_not_found(
     )
     random_id = uuid4()
     with raises(ResourceNotFoundException):
-        broken_resource.managingOrganization = {"reference": f"Organization/{random_id}"}  # type: ignore
+        broken_resource.managingOrganization = {
+            "reference": f"Organization/{random_id}"
+        }  # type: ignore
         endpoint_service.update_one(
             endpoint_id=old_endpoint.fhir_id, endpoint_fhir=broken_resource
         )

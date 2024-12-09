@@ -1,10 +1,10 @@
 import logging
 from datetime import datetime
-from typing import Sequence, Any, Dict
+from typing import Any, Dict, Sequence
 from uuid import UUID
 
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy import select, Boolean, or_, func, literal_column, cast, TIMESTAMP
+from sqlalchemy import TIMESTAMP, Boolean, cast, func, literal_column, or_, select
 from sqlalchemy.exc import DatabaseError
 
 from app.db.decorator import repository
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 @repository(Organization)
 class OrganizationsRepository(RepositoryBase):
     def get_one(
-        self, **kwargs: bool|str|UUID|dict[str, str]
+        self, **kwargs: bool | str | UUID | dict[str, str]
     ) -> Organization | None:
         stmt = (
             select(Organization)
@@ -28,7 +28,7 @@ class OrganizationsRepository(RepositoryBase):
         return self.db_session.session.execute(stmt).scalars().first()
 
     def get(
-        self, **kwargs: bool|str|UUID|dict[str, str]|int
+        self, **kwargs: bool | str | UUID | dict[str, str] | int
     ) -> Organization | None:
         """
         does not apply filters on latest and deleted columns.
@@ -37,13 +37,13 @@ class OrganizationsRepository(RepositoryBase):
         return self.db_session.session.execute(stmt).scalars().first()
 
     def get_many(
-        self, **kwargs: bool|str|UUID|dict[str, str]
+        self, **kwargs: bool | str | UUID | dict[str, str]
     ) -> Sequence[Organization]:
         stmt = select(Organization).filter_by(**kwargs)
         return self.db_session.session.execute(stmt).scalars().all()
 
     def find(
-        self, **conditions: bool|str|UUID|dict[str, Any]|None|datetime
+        self, **conditions: bool | str | UUID | dict[str, Any] | None | datetime
     ) -> Sequence[Organization]:
         stmt = select(Organization)
         filter_conditions: list[Any] = []
@@ -88,7 +88,8 @@ class OrganizationsRepository(RepositoryBase):
         if "part_of" in conditions:
             ref_id = str(conditions["part_of"])
             filter_conditions.append(
-                Organization.data["partOf"]["reference"].astext == f"Organization/{ref_id}"
+                Organization.data["partOf"]["reference"].astext
+                == f"Organization/{ref_id}"
             )
 
         if "phonetic" in conditions:
@@ -103,19 +104,30 @@ class OrganizationsRepository(RepositoryBase):
 
         if "sort_history" in conditions and conditions["sort_history"] is True:
             # sorted with oldest versions last
-            stmt = stmt.order_by(cast(Organization.data['meta']['lastUpdated'].astext, TIMESTAMP(timezone=True)).desc(),
-                                 Organization.version.desc())
+            stmt = stmt.order_by(
+                cast(
+                    Organization.data["meta"]["lastUpdated"].astext,
+                    TIMESTAMP(timezone=True),
+                ).desc(),
+                Organization.version.desc(),
+            )
 
         if "since" in conditions:
             filter_conditions.append(
-                cast(Organization.data['meta']['lastUpdated'].astext, TIMESTAMP(timezone=True)) >= conditions["since"]
+                cast(
+                    Organization.data["meta"]["lastUpdated"].astext,
+                    TIMESTAMP(timezone=True),
+                )
+                >= conditions["since"]
             )
 
         stmt = stmt.where(*filter_conditions)
         return self.db_session.session.execute(stmt).scalars().all()
 
     @staticmethod
-    def _add_address_filter_conditions(stmt: Any, **conditions: bool | str | UUID | dict[str, Any]|datetime|None) -> Any:
+    def _add_address_filter_conditions(
+        stmt: Any, **conditions: bool | str | UUID | dict[str, Any] | datetime | None
+    ) -> Any:
         if "address" in conditions:
             stmt = stmt.select_from(
                 Organization,
@@ -193,10 +205,7 @@ class OrganizationsRepository(RepositoryBase):
                 func.jsonb_array_elements(Organization.data["address"]).alias(
                     "address"
                 ),
-            ).where(
-                literal_column("address ->> 'use'")
-                == conditions["address_use"]
-            )
+            ).where(literal_column("address ->> 'use'") == conditions["address_use"])
         return stmt
 
     def create(self, organization: Organization) -> Organization:
