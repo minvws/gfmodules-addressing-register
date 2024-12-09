@@ -34,9 +34,7 @@ def get(
     Get the supplier's address by URA number. Authentication is done via UZI-server certificates
     """
     span = trace.get_current_span()
-    span.update_name(
-        f"POST {router.prefix}/get-update-supplier ura_number={str(ura_number.ura_number)}"
-    )
+    span.update_name(f"POST {router.prefix}/get-update-supplier ura_number={str(ura_number.ura_number)}")
     supplier = supplying_service.get_one(ura_number=ura_number.ura_number)
     span.set_attribute("data.supplier", str(supplier))
     return supplier

@@ -13,12 +13,8 @@ class BundleType(str, Enum):
     HISTORY = "history"
 
 
-def create_fhir_bundle(
-    bundled_entries: list[BundleEntry], bundle_type: BundleType = BundleType.SEARCHSET
-) -> Bundle:
-    return Bundle.construct(
-        type=bundle_type, entry=bundled_entries, total=len(bundled_entries)
-    )
+def create_fhir_bundle(bundled_entries: list[BundleEntry], bundle_type: BundleType = BundleType.SEARCHSET) -> Bundle:
+    return Bundle.construct(type=bundle_type, entry=bundled_entries, total=len(bundled_entries))
 
 
 def create_bundle_entries(
@@ -28,9 +24,7 @@ def create_bundle_entries(
     listing = []
     for entry in entries:
         if entry.bundle_meta is None:
-            raise ResourceNotFoundException(
-                f"Entry {entry.fhir_id} bundle meta not found"
-            )
+            raise ResourceNotFoundException(f"Entry {entry.fhir_id} bundle meta not found")
 
         params = {
             "fullUrl": Uri(f"{entry.fhir_id}/_history/{entry.version}"),

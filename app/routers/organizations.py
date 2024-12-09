@@ -26,9 +26,7 @@ def create_organization(
     fhir_data = FhirOrganization(**data)
     if fhir_data.id is not None:
         logging.error("Organization ID cannot be in the resource")
-        raise InvalidResourceException(
-            "Organization ID cannot be in the organization resource"
-        )
+        raise InvalidResourceException("Organization ID cannot be in the organization resource")
 
     return service.add_one(fhir_data).data
 
@@ -57,9 +55,7 @@ def update_organization(
     fhir_data = FhirOrganization(**data)
     if fhir_data.id is None:
         logging.error("Organization ID not found in organization resource")
-        raise InvalidResourceException(
-            "Organization ID not found in organization resource"
-        )
+        raise InvalidResourceException("Organization ID not found in organization resource")
 
     if _id != UUID(fhir_data.id):
         logging.error("Organization ID in the resource does not match the URL")

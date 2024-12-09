@@ -32,9 +32,7 @@ def test_healthcareservice_routes(
 ) -> None:
     setup_postgres_database.truncate_tables()
 
-    expected = generate_entity(
-        uuid.UUID("2f6c9432-a495-4112-be1b-134bc4656f1f"), healthcareservice_service
-    )
+    expected = generate_entity(uuid.UUID("2f6c9432-a495-4112-be1b-134bc4656f1f"), healthcareservice_service)
     url_endpoint = healthcareservice_endpoint + url_suffix.format(id=expected.id)
     response = api_client.get(url_endpoint)
 
@@ -55,19 +53,13 @@ def test_delete_endpoint(
     healthcareservice_endpoint: str,
     healthcareservice_service: HealthcareServiceService,
 ) -> None:
-    expected = generate_entity(
-        uuid.UUID("8235f9d5-1d03-4b37-b5fd-a69cdb2dc940"), healthcareservice_service
-    )
+    expected = generate_entity(uuid.UUID("8235f9d5-1d03-4b37-b5fd-a69cdb2dc940"), healthcareservice_service)
 
-    response = api_client.request(
-        "DELETE", f"{healthcareservice_endpoint}/{expected.fhir_id}"
-    )
+    response = api_client.request("DELETE", f"{healthcareservice_endpoint}/{expected.fhir_id}")
     assert response.status_code == 204
 
     # Next delete attempt should return 404
-    response = api_client.request(
-        "DELETE", f"{healthcareservice_endpoint}/{expected.fhir_id}"
-    )
+    response = api_client.request("DELETE", f"{healthcareservice_endpoint}/{expected.fhir_id}")
     assert response.status_code == 404
 
 
@@ -107,9 +99,7 @@ def test_update_endpoint(
     assert response.headers["etag"] == 'W/"3"'
 
     # New entry with different ID triggers just a new entry with version 1
-    new_entity = generate_entity(
-        uuid.UUID("455a4011-d553-4166-be9f-043f4ff5bea2"), healthcareservice_service
-    )
+    new_entity = generate_entity(uuid.UUID("455a4011-d553-4166-be9f-043f4ff5bea2"), healthcareservice_service)
     new_entity.comment = "New element"  # type: ignore
     response = api_client.put(
         f"{healthcareservice_endpoint}/{str(new_entity.fhir_id)}",
@@ -132,9 +122,7 @@ def test_history_endpoint(
     generate_entity(id, healthcareservice_service, comment="Second version")
     generate_entity(id, healthcareservice_service, comment="Third version")
 
-    response = api_client.request(
-        "GET", f"{healthcareservice_endpoint}/{str(id)}/_history"
-    )
+    response = api_client.request("GET", f"{healthcareservice_endpoint}/{str(id)}/_history")
     assert response.status_code == 200
     data = response.json()
     print(data)
@@ -150,9 +138,7 @@ def test_history_endpoint(
     bundle = Bundle(**data)
     assert isinstance(bundle, Bundle)
 
-    response = api_client.request(
-        "GET", f"{healthcareservice_endpoint}/{str(id)}/_history/2"
-    )
+    response = api_client.request("GET", f"{healthcareservice_endpoint}/{str(id)}/_history/2")
     assert response.status_code == 200
     assert response.headers["etag"] == 'W/"2"'
     data = response.json()
@@ -160,9 +146,7 @@ def test_history_endpoint(
     assert data["comment"] == "Second version"
 
 
-def generate_entity(
-    id: UUID, service: HealthcareServiceService, comment: str | None = None
-) -> HealthcareService:
+def generate_entity(id: UUID, service: HealthcareServiceService, comment: str | None = None) -> HealthcareService:
     """
     Generate a new entity and insert it into the database. If the entity already exists, update it by adding a new
     version with the same ID

@@ -44,9 +44,7 @@ def test_add_one_correctly_adds_endpoint_with_managing_org(
     expected = dg.generate_endpoint(org_fhir_id=org.fhir_id)
     actual = endpoint_service.add_one(expected)
     assert actual.data.get("address") == expected.address  # type: ignore
-    assert actual.data.get("managingOrganization") == {
-        "reference": f"Organization/{org.fhir_id}"
-    }  # type: ignore
+    assert actual.data.get("managingOrganization") == {"reference": f"Organization/{org.fhir_id}"}  # type: ignore
 
 
 def test_add_one_fails_correctly_when_managing_org_does_not_exist(
@@ -64,10 +62,7 @@ def test_delete_one_correctly_deletes_endpoint(
     endpoint_service: EndpointService,
 ) -> None:
     expected = add_endpoint(endpoint_service)
-    assert (
-        endpoint_service.get_one(endpoint_id=expected.fhir_id).fhir_id.__str__()
-        == expected.fhir_id.__str__()
-    )
+    assert endpoint_service.get_one(endpoint_id=expected.fhir_id).fhir_id.__str__() == expected.fhir_id.__str__()
     endpoint_service.delete_one(endpoint_id=expected.fhir_id)
     with raises(ResourceNotFoundException) as exc_info:
         endpoint_service.get_one(endpoint_id=expected.fhir_id)
@@ -89,9 +84,7 @@ def test_update_one_correctly_updates_endpoint(
     dg = DataGenerator()
     expected = dg.generate_endpoint(name="test_name")
     old_endpoint = add_endpoint(endpoint_service, complete_endpoint=expected.copy())
-    actual = endpoint_service.update_one(
-        endpoint_id=old_endpoint.fhir_id, endpoint_fhir=expected
-    )
+    actual = endpoint_service.update_one(endpoint_id=old_endpoint.fhir_id, endpoint_fhir=expected)
     assert old_endpoint.fhir_id.__str__() == actual.fhir_id.__str__()
     assert actual.data.get("name") == "test_name"  # type: ignore
 
@@ -102,9 +95,7 @@ def test_update_one_fails_correctly_when_endpoint_does_not_exist(
     dg = DataGenerator()
     random_id = uuid4()
     with raises(ResourceNotFoundException) as exc_info:
-        endpoint_service.update_one(
-            endpoint_id=random_id, endpoint_fhir=dg.generate_endpoint()
-        )
+        endpoint_service.update_one(endpoint_id=random_id, endpoint_fhir=dg.generate_endpoint())
     assert f"Endpoint not found for {random_id}" in str(exc_info.value)
 
 
@@ -114,17 +105,11 @@ def test_update_one_fails_correctly_managing_org_is_not_found(
     setup_postgres_database.truncate_tables()
     dg = DataGenerator()
     broken_resource = dg.generate_endpoint()
-    old_endpoint = add_endpoint(
-        endpoint_service, complete_endpoint=broken_resource.copy()
-    )
+    old_endpoint = add_endpoint(endpoint_service, complete_endpoint=broken_resource.copy())
     random_id = uuid4()
     with raises(ResourceNotFoundException):
-        broken_resource.managingOrganization = {
-            "reference": f"Organization/{random_id}"
-        }  # type: ignore
-        endpoint_service.update_one(
-            endpoint_id=old_endpoint.fhir_id, endpoint_fhir=broken_resource
-        )
+        broken_resource.managingOrganization = {"reference": f"Organization/{random_id}"}  # type: ignore
+        endpoint_service.update_one(endpoint_id=old_endpoint.fhir_id, endpoint_fhir=broken_resource)
 
 
 def test_find_should_succeed_when_a_criteria_is_met(
@@ -133,9 +118,7 @@ def test_find_should_succeed_when_a_criteria_is_met(
     setup_postgres_database.truncate_tables()
     dg = DataGenerator()
     mock_endpoint = dg.generate_endpoint(name="test_name")
-    expected_endpoint = add_endpoint(
-        endpoint_service, complete_endpoint=mock_endpoint.copy()
-    )
+    expected_endpoint = add_endpoint(endpoint_service, complete_endpoint=mock_endpoint.copy())
 
     actual = endpoint_service.find(name="test_name")
     assert len(actual) == 1

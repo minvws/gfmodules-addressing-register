@@ -47,9 +47,7 @@ def not_raise(validation_error: Type[Exception]) -> Generator[None, Any, Any]:
     ],
 )
 def test_correct_query_params_should_succeed(expected_params: dict[str, Any]) -> None:
-    actual_params = (OrganizationQueryParams(**expected_params)).model_dump(
-        exclude_none=True
-    )
+    actual_params = (OrganizationQueryParams(**expected_params)).model_dump(exclude_none=True)
     assert expected_params == actual_params
 
 

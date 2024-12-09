@@ -29,9 +29,7 @@ def test_organization_routes(
 ) -> None:
     setup_postgres_database.truncate_tables()
     expected = add_organization(organization_service)
-    endpoint = org_endpoint + endpoint_suffix.format(
-        id=expected.fhir_id, ura=expected.ura_number
-    )
+    endpoint = org_endpoint + endpoint_suffix.format(id=expected.fhir_id, ura=expected.ura_number)
     response = api_client.get(endpoint)
     assert response.status_code == 200
     data = response.json()
@@ -64,9 +62,7 @@ def test_update_organization(
     dg = DataGenerator()
     new_org = dg.generate_organization(ura_number=old.ura_number)
     new_org.id = str(old.fhir_id)  # type: ignore
-    response = api_client.put(
-        f"{org_endpoint}/{old.fhir_id}", json=dict(jsonable_encoder(new_org.dict()))
-    )
+    response = api_client.put(f"{org_endpoint}/{old.fhir_id}", json=dict(jsonable_encoder(new_org.dict())))
     assert response.status_code == 200
     updated_data = response.json()
     assert updated_data["id"] == old.fhir_id.__str__()
@@ -120,9 +116,7 @@ def test_organization_version(
     organization_service: OrganizationService,
 ) -> None:
     org = add_organization(organization_service)
-    response = api_client.request(
-        "GET", f"{org_endpoint}/{org.fhir_id}/_history/{org.version}"
-    )
+    response = api_client.request("GET", f"{org_endpoint}/{org.fhir_id}/_history/{org.version}")
     assert response.status_code == 200
     data = response.json()
     assert org.data == data

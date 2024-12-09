@@ -38,9 +38,7 @@ class OrganizationAffiliationService:
             repo = session.get_repository(OrganizationAffiliationRepository)
             return repo.find(**params)
 
-    def add_one(
-        self, fhir_entity: FhirOrganizationAffiliation, id: UUID | None = None
-    ) -> OrganizationAffiliation:
+    def add_one(self, fhir_entity: FhirOrganizationAffiliation, id: UUID | None = None) -> OrganizationAffiliation:
         with self.database.get_db_session() as session:
             repo = session.get_repository(OrganizationAffiliationRepository)
 
@@ -64,12 +62,8 @@ class OrganizationAffiliationService:
             entity = repo.get_one(fhir_id=str(resource_id))
 
             if entity is None or entity.data is None:
-                logging.warning(
-                    f"OrganizationAffiliation not found for {str(resource_id)}"
-                )
-                raise ResourceNotFoundException(
-                    f"OrganizationAffiliation not found for {str(resource_id)}"
-                )
+                logging.warning(f"OrganizationAffiliation not found for {str(resource_id)}")
+                raise ResourceNotFoundException(f"OrganizationAffiliation not found for {str(resource_id)}")
 
             repo.delete(entity)
 
@@ -79,33 +73,23 @@ class OrganizationAffiliationService:
             entity = repo.get_one(fhir_id=str(resource_id))
 
             if entity is None or entity.data is None:
-                logging.warning(
-                    f"OrganizationAffiliation not found for {str(resource_id)}"
-                )
-                raise ResourceNotFoundException(
-                    f"OrganizationAffiliation not found for {str(resource_id)}"
-                )
+                logging.warning(f"OrganizationAffiliation not found for {str(resource_id)}")
+                raise ResourceNotFoundException(f"OrganizationAffiliation not found for {str(resource_id)}")
 
             return entity
 
-    def get_one_version(
-        self, resource_id: UUID, version_id: int
-    ) -> OrganizationAffiliation:
+    def get_one_version(self, resource_id: UUID, version_id: int) -> OrganizationAffiliation:
         with self.database.get_db_session() as session:
             repo = session.get_repository(OrganizationAffiliationRepository)
             entity = repo.get(fhir_id=str(resource_id), version=version_id)
 
             if entity is None:
                 logging.warning(f"Version not found for {str(resource_id)}")
-                raise ResourceNotFoundException(
-                    f"Version not found for {str(resource_id)}"
-                )
+                raise ResourceNotFoundException(f"Version not found for {str(resource_id)}")
 
             return entity
 
-    def update_one(
-        self, resource_id: UUID, fhir_entity: FhirOrganizationAffiliation
-    ) -> OrganizationAffiliation:
+    def update_one(self, resource_id: UUID, fhir_entity: FhirOrganizationAffiliation) -> OrganizationAffiliation:
         with self.database.get_db_session() as session:
             # Remove metadata, as it will be added by the repository
             fhir_entity.meta = None  # type: ignore
@@ -114,12 +98,8 @@ class OrganizationAffiliationService:
             entity = repo.get_one(fhir_id=resource_id)
 
             if entity is None or entity.data is None:
-                logging.warning(
-                    f"OrganizationAffiliation not found for {str(resource_id)}"
-                )
-                raise ResourceNotFoundException(
-                    f"OrganizationAffiliation not found for {str(resource_id)}"
-                )
+                logging.warning(f"OrganizationAffiliation not found for {str(resource_id)}")
+                raise ResourceNotFoundException(f"OrganizationAffiliation not found for {str(resource_id)}")
 
             self._check_references(session, fhir_entity)
 
@@ -131,9 +111,7 @@ class OrganizationAffiliationService:
 
             return repo.update(entity, fhir_entity.dict())
 
-    def find_history(
-        self, id: UUID | None = None, since: datetime | None = None
-    ) -> Sequence[OrganizationAffiliation]:
+    def find_history(self, id: UUID | None = None, since: datetime | None = None) -> Sequence[OrganizationAffiliation]:
         params = {
             "latest": False,
             "sort_history": True,
@@ -146,29 +124,21 @@ class OrganizationAffiliationService:
             return repo.find(**params)
 
     @staticmethod
-    def _check_references(
-        session: DbSession, fhir_entity: FhirOrganizationAffiliation
-    ) -> None:
+    def _check_references(session: DbSession, fhir_entity: FhirOrganizationAffiliation) -> None:
         reference_validator = ReferenceValidator()
 
         if fhir_entity.healthcareService is not None:
-            reference_validator.validate_list(
-                session, fhir_entity.healthcareService, match_on="HealthcareService"
-            )
+            reference_validator.validate_list(session, fhir_entity.healthcareService, match_on="HealthcareService")
 
         if fhir_entity.organization is not None:
-            reference_validator.validate_reference(
-                session, fhir_entity.organization, match_on="Organization"
-            )
+            reference_validator.validate_reference(session, fhir_entity.organization, match_on="Organization")
 
         if fhir_entity.participatingOrganization is not None:
             reference_validator.validate_reference(
                 session, fhir_entity.participatingOrganization, match_on="Organization"
             )
         if fhir_entity.network is not None and len(fhir_entity.network) > 0:
-            reference_validator.validate_list(
-                session, fhir_entity.network, match_on="Organization"
-            )
+            reference_validator.validate_list(session, fhir_entity.network, match_on="Organization")
 
     def get_endpoints(self, entries: list[OrganizationAffiliation]) -> list[Endpoint]:
         """
@@ -188,9 +158,7 @@ class OrganizationAffiliationService:
 
                     endpoint_entity = repo.get_one(fhir_id=ref_id)
                     if endpoint_entity is None:
-                        logging.warning(
-                            f"Endpoint {ref_id} not found for {affiliation.fhir_id}"
-                        )
+                        logging.warning(f"Endpoint {ref_id} not found for {affiliation.fhir_id}")
                         continue
 
                     endpoint_entities.append(endpoint_entity)

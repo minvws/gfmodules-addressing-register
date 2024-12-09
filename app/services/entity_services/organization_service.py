@@ -75,10 +75,7 @@ class OrganizationService(EntityService):
 
     @staticmethod
     def is_valid_identifier(identifier: Identifier) -> bool:
-        return (
-            isinstance(identifier, Identifier)
-            and "http://fhir.nl/fhir/NamingSystem/ura" in identifier.system
-        )
+        return isinstance(identifier, Identifier) and "http://fhir.nl/fhir/NamingSystem/ura" in identifier.system
 
     @staticmethod
     def get_ura_number(identifier: Identifier) -> UraNumber:
@@ -86,9 +83,7 @@ class OrganizationService(EntityService):
             return UraNumber(identifier.value)
         except ValueError as e:
             logging.warning(f"URA number {identifier.value} malformed: {e}")
-            raise InvalidResourceException(
-                f"URA number {identifier.value} malformed: {e}"
-            )
+            raise InvalidResourceException(f"URA number {identifier.value} malformed: {e}")
 
     @staticmethod
     def check_existing_organization(
@@ -97,16 +92,12 @@ class OrganizationService(EntityService):
         is_update: bool,
         org_repo: OrganizationsRepository,
     ) -> None:
-        existing_org = (
-            org_repo.get_one(fhir_id=str(organization_fhir.id)) if is_update else None
-        )
+        existing_org = org_repo.get_one(fhir_id=str(organization_fhir.id)) if is_update else None
         if existing_org and str(ura_number) != existing_org.ura_number:
             raise InvalidResourceException("URA number mismatch in new resource")
 
         if not is_update and org_repo.get_one(ura_number=str(ura_number)) is not None:
-            raise InvalidResourceException(
-                "URA number already present in other organization"
-            )
+            raise InvalidResourceException("URA number already present in other organization")
 
     @staticmethod
     def validate_ura_number_in_fhir_resource(
@@ -116,14 +107,10 @@ class OrganizationService(EntityService):
     ) -> UraNumber:
         for identifier in organization_fhir.identifier:
             if not isinstance(identifier, Identifier):
-                raise InvalidResourceException(
-                    "Reference identifier must be an instance of Identifier"
-                )
+                raise InvalidResourceException("Reference identifier must be an instance of Identifier")
             if OrganizationService.is_valid_identifier(identifier):
                 ura_number = OrganizationService.get_ura_number(identifier)
-                OrganizationService.check_existing_organization(
-                    ura_number, organization_fhir, is_update, org_repo
-                )
+                OrganizationService.check_existing_organization(ura_number, organization_fhir, is_update, org_repo)
                 return ura_number
         logging.error("URA number not found in organization resource")
 
@@ -135,9 +122,7 @@ class OrganizationService(EntityService):
 
             organization_fhir.meta = None  # type: ignore
 
-            ura_number = self.validate_ura_number_in_fhir_resource(
-                organization_fhir, False, org_repo
-            )
+            ura_number = self.validate_ura_number_in_fhir_resource(organization_fhir, False, org_repo)
             org = org_repo.get_one(ura_number=str(ura_number))
             if org is not None:
                 raise InvalidResourceException("Ura number already exists")
@@ -163,9 +148,7 @@ class OrganizationService(EntityService):
             organization = repository.get_one(fhir_id=str(resource_id))
             if organization is None or organization.data is None:
                 logging.warning(f"Organization not found for {str(resource_id)}")
-                raise ResourceNotFoundException(
-                    f"Organization not found for {str(resource_id)}"
-                )
+                raise ResourceNotFoundException(f"Organization not found for {str(resource_id)}")
 
             return organization
 
@@ -175,9 +158,7 @@ class OrganizationService(EntityService):
             version = repository.get(fhir_id=resource_id, version=version_id)
             if version is None:
                 logging.warning(f"Version not found for {str(resource_id)}")
-                raise ResourceNotFoundException(
-                    f"Version not found for {str(resource_id)}"
-                )
+                raise ResourceNotFoundException(f"Version not found for {str(resource_id)}")
 
             return version
 
@@ -196,13 +177,9 @@ class OrganizationService(EntityService):
             update_organization = org_repo.get_one(fhir_id=resource_id)
             if update_organization is None or update_organization.data is None:
                 logging.warning(f"Organization not found for {str(resource_id)}")
-                raise ResourceNotFoundException(
-                    f"Organization not found for {str(resource_id)}"
-                )
+                raise ResourceNotFoundException(f"Organization not found for {str(resource_id)}")
             update_organization.data.pop("meta")
-            if jsonable_encoder(update_organization.data) == jsonable_encoder(
-                organization_fhir.dict()
-            ):
+            if jsonable_encoder(update_organization.data) == jsonable_encoder(organization_fhir.dict()):
                 return update_organization  # The old and the new are the same, no need to create a new version for this
 
             self._check_references(organization_fhir)
@@ -217,24 +194,18 @@ class OrganizationService(EntityService):
 
             if organization is None or organization.data is None:
                 logging.warning(f"Organization not found for {str(resource_id)}")
-                raise ResourceNotFoundException(
-                    f"Organization not found for {str(resource_id)}"
-                )
+                raise ResourceNotFoundException(f"Organization not found for {str(resource_id)}")
 
             self._check_references(FhirOrganization(**organization.data), delete=True)
 
             org_repo.delete(organization)
 
-    def _check_references(
-        self, organization: FhirOrganization, delete: bool = False
-    ) -> None:
+    def _check_references(self, organization: FhirOrganization, delete: bool = False) -> None:
         with self.database.get_db_session() as session:
             endpoint_repo = session.get_repository(EndpointsRepository)
             org_repo = session.get_repository(OrganizationsRepository)
             if delete:
-                endpoints_with_org = endpoint_repo.find(
-                    latest=True, managingOrganization=str(organization.id)
-                )
+                endpoints_with_org = endpoint_repo.find(latest=True, managingOrganization=str(organization.id))
                 if len(endpoints_with_org) > 0:
                     logging.warning(
                         "Cannot delete, Endpoint %s has active reference to this resource",
@@ -262,6 +233,4 @@ class OrganizationService(EntityService):
                     match_on="Endpoint",
                 )
             if organization.partOf is not None:
-                reference_validator.validate_reference(
-                    session, organization.partOf, match_on="Organization"
-                )
+                reference_validator.validate_reference(session, organization.partOf, match_on="Organization")

@@ -17,9 +17,7 @@ logger = logging.getLogger(__name__)
 
 @repository(Organization)
 class OrganizationsRepository(RepositoryBase):
-    def get_one(
-        self, **kwargs: bool | str | UUID | dict[str, str]
-    ) -> Organization | None:
+    def get_one(self, **kwargs: bool | str | UUID | dict[str, str]) -> Organization | None:
         stmt = (
             select(Organization)
             .where(Organization.latest.__eq__(True), Organization.deleted.__eq__(False))
@@ -27,24 +25,18 @@ class OrganizationsRepository(RepositoryBase):
         )
         return self.db_session.session.execute(stmt).scalars().first()
 
-    def get(
-        self, **kwargs: bool | str | UUID | dict[str, str] | int
-    ) -> Organization | None:
+    def get(self, **kwargs: bool | str | UUID | dict[str, str] | int) -> Organization | None:
         """
         does not apply filters on latest and deleted columns.
         """
         stmt = select(Organization).filter_by(**kwargs)
         return self.db_session.session.execute(stmt).scalars().first()
 
-    def get_many(
-        self, **kwargs: bool | str | UUID | dict[str, str]
-    ) -> Sequence[Organization]:
+    def get_many(self, **kwargs: bool | str | UUID | dict[str, str]) -> Sequence[Organization]:
         stmt = select(Organization).filter_by(**kwargs)
         return self.db_session.session.execute(stmt).scalars().all()
 
-    def find(
-        self, **conditions: bool | str | UUID | dict[str, Any] | None | datetime
-    ) -> Sequence[Organization]:
+    def find(self, **conditions: bool | str | UUID | dict[str, Any] | None | datetime) -> Sequence[Organization]:
         stmt = select(Organization)
         filter_conditions: list[Any] = []
 
@@ -60,47 +52,30 @@ class OrganizationsRepository(RepositoryBase):
             filter_conditions.append(Organization.fhir_id == conditions["id"])
 
         if "active" in conditions:
-            filter_conditions.append(
-                Organization.data["active"].astext.cast(Boolean) == conditions["active"]
-            )
+            filter_conditions.append(Organization.data["active"].astext.cast(Boolean) == conditions["active"])
 
         if "endpoint" in conditions:
             ref_id = str(conditions["endpoint"])
-            filter_conditions.append(
-                Organization.data["endpoint"].contains(
-                    [{"reference": f"Endpoint/{ref_id}"}]
-                )
-            )
+            filter_conditions.append(Organization.data["endpoint"].contains([{"reference": f"Endpoint/{ref_id}"}]))
 
         if "identifier" in conditions:
             stmt = stmt.select_from(
                 Organization,
-                func.jsonb_array_elements(Organization.data["identifier"]).alias(
-                    "identifier"
-                ),
+                func.jsonb_array_elements(Organization.data["identifier"]).alias("identifier"),
             ).where(literal_column("identifier->>'value'") == conditions["identifier"])
 
         if "name" in conditions:
-            filter_conditions.append(
-                Organization.data["name"].astext.like(f'%{conditions["name"]}%')
-            )
+            filter_conditions.append(Organization.data["name"].astext.like(f'%{conditions["name"]}%'))
 
         if "part_of" in conditions:
             ref_id = str(conditions["part_of"])
-            filter_conditions.append(
-                Organization.data["partOf"]["reference"].astext
-                == f"Organization/{ref_id}"
-            )
+            filter_conditions.append(Organization.data["partOf"]["reference"].astext == f"Organization/{ref_id}")
 
         if "phonetic" in conditions:
-            filter_conditions.append(
-                Organization.data["name"]["phonetic"].astext == conditions["phonetic"]
-            )
+            filter_conditions.append(Organization.data["name"]["phonetic"].astext == conditions["phonetic"])
 
         if "type" in conditions:
-            filter_conditions.append(
-                Organization.data["type"].astext == conditions["type"]
-            )
+            filter_conditions.append(Organization.data["type"].astext == conditions["type"])
 
         if "sort_history" in conditions and conditions["sort_history"] is True:
             # sorted with oldest versions last
@@ -131,80 +106,47 @@ class OrganizationsRepository(RepositoryBase):
         if "address" in conditions:
             stmt = stmt.select_from(
                 Organization,
-                func.jsonb_array_elements(Organization.data["address"]).alias(
-                    "address"
-                ),
+                func.jsonb_array_elements(Organization.data["address"]).alias("address"),
             ).where(
                 or_(
-                    literal_column("address->>'use'").ilike(
-                        f"%{conditions['address']}%"
-                    ),
-                    literal_column("address->>'city'").ilike(
-                        f"%{conditions['address']}%"
-                    ),
-                    literal_column("address->>'text'").ilike(
-                        f"%{conditions['address']}%"
-                    ),
-                    literal_column("address->>'type'").ilike(
-                        f"%{conditions['address']}%"
-                    ),
-                    literal_column("address->>'state'").ilike(
-                        f"%{conditions['address']}%"
-                    ),
-                    literal_column("address->>'country'").ilike(
-                        f"%{conditions['address']}%"
-                    ),
-                    literal_column("address->>'postalCode'").ilike(
-                        f"%{conditions['address']}%"
-                    ),
+                    literal_column("address->>'use'").ilike(f"%{conditions['address']}%"),
+                    literal_column("address->>'city'").ilike(f"%{conditions['address']}%"),
+                    literal_column("address->>'text'").ilike(f"%{conditions['address']}%"),
+                    literal_column("address->>'type'").ilike(f"%{conditions['address']}%"),
+                    literal_column("address->>'state'").ilike(f"%{conditions['address']}%"),
+                    literal_column("address->>'country'").ilike(f"%{conditions['address']}%"),
+                    literal_column("address->>'postalCode'").ilike(f"%{conditions['address']}%"),
                 )
             )
 
         if "address_city" in conditions:
             stmt = stmt.select_from(
                 Organization,
-                func.jsonb_array_elements(Organization.data["address"]).alias(
-                    "address"
-                ),
+                func.jsonb_array_elements(Organization.data["address"]).alias("address"),
             ).where(literal_column("address ->> 'city'") == conditions["address_city"])
 
         if "address_country" in conditions:
             stmt = stmt.select_from(
                 Organization,
-                func.jsonb_array_elements(Organization.data["address"]).alias(
-                    "address"
-                ),
-            ).where(
-                literal_column("address ->> 'country'") == conditions["address_country"]
-            )
+                func.jsonb_array_elements(Organization.data["address"]).alias("address"),
+            ).where(literal_column("address ->> 'country'") == conditions["address_country"])
 
         if "address_postal_code" in conditions:
             stmt = stmt.select_from(
                 Organization,
-                func.jsonb_array_elements(Organization.data["address"]).alias(
-                    "address"
-                ),
-            ).where(
-                literal_column("address ->> 'postalCode'")
-                == conditions["address_postal_code"]
-            )
+                func.jsonb_array_elements(Organization.data["address"]).alias("address"),
+            ).where(literal_column("address ->> 'postalCode'") == conditions["address_postal_code"])
 
         if "address_state" in conditions:
             stmt = stmt.select_from(
                 Organization,
-                func.jsonb_array_elements(Organization.data["address"]).alias(
-                    "address"
-                ),
-            ).where(
-                literal_column("address ->> 'state'") == conditions["address_state"]
-            )
+                func.jsonb_array_elements(Organization.data["address"]).alias("address"),
+            ).where(literal_column("address ->> 'state'") == conditions["address_state"])
 
         if "address_use" in conditions:
             stmt = stmt.select_from(
                 Organization,
-                func.jsonb_array_elements(Organization.data["address"]).alias(
-                    "address"
-                ),
+                func.jsonb_array_elements(Organization.data["address"]).alias("address"),
             ).where(literal_column("address ->> 'use'") == conditions["address_use"])
         return stmt
 
@@ -236,9 +178,7 @@ class OrganizationsRepository(RepositoryBase):
             logging.error(f"Failed to delete organization {organization.id}: {e}")
             raise e
 
-    def update(
-        self, organization: Organization, fhir_data: Dict[str, Any]
-    ) -> Organization:
+    def update(self, organization: Organization, fhir_data: Dict[str, Any]) -> Organization:
         try:
             self._update_entry_latest(organization)
             target_org = Organization(

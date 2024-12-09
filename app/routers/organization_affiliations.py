@@ -37,9 +37,7 @@ router = APIRouter(
 @router.post("")
 async def create(
     data: Annotated[Dict[str, Any], Body()],
-    service: OrganizationAffiliationService = Depends(
-        get_organization_affiliation_service
-    ),
+    service: OrganizationAffiliationService = Depends(get_organization_affiliation_service),
 ) -> Response:
     fhir_data = FhirOrganizationAffiliation(**data)
     if fhir_data is None:
@@ -49,9 +47,7 @@ async def create(
     # Check if the ID is present in the resource
     if fhir_data.id is not None:
         logging.error("Organization Affiliate ID is found in resource")
-        raise InvalidResourceException(
-            "Organization Affiliate ID is found in resource. Use PUT to update"
-        )
+        raise InvalidResourceException("Organization Affiliate ID is found in resource. Use PUT to update")
 
     entry = service.add_one(fhir_data)
     return FhirEntityResponse(entry, status_code=201)
@@ -60,16 +56,11 @@ async def create(
 @router.get("/_search")
 def find(
     query_params: OrganizationAffiliationQueryParams = Depends(),
-    service: OrganizationAffiliationService = Depends(
-        get_organization_affiliation_service
-    ),
+    service: OrganizationAffiliationService = Depends(get_organization_affiliation_service),
 ) -> Response:
     entries = list(service.find(query_params.model_dump()))
 
-    if (
-        query_params.include is not None
-        and query_params.include == "OrganizationAffiliation.endpoint"
-    ):
+    if query_params.include is not None and query_params.include == "OrganizationAffiliation.endpoint":
         endpoint_entities = service.get_endpoints(entries)
         entries.extend(endpoint_entities)  # type: ignore
 
@@ -85,9 +76,7 @@ def find(
 def update(
     _id: UUID,
     data: Dict[str, Any],
-    service: OrganizationAffiliationService = Depends(
-        get_organization_affiliation_service
-    ),
+    service: OrganizationAffiliationService = Depends(get_organization_affiliation_service),
 ) -> Response:
     fhir_data = FhirOrganizationAffiliation(**data)
     if fhir_data is None:
@@ -96,9 +85,7 @@ def update(
 
     if _id != UUID(fhir_data.id):
         logging.error(f"Organization Affiliate ID not found in resource: {_id}")
-        raise InvalidResourceException(
-            "Organization Affiliate ID not found in resource"
-        )
+        raise InvalidResourceException("Organization Affiliate ID not found in resource")
 
     entry = service.update_one(_id, fhir_data)
     return FhirEntityResponse(entry)
@@ -107,9 +94,7 @@ def update(
 @router.delete("/{_id}")
 def delete(
     _id: UUID,
-    service: OrganizationAffiliationService = Depends(
-        get_organization_affiliation_service
-    ),
+    service: OrganizationAffiliationService = Depends(get_organization_affiliation_service),
 ) -> Response:
     if not service.get_one(_id):
         logger.error(f"Organization Affiliate resource is invalid: {_id}")
@@ -130,9 +115,7 @@ def delete(
 def get_history_version(
     _id: UUID,
     version_id: int,
-    service: OrganizationAffiliationService = Depends(
-        get_organization_affiliation_service
-    ),
+    service: OrganizationAffiliationService = Depends(get_organization_affiliation_service),
 ) -> Response:
     entry = service.get_one_version(resource_id=_id, version_id=version_id)
     if entry is None:
@@ -153,9 +136,7 @@ def get_history_version(
 def get_history(
     _id: UUID | None = None,
     _since: HistoryRequest = Depends(),
-    service: OrganizationAffiliationService = Depends(
-        get_organization_affiliation_service
-    ),
+    service: OrganizationAffiliationService = Depends(get_organization_affiliation_service),
 ) -> Response:
     if _id is None:
         # Fetch all history entries
@@ -175,9 +156,7 @@ def get_history(
 @router.get("/{_id}")
 def get(
     _id: UUID,
-    service: OrganizationAffiliationService = Depends(
-        get_organization_affiliation_service
-    ),
+    service: OrganizationAffiliationService = Depends(get_organization_affiliation_service),
 ) -> Response:
     entry = service.get_one(_id)
     if entry is None:

@@ -50,9 +50,7 @@ class Database:
     def generate_tables() -> None:
         # TODO: Only for testing purposes
         logger.info("Generating tables...")
-        migrate_command = (
-            "tools/./migrate_db.sh addressing_db postgres postgres testing"
-        )
+        migrate_command = "tools/./migrate_db.sh addressing_db postgres postgres testing"
         out = subprocess.run(migrate_command.split(), capture_output=True)
         logger.info(out.stdout.decode("utf-8"))
 

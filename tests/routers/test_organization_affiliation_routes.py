@@ -94,9 +94,7 @@ def test_organization_affiliation_history(
     organization_affiliation_service: OrganizationAffiliationService,
 ) -> None:
     org_aff = add_organization_affiliation(organization_affiliation_service)
-    response = api_client.request(
-        "GET", f"{org_aff_endpoint}/{org_aff.fhir_id}/_history"
-    )
+    response = api_client.request("GET", f"{org_aff_endpoint}/{org_aff.fhir_id}/_history")
     assert response.status_code == 200
     data = response.json()
     assert data["resourceType"] == "Bundle"
@@ -138,9 +136,7 @@ def test_organization_affiliation_version(
     organization_affiliation_service: OrganizationAffiliationService,
 ) -> None:
     org_aff = add_organization_affiliation(organization_affiliation_service)
-    response = api_client.request(
-        "GET", f"{org_aff_endpoint}/{org_aff.fhir_id}/_history/{org_aff.version}"
-    )
+    response = api_client.request("GET", f"{org_aff_endpoint}/{org_aff.fhir_id}/_history/{org_aff.version}")
     assert response.status_code == 200
     data = response.json()
     assert org_aff.data == data
