@@ -66,6 +66,7 @@ class HealthcareServiceService(EntityService):
         with self.database.get_db_session() as session:
             repo = session.get_repository(HealthcareServiceRepository)
             entity = repo.get_one(fhir_id=str(resource_id))
+
             if entity is None or entity.data is None:
                 logging.warning(f"HealthcareService not found for {str(resource_id)}")
                 raise ResourceNotFoundException(
@@ -78,6 +79,7 @@ class HealthcareServiceService(EntityService):
         with self.database.get_db_session() as session:
             repo = session.get_repository(HealthcareServiceRepository)
             entity = repo.get(fhir_id=str(resource_id), version=version_id)
+
             if entity is None:
                 logging.warning(f"Version not found for {str(resource_id)}")
                 raise ResourceNotFoundException(
@@ -95,6 +97,7 @@ class HealthcareServiceService(EntityService):
 
             repo = session.get_repository(HealthcareServiceRepository)
             entity = repo.get_one(fhir_id=resource_id)
+
             if entity is None or entity.data is None:
                 logging.warning(f"HealthcareService not found for {str(resource_id)}")
                 raise ResourceNotFoundException(

@@ -172,8 +172,6 @@ def generate_entity(
 
     try:
         service.get_one(id)
-        print(f"generate_entity: update one {id}")
         return service.update_one(id, entity)
     except ResourceNotFoundException:
-        print(f"generate_entity: create one {id}")
         return service.add_one(entity, id=id)
