@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import AliasChoices, Field, BaseModel
+from pydantic import AliasChoices, BaseModel, Field
 
 
 class HistoryRequest(BaseModel):

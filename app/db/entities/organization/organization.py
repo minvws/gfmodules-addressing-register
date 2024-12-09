@@ -1,4 +1,4 @@
-from sqlalchemy import String, PrimaryKeyConstraint
+from sqlalchemy import PrimaryKeyConstraint, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.entities.base import Base

@@ -6,8 +6,9 @@ from app.db.entities.mixin.common_mixin import CommonMixin
 
 T = TypeVar("T", bound=CommonMixin)
 
+
 def update_resource_meta(res: T, method: Literal["create", "update", "delete"]) -> T:
-    res.version = res.version+1 if method != "create" else 1
+    res.version = res.version + 1 if method != "create" else 1
     if isinstance(res.data, dict):
         res.data.update(
             {
@@ -39,4 +40,3 @@ def update_resource_meta(res: T, method: Literal["create", "update", "delete"]) 
     }
 
     return res
-

@@ -1,14 +1,18 @@
 from datetime import datetime
-from typing import Any, Sequence, List
+from typing import Any, List, Sequence
 from uuid import UUID
 
-from fhir.resources.R4B.bundle import BundleEntry, Bundle
+from fhir.resources.R4B.bundle import Bundle, BundleEntry
 from fhir.resources.R4B.organization import Organization as FhirOrganization
 from fhir.resources.R4B.reference import Reference
 
 from app.db.entities.organization.organization import Organization
 from app.exceptions.service_exceptions import ResourceNotFoundException
-from app.mappers.fhir_mapper import (create_fhir_bundle, create_bundle_entries, BundleType)
+from app.mappers.fhir_mapper import (
+    BundleType,
+    create_bundle_entries,
+    create_fhir_bundle,
+)
 from app.params.endpoint_query_params import EndpointQueryParams
 from app.params.organization_query_params import OrganizationQueryParams
 from app.services.entity_services.endpoint_service import EndpointService
@@ -25,14 +29,16 @@ class MatchingCareService:
         self._endpoint_service = endpoint_service
 
     def find_organizations_history(
-        self, organization_id: UUID | None = None, since: datetime|None=None
+        self, organization_id: UUID | None = None, since: datetime | None = None
     ) -> dict[str, Any]:
         organization_entries = self._organization_service.find(
             id=organization_id, sort_history=True, since=since
         )
 
         return create_fhir_bundle(  # type: ignore
-            bundled_entries=create_bundle_entries(organization_entries, with_req_resp=True),
+            bundled_entries=create_bundle_entries(
+                organization_entries, with_req_resp=True
+            ),
             bundle_type=BundleType.HISTORY,
         ).dict()
 
@@ -53,20 +59,25 @@ class MatchingCareService:
             )
 
         return create_fhir_bundle(
-            bundled_entries=bundled_resources,
-            bundle_type=BundleType.SEARCHSET
+            bundled_entries=bundled_resources, bundle_type=BundleType.SEARCHSET
         )
 
     def find_endpoints(self, endpoints_req_params: EndpointQueryParams) -> Bundle:
-        endpoints = self._endpoint_service.find(latest_version=True, **endpoints_req_params.model_dump())
+        endpoints = self._endpoint_service.find(
+            latest_version=True, **endpoints_req_params.model_dump()
+        )
 
         return create_fhir_bundle(
             bundled_entries=create_bundle_entries(endpoints, with_req_resp=False),
-            bundle_type=BundleType.SEARCHSET
+            bundle_type=BundleType.SEARCHSET,
         )
 
-    def find_endpoint_history(self, endpoint_id: UUID | None = None, since: datetime|None=None) -> dict[str, Any]:
-        endpoints = self._endpoint_service.find(id=endpoint_id, sort_history=True, since=since)
+    def find_endpoint_history(
+        self, endpoint_id: UUID | None = None, since: datetime | None = None
+    ) -> dict[str, Any]:
+        endpoints = self._endpoint_service.find(
+            id=endpoint_id, sort_history=True, since=since
+        )
 
         return create_fhir_bundle(  # type: ignore
             bundled_entries=create_bundle_entries(endpoints, with_req_resp=True),

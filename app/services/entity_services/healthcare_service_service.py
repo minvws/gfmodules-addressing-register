@@ -1,14 +1,18 @@
 import logging
-from typing import Sequence, Any
+from typing import Any, Sequence
 from uuid import UUID, uuid4
 
 from fastapi.encoders import jsonable_encoder
 from fhir.resources.R4B.fhirtypes import Id
-from fhir.resources.R4B.healthcareservice import HealthcareService as FhirHealthcareService
+from fhir.resources.R4B.healthcareservice import (
+    HealthcareService as FhirHealthcareService,
+)
 
 from app.db.db import Database
 from app.db.entities.healthcare_service.healthcare_service import HealthcareService
-from app.db.repositories.healthcare_service_repository import HealthcareServiceRepository
+from app.db.repositories.healthcare_service_repository import (
+    HealthcareServiceRepository,
+)
 from app.exceptions.service_exceptions import ResourceNotFoundException
 from app.services.entity_services.abstraction import EntityService
 
@@ -22,12 +26,14 @@ class HealthcareServiceService(EntityService):
         params: dict[str, Any],
     ) -> Sequence[HealthcareService]:
         with self.database.get_db_session() as session:
-            params['latest'] = True
+            params["latest"] = True
 
             repo = session.get_repository(HealthcareServiceRepository)
             return repo.find(**params)
 
-    def add_one(self, fhir_entity: FhirHealthcareService, id: UUID|None = None) -> HealthcareService:
+    def add_one(
+        self, fhir_entity: FhirHealthcareService, id: UUID | None = None
+    ) -> HealthcareService:
         with self.database.get_db_session() as session:
             repo = session.get_repository(HealthcareServiceRepository)
 
@@ -80,7 +86,9 @@ class HealthcareServiceService(EntityService):
 
             return entity
 
-    def update_one(self, resource_id: UUID, fhir_entity: FhirHealthcareService) -> HealthcareService:
+    def update_one(
+        self, resource_id: UUID, fhir_entity: FhirHealthcareService
+    ) -> HealthcareService:
         with self.database.get_db_session() as session:
             # Remove metadata, as it will be added by the repository
             fhir_entity.meta = None  # type: ignore
@@ -103,9 +111,9 @@ class HealthcareServiceService(EntityService):
 
     def find_history(self, id: UUID | None = None) -> Sequence[HealthcareService]:
         params = {
-            'latest': False,
-            'sort_history': True,
-            'id': id,
+            "latest": False,
+            "sort_history": True,
+            "id": id,
         }
 
         with self.database.get_db_session() as session:

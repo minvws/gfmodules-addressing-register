@@ -8,7 +8,7 @@ from app.params.organization_query_params import OrganizationQueryParams
 from app.services.entity_services.endpoint_service import EndpointService
 from app.services.entity_services.organization_service import OrganizationService
 from app.services.matching_care_service import MatchingCareService
-from tests.utils import check_key_value, add_organization, add_endpoint
+from tests.utils import add_endpoint, add_organization, check_key_value
 
 
 @pytest.mark.parametrize(
@@ -17,59 +17,66 @@ from tests.utils import check_key_value, add_organization, add_endpoint
         (True, True, "Org A", False, None, None),
         (True, False, "Org B", True, "Organization.endpoint", None),
         (True, False, None, False, None, "Location:organization"),
-        (True,
-         True,
-         "Org C",
-         True,
-         None,
-         "OrganizationAffiliation:primary-organization",
-         ),
-        (True,
-         True,
-         "Org D",
-         False,
-         "Organization.endpoint",
-         "OrganizationAffiliation:participating-organization",
-         ),
-        (True,
-         False,
-         "Org E",
-         True,
-         None,
-         "OrganizationAffiliation:primary-organization",
-         ),
+        (
+            True,
+            True,
+            "Org C",
+            True,
+            None,
+            "OrganizationAffiliation:primary-organization",
+        ),
+        (
+            True,
+            True,
+            "Org D",
+            False,
+            "Organization.endpoint",
+            "OrganizationAffiliation:participating-organization",
+        ),
+        (
+            True,
+            False,
+            "Org E",
+            True,
+            None,
+            "OrganizationAffiliation:primary-organization",
+        ),
         (True, False, "Org F", None, None, "Location:organization"),
-        (True,
-         True,
-         None,
-         False,
-         None,
-         "OrganizationAffiliation:primary-organization",
-         ),
-        (True,
-         False,
-         "Org G",
-         False,
-         None,
-         "OrganizationAffiliation:participating-organization",
-         ),
+        (
+            True,
+            True,
+            None,
+            False,
+            None,
+            "OrganizationAffiliation:primary-organization",
+        ),
+        (
+            True,
+            False,
+            "Org G",
+            False,
+            None,
+            "OrganizationAffiliation:participating-organization",
+        ),
         (True, True, None, True, None, "Location:organization"),
         (True, None, "Org H", True, "Organization.endpoint", None),
-        (True,
-         False,
-         "Org I",
-         True,
-         None,
-         "OrganizationAffiliation:primary-organization",
-         ),
+        (
+            True,
+            False,
+            "Org I",
+            True,
+            None,
+            "OrganizationAffiliation:primary-organization",
+        ),
         (True, True, "Org J", None, None, "Location:organization"),
-        (True,
-         None,
-         "Org K",
-         False,
-         None,
-         "OrganizationAffiliation:primary-organization",
-         ),
+        (
+            True,
+            None,
+            "Org K",
+            False,
+            None,
+            "OrganizationAffiliation:primary-organization",
+        ),
         (True, True, None, True, None, None),
     ],
 )
@@ -89,21 +96,22 @@ def test_find_correct_organizations(
             "OrganizationAffiliation:primary-organization",
         ]
     ],
-    setup_postgres_database: Database
+    setup_postgres_database: Database,
 ) -> None:
     setup_postgres_database.truncate_tables()
 
     expected_endpoint = add_endpoint(endpoint_service) if include else None
-    part_of_id = add_organization(organization_service).fhir_id if parent_organization else None
+    part_of_id = (
+        add_organization(organization_service).fhir_id if parent_organization else None
+    )
 
     expected_org = add_organization(
         organization_service=organization_service,
         active=active,
         name=name,
-        endpoint_id=expected_endpoint.fhir_id if include is not None else None, # type: ignore
+        endpoint_id=expected_endpoint.fhir_id if include is not None else None,  # type: ignore
         part_of=part_of_id if parent_organization else None,
     )
-
 
     query_params = OrganizationQueryParams(
         active=active if active is not None else None,
@@ -112,7 +120,7 @@ def test_find_correct_organizations(
         partOf=str(part_of_id) if parent_organization else None,
         _include=include if include is not None else None,
         # _revInclude=rev_include,
-        endpoint=str(expected_endpoint.fhir_id) if include is not None else None # type: ignore
+        endpoint=str(expected_endpoint.fhir_id) if include is not None else None,  # type: ignore
     )
 
     result = matching_care_service.find_organizations(query_params)
@@ -126,7 +134,9 @@ def test_find_correct_organizations(
         assert check_key_value(result.dict(), "name", name)
     if include is not None:
         assert check_key_value(
-            result.dict(), "reference", "Endpoint/" + str(expected_endpoint.fhir_id) # type: ignore
+            result.dict(),
+            "reference",
+            "Endpoint/" + str(expected_endpoint.fhir_id),  # type: ignore
         )
 
 
@@ -134,7 +144,7 @@ def test_find_correct_endpoints(
     organization_service: OrganizationService,
     endpoint_service: EndpointService,
     matching_care_service: MatchingCareService,
-    setup_postgres_database: Database
+    setup_postgres_database: Database,
 ) -> None:
     setup_postgres_database.truncate_tables()
     expected_org = add_organization(organization_service)
@@ -151,4 +161,6 @@ def test_find_correct_endpoints(
         endpoints.dict(), "reference", f"Organization/{expected_org.fhir_id}"
     )
     assert check_key_value(endpoints.dict(), "id", expected_endpoint.fhir_id)
-    assert check_key_value(endpoints.dict(), "address", expected_endpoint.data.get("address")) # type: ignore
+    assert check_key_value(
+        endpoints.dict(), "address", expected_endpoint.data.get("address")
+    )  # type: ignore

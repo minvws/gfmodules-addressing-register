@@ -14,8 +14,9 @@ from app.db.entities.organization.organization import Organization
 from app.db.repositories.endpoints_repository import EndpointsRepository
 from app.db.repositories.organizations_repository import OrganizationsRepository
 from app.exceptions.service_exceptions import (
+    InvalidResourceException,
+    ResourceNotDeletedException,
     ResourceNotFoundException,
-    InvalidResourceException, ResourceNotDeletedException,
 )
 from app.services.entity_services.abstraction import EntityService
 from app.services.reference_validator import ReferenceValidator
@@ -225,29 +226,42 @@ class OrganizationService(EntityService):
             org_repo.delete(organization)
 
     def _check_references(
-        self, organization: FhirOrganization, delete: bool=False
+        self, organization: FhirOrganization, delete: bool = False
     ) -> None:
         with self.database.get_db_session() as session:
             endpoint_repo = session.get_repository(EndpointsRepository)
             org_repo = session.get_repository(OrganizationsRepository)
             if delete:
-                endpoints_with_org = endpoint_repo.find(latest=True, managingOrganization=str(organization.id))
+                endpoints_with_org = endpoint_repo.find(
+                    latest=True, managingOrganization=str(organization.id)
+                )
                 if len(endpoints_with_org) > 0:
-                        logging.warning("Cannot delete, Endpoint %s has active reference to this resource",
-                                        endpoints_with_org[0].fhir_id)
-                        raise ResourceNotDeletedException(
-                            f"Cannot delete, Endpoint {endpoints_with_org[0].fhir_id} has active reference to this resource")
+                    logging.warning(
+                        "Cannot delete, Endpoint %s has active reference to this resource",
+                        endpoints_with_org[0].fhir_id,
+                    )
+                    raise ResourceNotDeletedException(
+                        f"Cannot delete, Endpoint {endpoints_with_org[0].fhir_id} has active reference to this resource"
+                    )
                 orgs_part_of = org_repo.find(latest=True, part_of=str(organization.id))
                 if len(orgs_part_of) > 0:
-                    logging.warning("Cannot delete, Organization %s has active reference to this resource",
-                                    orgs_part_of[0].fhir_id)
+                    logging.warning(
+                        "Cannot delete, Organization %s has active reference to this resource",
+                        orgs_part_of[0].fhir_id,
+                    )
                     raise ResourceNotDeletedException(
-                        f"Cannot delete, Organization {orgs_part_of[0].fhir_id} has active reference to this resource")
+                        f"Cannot delete, Organization {orgs_part_of[0].fhir_id} has active reference to this resource"
+                    )
                 return
 
             reference_validator = ReferenceValidator()
             if organization.endpoint is not None:
-                reference_validator.validate_list(session, [endpoint for endpoint in organization.endpoint], match_on="Endpoint")
+                reference_validator.validate_list(
+                    session,
+                    [endpoint for endpoint in organization.endpoint],
+                    match_on="Endpoint",
+                )
             if organization.partOf is not None:
-                reference_validator.validate_reference(session, organization.partOf, match_on="Organization")
-
+                reference_validator.validate_reference(
+                    session, organization.partOf, match_on="Organization"
+                )

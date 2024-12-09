@@ -4,8 +4,9 @@ from typing import Sequence
 from fhir.resources.R4B.bundle import Bundle, BundleEntry
 from fhir.resources.R4B.fhirtypes import Uri
 
-from app.exceptions.service_exceptions import ResourceNotFoundException
 from app.db.entities.mixin.common_mixin import CommonMixin
+from app.exceptions.service_exceptions import ResourceNotFoundException
+
 
 class BundleType(str, Enum):
     SEARCHSET = "searchset"
@@ -19,6 +20,7 @@ def create_fhir_bundle(
         type=bundle_type, entry=bundled_entries, total=len(bundled_entries)
     )
 
+
 def create_bundle_entries(
     entries: Sequence[CommonMixin],
     with_req_resp: bool = False,
@@ -26,7 +28,9 @@ def create_bundle_entries(
     listing = []
     for entry in entries:
         if entry.bundle_meta is None:
-            raise ResourceNotFoundException(f"Entry {entry.fhir_id} bundle meta not found")
+            raise ResourceNotFoundException(
+                f"Entry {entry.fhir_id} bundle meta not found"
+            )
 
         params = {
             "fullUrl": Uri(f"{entry.fhir_id}/_history/{entry.version}"),
@@ -36,5 +40,5 @@ def create_bundle_entries(
             params["request"] = entry.bundle_meta.get("request")
             params["response"] = entry.bundle_meta.get("response")
 
-        listing.append(BundleEntry.construct(**params)) # type: ignore
+        listing.append(BundleEntry.construct(**params))  # type: ignore
     return listing

@@ -5,14 +5,12 @@ from uuid import UUID
 from fastapi import APIRouter, Depends
 from fhir.resources.R4B.organization import Organization as FhirOrganization
 
-from app.container import get_organization_service, get_matching_care_service
+from app.container import get_matching_care_service, get_organization_service
 from app.exceptions.service_exceptions import InvalidResourceException
 from app.params.history_query_params import HistoryRequest
 from app.params.organization_query_params import OrganizationQueryParams
-
 from app.services.entity_services.organization_service import OrganizationService
 from app.services.matching_care_service import MatchingCareService
-
 
 router = APIRouter(
     prefix="/Organization",

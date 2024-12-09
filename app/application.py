@@ -1,27 +1,29 @@
 import logging
-
 from typing import Any
 
-from fastapi import FastAPI
 import uvicorn
-from app.exceptions.fhir_exception import (
-    OperationOutcome,
-    OperationOutcomeIssue,
-    OperationOutcomeDetail,
-)
+from fastapi import FastAPI
 from starlette.requests import Request
 from starlette.responses import JSONResponse
-from app.container import setup_container
-from app.telemetry import setup_telemetry
-from app.stats import setup_stats, StatsdMiddleware
-from app.routers.default import router as default_router
-from app.routers.health import router as health_router
-from app.routers.organizations import router as organizations_router
-from app.routers.endpoints import router as endpoints_router
-from app.routers.suppliers import router as supplier_router
-from app.routers.healthcare_service import router as healthcare_service_router
-from app.routers.organization_affiliations import router as organization_affiliations_router
+
 from app.config import get_config
+from app.container import setup_container
+from app.exceptions.fhir_exception import (
+    OperationOutcome,
+    OperationOutcomeDetail,
+    OperationOutcomeIssue,
+)
+from app.routers.default import router as default_router
+from app.routers.endpoints import router as endpoints_router
+from app.routers.health import router as health_router
+from app.routers.healthcare_service import router as healthcare_service_router
+from app.routers.organization_affiliations import (
+    router as organization_affiliations_router,
+)
+from app.routers.organizations import router as organizations_router
+from app.routers.suppliers import router as supplier_router
+from app.stats import StatsdMiddleware, setup_stats
+from app.telemetry import setup_telemetry
 
 
 def get_uvicorn_params() -> dict[str, Any]:

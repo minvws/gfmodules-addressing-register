@@ -1,10 +1,10 @@
 import logging
 from datetime import datetime
-from typing import Sequence, Any, Dict
+from typing import Any, Dict, Sequence
 from uuid import UUID
 
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy import select, func, literal_column, or_, cast, TIMESTAMP
+from sqlalchemy import TIMESTAMP, cast, func, literal_column, or_, select
 from sqlalchemy.exc import DatabaseError
 
 from app.db.decorator import repository
@@ -114,11 +114,21 @@ class EndpointsRepository(RepositoryBase):
 
         if "sort_history" in conditions and conditions["sort_history"] is True:
             # sorted with oldest versions last
-            stmt = stmt.order_by(cast(Endpoint.data['meta']['lastUpdated'].astext, TIMESTAMP(timezone=True)).desc(), Endpoint.version.desc())
+            stmt = stmt.order_by(
+                cast(
+                    Endpoint.data["meta"]["lastUpdated"].astext,
+                    TIMESTAMP(timezone=True),
+                ).desc(),
+                Endpoint.version.desc(),
+            )
 
         if "since" in conditions:
             filter_conditions.append(
-                cast(Endpoint.data['meta']['lastUpdated'].astext, TIMESTAMP(timezone=True)) >= conditions["since"]
+                cast(
+                    Endpoint.data["meta"]["lastUpdated"].astext,
+                    TIMESTAMP(timezone=True),
+                )
+                >= conditions["since"]
             )
 
         stmt = stmt.where(*filter_conditions)

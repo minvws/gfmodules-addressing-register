@@ -1,8 +1,10 @@
+from contextlib import contextmanager
 from typing import Any, Generator, Type
 from uuid import uuid4
-from pydantic import ValidationError
+
 import pytest
-from contextlib import contextmanager
+from pydantic import ValidationError
+
 from app.params.organization_query_params import OrganizationQueryParams
 
 
@@ -100,7 +102,7 @@ def test_incorrect_query_params_should_raise_value_error(
     ],
 )
 def test_incorrect_param_should_raise_validation_error(
-    incorrect_organization_params: dict[str, Any]
+    incorrect_organization_params: dict[str, Any],
 ) -> None:
     with pytest.raises(ValidationError):
         OrganizationQueryParams.model_validate(incorrect_organization_params)

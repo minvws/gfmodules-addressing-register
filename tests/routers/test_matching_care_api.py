@@ -4,7 +4,7 @@ from fhir.resources.R4B.bundle import Bundle
 from app.db.db import Database
 from app.services.entity_services.endpoint_service import EndpointService
 from app.services.entity_services.organization_service import OrganizationService
-from tests.utils import check_key_value, add_organization, add_endpoint
+from tests.utils import add_endpoint, add_organization, check_key_value
 
 
 def test_organization_returns_fhir_bundle(
@@ -17,7 +17,10 @@ def test_organization_returns_fhir_bundle(
 
 
 def test_organization_returns_correct_organization(
-    api_client: TestClient, org_endpoint: str, organization_service: OrganizationService, setup_postgres_database: Database
+    api_client: TestClient,
+    org_endpoint: str,
+    organization_service: OrganizationService,
+    setup_postgres_database: Database,
 ) -> None:
     setup_postgres_database.truncate_tables()
 
@@ -44,7 +47,10 @@ def test_endpoint_returns_fhir_bundle(
 
 
 def test_endpoint_returns_correct_endpoint(
-    api_client: TestClient, endpoint_endpoint: str, endpoint_service: EndpointService, setup_postgres_database: Database
+    api_client: TestClient,
+    endpoint_endpoint: str,
+    endpoint_service: EndpointService,
+    setup_postgres_database: Database,
 ) -> None:
     setup_postgres_database.truncate_tables()
     expected_endpoint = add_endpoint(endpoint_service)

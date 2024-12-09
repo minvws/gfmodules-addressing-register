@@ -6,7 +6,7 @@ from fhir.resources.R4B.bundle import Bundle
 from app.db.db import Database
 from app.services.entity_services.endpoint_service import EndpointService
 from seeds.generate_data import DataGenerator
-from tests.utils import check_key_value, add_endpoint
+from tests.utils import add_endpoint, check_key_value
 
 
 @pytest.mark.parametrize(
@@ -47,9 +47,7 @@ def test_delete_endpoint(
     endpoint_service: EndpointService,
 ) -> None:
     expected = add_endpoint(endpoint_service)
-    response = api_client.request(
-        "DELETE", f"{endpoint_endpoint}/{expected.fhir_id}"
-    )
+    response = api_client.request("DELETE", f"{endpoint_endpoint}/{expected.fhir_id}")
     assert response.status_code == 200
 
 
@@ -91,25 +89,31 @@ def test_history_endpoint(
 
     endpoint_2 = add_endpoint(endpoint_service)
     response = api_client.request(
-        "GET", f"{endpoint_endpoint}/_history",
-        params={"_since": endpoint_2.data.get("meta").get("lastUpdated")}  # type: ignore
+        "GET",
+        f"{endpoint_endpoint}/_history",
+        params={"_since": endpoint_2.data.get("meta").get("lastUpdated")},  # type: ignore
     )
     assert response.status_code == 200
     bundle = Bundle(**response.json())
     assert isinstance(bundle, Bundle)
     assert bundle.type == "history"
     assert bundle.total == 1  # Only endpoint_2 as it was created later than endpoint 1
-    assert bundle.entry[0].resource.id == endpoint_2.fhir_id.__str__() # type: ignore
+    assert bundle.entry[0].resource.id == endpoint_2.fhir_id.__str__()  # type: ignore
 
-    response = api_client.request("GET", f"{endpoint_endpoint}/_history", # Since creation of 1st endpoint
-                                       params={"_since": endpoint.data.get("meta").get("lastUpdated")})  # type: ignore
+    response = api_client.request(
+        "GET",
+        f"{endpoint_endpoint}/_history",  # Since creation of 1st endpoint
+        params={"_since": endpoint.data.get("meta").get("lastUpdated")},
+    )  # type: ignore
     assert response.status_code == 200
     bundle = Bundle(**response.json())
     assert isinstance(bundle, Bundle)
     assert bundle.type == "history"
-    assert bundle.total == 2  # Both, because since is time of creation of first endpoint
-    assert bundle.entry[0].resource.id == endpoint_2.fhir_id.__str__() # type: ignore
-    assert bundle.entry[1].resource.id == endpoint.fhir_id.__str__() # type: ignore
+    assert (
+        bundle.total == 2
+    )  # Both, because since is time of creation of first endpoint
+    assert bundle.entry[0].resource.id == endpoint_2.fhir_id.__str__()  # type: ignore
+    assert bundle.entry[1].resource.id == endpoint.fhir_id.__str__()  # type: ignore
 
 
 def test_endpoint_version(

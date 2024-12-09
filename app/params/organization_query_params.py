@@ -1,6 +1,6 @@
 from typing import Literal
 
-from pydantic import Field, AliasChoices
+from pydantic import AliasChoices, Field
 
 from app.params.common_query_params import CommonQueryParams
 
@@ -56,4 +56,3 @@ class OrganizationQueryParams(CommonQueryParams):
     address_use: str | None = None
     phonetic: str | None = None
     endpoint: str | None = None
-
