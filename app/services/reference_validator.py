@@ -18,9 +18,7 @@ from app.services.utils import split_reference
 
 class ReferenceValidator:
     @staticmethod
-    def validate_reference(
-        session: DbSession, data: ReferenceType | Reference, match_on: str
-    ) -> None:
+    def validate_reference(session: DbSession, data: ReferenceType | Reference, match_on: str) -> None:
         if not isinstance(data, Reference):
             raise ValueError(f"Invalid reference {data}")
 
@@ -52,21 +50,14 @@ class ReferenceValidator:
                 ).first()
             case "Endpoint":
                 found = session.execute(
-                    select(Endpoint)
-                    .where(Endpoint.fhir_id == reference_id)
-                    .where(Endpoint.deleted == false())
-                    .limit(1)
+                    select(Endpoint).where(Endpoint.fhir_id == reference_id).where(Endpoint.deleted == false()).limit(1)
                 ).first()
             case _:
                 raise ValueError(f"Invalid reference type {reference_type}")
 
         if found is None:
-            logging.warning(
-                "Invalid resource, reference %s is not resolvable", data.reference
-            )
-            raise ResourceNotFoundException(
-                f"Invalid resource, reference {data.reference} is not resolvable"
-            )
+            logging.warning("Invalid resource, reference %s is not resolvable", data.reference)
+            raise ResourceNotFoundException(f"Invalid resource, reference {data.reference} is not resolvable")
 
     def validate_list(
         self,

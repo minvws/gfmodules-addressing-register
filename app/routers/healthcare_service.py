@@ -79,12 +79,8 @@ def update(
         raise ResourceNotFoundException("Healthcare Service resource is invalid")
 
     if _id != UUID(fhir_data.id):
-        logging.error(
-            f"Healthcare Service ID not found in healthcare service resource: {_id}"
-        )
-        raise InvalidResourceException(
-            "Healthcare Service ID not found in healthcare service resource"
-        )
+        logging.error(f"Healthcare Service ID not found in healthcare service resource: {_id}")
+        raise InvalidResourceException("Healthcare Service ID not found in healthcare service resource")
 
     entry = service.update_one(_id, fhir_data)
     return FhirEntityResponse(entry)

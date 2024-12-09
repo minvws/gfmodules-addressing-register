@@ -21,9 +21,7 @@ def test_ura_returns_subscriber_for_valid_cert(mocker: MockerFixture) -> None:
     uzi_server_mock = mocker.MagicMock(spec=UziServer)
     uzi_server_mock.__getitem__.side_effect = {"SubscriberNumber": 12345679}.__getitem__
 
-    uzi_server_creation_mock = mocker.patch.object(
-        UziServer, "__new__", return_value=uzi_server_mock
-    )
+    uzi_server_creation_mock = mocker.patch.object(UziServer, "__new__", return_value=uzi_server_mock)
 
     actual = authenticated_ura(request)
 
@@ -65,10 +63,10 @@ def test_enforce_cert_newlines_without_headers(
 
 @pytest.fixture
 def certificate_data() -> Tuple[str, str, str]:
-    cert_without_headers = "000102030405060708091011121314151617181920212223242526272829303132333435363738394041424344454647484950"
-    cert_with_headers = (
-        f"-----BEGIN CERTIFICATE-----{cert_without_headers}-----END CERTIFICATE-----"
+    cert_without_headers = (
+        "000102030405060708091011121314151617181920212223242526272829303132333435363738394041424344454647484950"
     )
+    cert_with_headers = f"-----BEGIN CERTIFICATE-----{cert_without_headers}-----END CERTIFICATE-----"
     expected_cert = "-----BEGIN CERTIFICATE-----\n0001020304050607080910111213141516171819202122232425262728293031\n32333435363738394041424344454647484950\n-----END CERTIFICATE-----"
 
     return cert_with_headers, cert_without_headers, expected_cert

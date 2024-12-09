@@ -20,15 +20,11 @@ router = APIRouter(
 
 
 @router.post("")
-def create(
-    data: Dict[str, Any], service: EndpointService = Depends(get_endpoint_service)
-) -> Dict[str, Any] | None:
+def create(data: Dict[str, Any], service: EndpointService = Depends(get_endpoint_service)) -> Dict[str, Any] | None:
     fhir_data = FhirEndpoint(**data)
     if fhir_data.id is not None:
         logging.error("Endpoint ID cannot be in the resource")
-        raise InvalidResourceException(
-            "Endpoint ID cannot be in the organization resource"
-        )
+        raise InvalidResourceException("Endpoint ID cannot be in the organization resource")
     new_endpoint = service.add_one(fhir_data)
     return new_endpoint.data
 

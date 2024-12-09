@@ -31,9 +31,7 @@ class HealthcareServiceService(EntityService):
             repo = session.get_repository(HealthcareServiceRepository)
             return repo.find(**params)
 
-    def add_one(
-        self, fhir_entity: FhirHealthcareService, id: UUID | None = None
-    ) -> HealthcareService:
+    def add_one(self, fhir_entity: FhirHealthcareService, id: UUID | None = None) -> HealthcareService:
         with self.database.get_db_session() as session:
             repo = session.get_repository(HealthcareServiceRepository)
 
@@ -56,9 +54,7 @@ class HealthcareServiceService(EntityService):
 
             if entity is None or entity.data is None:
                 logging.warning(f"HealthcareService not found for {str(resource_id)}")
-                raise ResourceNotFoundException(
-                    f"HealthcareService not found for {str(resource_id)}"
-                )
+                raise ResourceNotFoundException(f"HealthcareService not found for {str(resource_id)}")
 
             repo.delete(entity)
 
@@ -69,9 +65,7 @@ class HealthcareServiceService(EntityService):
 
             if entity is None or entity.data is None:
                 logging.warning(f"HealthcareService not found for {str(resource_id)}")
-                raise ResourceNotFoundException(
-                    f"HealthcareService not found for {str(resource_id)}"
-                )
+                raise ResourceNotFoundException(f"HealthcareService not found for {str(resource_id)}")
 
             return entity
 
@@ -82,15 +76,11 @@ class HealthcareServiceService(EntityService):
 
             if entity is None:
                 logging.warning(f"Version not found for {str(resource_id)}")
-                raise ResourceNotFoundException(
-                    f"Version not found for {str(resource_id)}"
-                )
+                raise ResourceNotFoundException(f"Version not found for {str(resource_id)}")
 
             return entity
 
-    def update_one(
-        self, resource_id: UUID, fhir_entity: FhirHealthcareService
-    ) -> HealthcareService:
+    def update_one(self, resource_id: UUID, fhir_entity: FhirHealthcareService) -> HealthcareService:
         with self.database.get_db_session() as session:
             # Remove metadata, as it will be added by the repository
             fhir_entity.meta = None  # type: ignore
@@ -100,9 +90,7 @@ class HealthcareServiceService(EntityService):
 
             if entity is None or entity.data is None:
                 logging.warning(f"HealthcareService not found for {str(resource_id)}")
-                raise ResourceNotFoundException(
-                    f"HealthcareService not found for {str(resource_id)}"
-                )
+                raise ResourceNotFoundException(f"HealthcareService not found for {str(resource_id)}")
 
             # Remove metadata temporary in order to compare the data
             meta = entity.data.pop("meta")

@@ -101,9 +101,7 @@ def test_find_correct_organizations(
     setup_postgres_database.truncate_tables()
 
     expected_endpoint = add_endpoint(endpoint_service) if include else None
-    part_of_id = (
-        add_organization(organization_service).fhir_id if parent_organization else None
-    )
+    part_of_id = add_organization(organization_service).fhir_id if parent_organization else None
 
     expected_org = add_organization(
         organization_service=organization_service,
@@ -157,10 +155,6 @@ def test_find_correct_endpoints(
 
     endpoints = matching_care_service.find_endpoints(endpoint_params)
     assert endpoints is not None
-    assert check_key_value(
-        endpoints.dict(), "reference", f"Organization/{expected_org.fhir_id}"
-    )
+    assert check_key_value(endpoints.dict(), "reference", f"Organization/{expected_org.fhir_id}")
     assert check_key_value(endpoints.dict(), "id", expected_endpoint.fhir_id)
-    assert check_key_value(
-        endpoints.dict(), "address", expected_endpoint.data.get("address")
-    )  # type: ignore
+    assert check_key_value(endpoints.dict(), "address", expected_endpoint.data.get("address"))  # type: ignore

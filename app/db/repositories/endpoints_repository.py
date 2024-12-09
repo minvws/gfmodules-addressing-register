@@ -28,24 +28,18 @@ class EndpointsRepository(RepositoryBase):
         )
         return self.db_session.session.execute(stmt).scalars().first()
 
-    def get(
-        self, **kwargs: bool | str | UUID | dict[str, str] | int
-    ) -> Endpoint | None:
+    def get(self, **kwargs: bool | str | UUID | dict[str, str] | int) -> Endpoint | None:
         """
         does not apply filters on latest and deleted columns.
         """
         stmt = select(Endpoint).filter_by(**kwargs)
         return self.db_session.session.execute(stmt).scalars().first()
 
-    def get_many(
-        self, **kwargs: bool | str | UUID | dict[str, str]
-    ) -> Sequence[Endpoint]:
+    def get_many(self, **kwargs: bool | str | UUID | dict[str, str]) -> Sequence[Endpoint]:
         stmt = select(Endpoint).filter_by(**kwargs)
         return self.db_session.session.execute(stmt).scalars().all()
 
-    def find(
-        self, **conditions: bool | str | UUID | dict[str, Any] | datetime | None
-    ) -> Sequence[Endpoint]:
+    def find(self, **conditions: bool | str | UUID | dict[str, Any] | datetime | None) -> Sequence[Endpoint]:
         stmt = select(Endpoint)
         filter_conditions: list[Any] = []
 
@@ -57,60 +51,40 @@ class EndpointsRepository(RepositoryBase):
             filter_conditions.append(Endpoint.fhir_id == conditions["id"])
 
         if "connectionType" in conditions:
-            filter_conditions.append(
-                Endpoint.data["connectionType"]["code"].astext
-                == conditions["connectionType"]
-            )
+            filter_conditions.append(Endpoint.data["connectionType"]["code"].astext == conditions["connectionType"])
 
         if "identifier" in conditions:
             stmt = stmt.select_from(
                 Endpoint,
-                func.jsonb_array_elements(Endpoint.data["identifier"]).alias(
-                    "identifier"
-                ),
+                func.jsonb_array_elements(Endpoint.data["identifier"]).alias("identifier"),
             ).where(literal_column("identifier->>'value'") == conditions["identifier"])
 
         if "name" in conditions:
-            filter_conditions.append(
-                Endpoint.data["name"].astext.like(f'%{conditions["name"]}%')
-            )
+            filter_conditions.append(Endpoint.data["name"].astext.like(f'%{conditions["name"]}%'))
 
         if "managingOrganization" in conditions:
             ref_id = str(conditions["managingOrganization"])
             filter_conditions.append(
-                Endpoint.data["managingOrganization"]["reference"].astext
-                == f"Organization/{ref_id}"
+                Endpoint.data["managingOrganization"]["reference"].astext == f"Organization/{ref_id}"
             )
 
         if "payloadType" in conditions:
             stmt = (
                 stmt.select_from(
                     Endpoint,
-                    func.jsonb_array_elements(Endpoint.data["payloadType"]).alias(
-                        "payload_type"
-                    ),
+                    func.jsonb_array_elements(Endpoint.data["payloadType"]).alias("payload_type"),
                 )
-                .select_from(
-                    func.jsonb_array_elements(
-                        literal_column("payload_type->'coding'")
-                    ).alias("coding")
-                )
+                .select_from(func.jsonb_array_elements(literal_column("payload_type->'coding'")).alias("coding"))
                 .where(
                     or_(
-                        literal_column("coding->>'system'").ilike(
-                            f"%{conditions['payloadType']}%"
-                        ),
-                        literal_column("coding->>'code'").ilike(
-                            f"%{conditions['payloadType']}%"
-                        ),
+                        literal_column("coding->>'system'").ilike(f"%{conditions['payloadType']}%"),
+                        literal_column("coding->>'code'").ilike(f"%{conditions['payloadType']}%"),
                     )
                 )
             )
 
         if "status" in conditions:
-            filter_conditions.append(
-                Endpoint.data["status"].astext == conditions["status"]
-            )
+            filter_conditions.append(Endpoint.data["status"].astext == conditions["status"])
 
         if "sort_history" in conditions and conditions["sort_history"] is True:
             # sorted with oldest versions last

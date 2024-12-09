@@ -7,9 +7,7 @@ from app.services.entity_services.organization_service import OrganizationServic
 from tests.utils import add_endpoint, add_organization, check_key_value
 
 
-def test_organization_returns_fhir_bundle(
-    api_client: TestClient, org_endpoint: str
-) -> None:
+def test_organization_returns_fhir_bundle(api_client: TestClient, org_endpoint: str) -> None:
     response = api_client.get(f"{org_endpoint}/_search")
     assert response.status_code == 200
     bundle = Bundle.parse_raw(response.text)
@@ -37,9 +35,7 @@ def test_organization_returns_422(api_client: TestClient, org_endpoint: str) -> 
     assert response.status_code == 422
 
 
-def test_endpoint_returns_fhir_bundle(
-    api_client: TestClient, endpoint_endpoint: str
-) -> None:
+def test_endpoint_returns_fhir_bundle(api_client: TestClient, endpoint_endpoint: str) -> None:
     response = api_client.get(f"{endpoint_endpoint}/_search")
     assert response.status_code == 200
     bundle = Bundle.parse_raw(response.text)

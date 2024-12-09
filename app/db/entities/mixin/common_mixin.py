@@ -34,9 +34,5 @@ class CommonMixin(BaseMixin):
     bundle_meta: Mapped[Dict[str, Any]] = mapped_column("bundle_meta", JSONB)
     fhir_id: Mapped[UUID] = mapped_column("fhir_id", types.Uuid)
     version: Mapped[int] = mapped_column("version", INTEGER, default=1)
-    latest: Mapped[bool] = mapped_column(
-        "latest", BOOLEAN, nullable=False, default=True
-    )
-    deleted: Mapped[bool] = mapped_column(
-        "deleted", BOOLEAN, nullable=False, default=False
-    )
+    latest: Mapped[bool] = mapped_column("latest", BOOLEAN, nullable=False, default=True)
+    deleted: Mapped[bool] = mapped_column("deleted", BOOLEAN, nullable=False, default=False)

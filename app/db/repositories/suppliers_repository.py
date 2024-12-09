@@ -15,9 +15,7 @@ logger = logging.getLogger(__name__)
 class SuppliersRepository(RepositoryBase):
     def get(self, ura_number: str) -> SupplierEndpoint | None:
         try:
-            stmt = select(SupplierEndpoint).where(
-                SupplierEndpoint.ura_number == ura_number
-            )
+            stmt = select(SupplierEndpoint).where(SupplierEndpoint.ura_number == ura_number)
             supplier_entity = self.db_session.execute(stmt).scalars().first()
             if supplier_entity is None or isinstance(supplier_entity, SupplierEndpoint):
                 return supplier_entity

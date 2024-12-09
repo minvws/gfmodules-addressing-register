@@ -119,17 +119,13 @@ class EndpointService:
                 raise ResourceNotFoundException(f"Endpoint not found for {endpoint_id}")
 
             update_endpoint.data.pop("meta")
-            if jsonable_encoder(update_endpoint.data) == jsonable_encoder(
-                endpoint_fhir.dict()
-            ):
+            if jsonable_encoder(update_endpoint.data) == jsonable_encoder(endpoint_fhir.dict()):
                 # They are the same, no need to update
                 return update_endpoint
 
             self._check_references(endpoint_fhir)
 
-            updated_endpoint = endpoint_repo.update(
-                update_endpoint, endpoint_fhir.dict()
-            )
+            updated_endpoint = endpoint_repo.update(update_endpoint, endpoint_fhir.dict())
 
             return updated_endpoint
 
@@ -139,9 +135,7 @@ class EndpointService:
             version = repository.get(fhir_id=resource_id, version=version_id)
             if version is None:
                 logging.warning(f"Version not found for {str(resource_id)}")
-                raise ResourceNotFoundException(
-                    f"Version not found for {str(resource_id)}"
-                )
+                raise ResourceNotFoundException(f"Version not found for {str(resource_id)}")
 
             return version
 
@@ -149,9 +143,7 @@ class EndpointService:
         with self.database.get_db_session() as session:
             org_repo = session.get_repository(OrganizationsRepository)
             if delete:
-                orgs_with_ref_to_endpoint = org_repo.find(
-                    latest=True, endpoint=str(data.id)
-                )
+                orgs_with_ref_to_endpoint = org_repo.find(latest=True, endpoint=str(data.id))
                 if len(orgs_with_ref_to_endpoint) > 0:
                     logging.warning(
                         "Cannot delete, Organization %s has active reference to this resource",
@@ -164,6 +156,4 @@ class EndpointService:
 
             if data.managingOrganization is not None:
                 reference_validator = ReferenceValidator()
-                reference_validator.validate_reference(
-                    session, data.managingOrganization, match_on="Organization"
-                )
+                reference_validator.validate_reference(session, data.managingOrganization, match_on="Organization")

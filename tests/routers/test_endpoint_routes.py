@@ -75,9 +75,7 @@ def test_history_endpoint(
     endpoint_service: EndpointService,
 ) -> None:
     endpoint = add_endpoint(endpoint_service)
-    response = api_client.request(
-        "GET", f"{endpoint_endpoint}/{endpoint.fhir_id}/_history"
-    )
+    response = api_client.request("GET", f"{endpoint_endpoint}/{endpoint.fhir_id}/_history")
     assert response.status_code == 200
     data = response.json()
     assert data["resourceType"] == "Bundle"
@@ -109,9 +107,7 @@ def test_history_endpoint(
     bundle = Bundle(**response.json())
     assert isinstance(bundle, Bundle)
     assert bundle.type == "history"
-    assert (
-        bundle.total == 2
-    )  # Both, because since is time of creation of first endpoint
+    assert bundle.total == 2  # Both, because since is time of creation of first endpoint
     assert bundle.entry[0].resource.id == endpoint_2.fhir_id.__str__()  # type: ignore
     assert bundle.entry[1].resource.id == endpoint.fhir_id.__str__()  # type: ignore
 
@@ -122,9 +118,7 @@ def test_endpoint_version(
     endpoint_service: EndpointService,
 ) -> None:
     endpoint = add_endpoint(endpoint_service)
-    response = api_client.request(
-        "GET", f"{endpoint_endpoint}/{endpoint.fhir_id}/_history/{endpoint.version}"
-    )
+    response = api_client.request("GET", f"{endpoint_endpoint}/{endpoint.fhir_id}/_history/{endpoint.version}")
     assert response.status_code == 200
     data = response.json()
     assert endpoint.data == data

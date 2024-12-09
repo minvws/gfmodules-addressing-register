@@ -23,9 +23,7 @@ from seeds.generate_data import DataGenerator
 fake = Faker("nl_nl")
 
 
-def check_key_value(
-    data: dict[Any, Any] | list[Any], key_to_check: Any, value_to_check: Any
-) -> bool:
+def check_key_value(data: dict[Any, Any] | list[Any], key_to_check: Any, value_to_check: Any) -> bool:
     """
     Recursively checks if the specified key exists in the dictionary or list
     and if its value matches the specified value.
@@ -41,10 +39,7 @@ def check_key_value(
     if isinstance(data, dict):
         return any(
             (str(key) == str(key_to_check) and str(value) == str(value_to_check))
-            or (
-                isinstance(value, (dict, list))
-                and check_key_value(value, key_to_check, value_to_check)
-            )
+            or (isinstance(value, (dict, list)) and check_key_value(value, key_to_check, value_to_check))
             for key, value in data.items()
         )
     if isinstance(data, list):
@@ -79,9 +74,7 @@ def add_organization(
     part_of: Optional[UUID] = None,
 ) -> Organization:
     dg = DataGenerator()
-    return organization_service.add_one(
-        dg.generate_organization(ura_number, active, name, uuid, endpoint_id, part_of)
-    )
+    return organization_service.add_one(dg.generate_organization(ura_number, active, name, uuid, endpoint_id, part_of))
 
 
 # Helper function to add an organization affiliation
@@ -93,9 +86,7 @@ def add_organization_affiliation(
 ) -> OrganizationAffiliation:
     dg = DataGenerator()
     return organization_affiliation_service.add_one(
-        dg.generate_organization_affiliation(
-            active, organization, participation_organization
-        )
+        dg.generate_organization_affiliation(active, organization, participation_organization)
     )
 
 

@@ -21,11 +21,7 @@ def authenticated_ura(request: Request) -> UraNumber:
 
 
 def enforce_cert_newlines(cert_data: str) -> str:
-    cert_data = (
-        cert_data.split("-----BEGIN CERTIFICATE-----")[-1]
-        .split("-----END CERTIFICATE-----")[0]
-        .strip()
-    )
+    cert_data = cert_data.split("-----BEGIN CERTIFICATE-----")[-1].split("-----END CERTIFICATE-----")[0].strip()
     return (
         "-----BEGIN CERTIFICATE-----\n"
         + "\n".join(textwrap.wrap(cert_data.replace(" ", ""), 64))

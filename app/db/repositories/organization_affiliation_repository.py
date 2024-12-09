@@ -31,9 +31,7 @@ def convert_specialty_to_code(specialty: str) -> List[str] | None:
 
 @repository(OrganizationAffiliation)
 class OrganizationAffiliationRepository(RepositoryBase):
-    def get_one(
-        self, **kwargs: bool | str | UUID | dict[str, str]
-    ) -> OrganizationAffiliation | None:
+    def get_one(self, **kwargs: bool | str | UUID | dict[str, str]) -> OrganizationAffiliation | None:
         stmt = (
             select(OrganizationAffiliation)
             .where(
@@ -44,18 +42,14 @@ class OrganizationAffiliationRepository(RepositoryBase):
         )
         return self.db_session.session.execute(stmt).scalars().first()
 
-    def get(
-        self, **kwargs: bool | str | UUID | dict[str, str] | int
-    ) -> OrganizationAffiliation | None:
+    def get(self, **kwargs: bool | str | UUID | dict[str, str] | int) -> OrganizationAffiliation | None:
         """
         does not apply filters on latest and deleted columns.
         """
         stmt = select(OrganizationAffiliation).filter_by(**kwargs)
         return self.db_session.session.execute(stmt).scalars().first()
 
-    def get_many(
-        self, **kwargs: bool | str | UUID | dict[str, str]
-    ) -> Sequence[OrganizationAffiliation]:
+    def get_many(self, **kwargs: bool | str | UUID | dict[str, str]) -> Sequence[OrganizationAffiliation]:
         stmt = select(OrganizationAffiliation).filter_by(**kwargs)
         return self.db_session.session.execute(stmt).scalars().all()
 
@@ -74,36 +68,23 @@ class OrganizationAffiliationRepository(RepositoryBase):
 
         if "id" in conditions and conditions["id"] is not None:
             # Filter on our internal UUID id
-            filter_conditions.append(
-                OrganizationAffiliation.fhir_id == conditions["id"]
-            )
+            filter_conditions.append(OrganizationAffiliation.fhir_id == conditions["id"])
 
         if "active" in conditions and conditions["active"] is not None:
             filter_conditions.append(
-                OrganizationAffiliation.data["active"].astext.cast(Boolean)
-                == conditions["active"]
+                OrganizationAffiliation.data["active"].astext.cast(Boolean) == conditions["active"]
             )
 
         if "date" in conditions and conditions["date"] is not None:
-            filter_conditions.append(
-                OrganizationAffiliation.created_at >= conditions["date"]
-            )
+            filter_conditions.append(OrganizationAffiliation.created_at >= conditions["date"])
 
-        if (
-            "participating_organization" in conditions
-            and conditions["participating_organization"] is not None
-        ):
+        if "participating_organization" in conditions and conditions["participating_organization"] is not None:
             filter_conditions.append(
-                OrganizationAffiliation.data["participatingOrganization"][
-                    "reference"
-                ].astext
+                OrganizationAffiliation.data["participatingOrganization"]["reference"].astext
                 == "Organization/" + str(conditions["participating_organization"])
             )
 
-        if (
-            "primary_organization" in conditions
-            and conditions["primary_organization"] is not None
-        ):
+        if "primary_organization" in conditions and conditions["primary_organization"] is not None:
             filter_conditions.append(
                 OrganizationAffiliation.data["organization"]["reference"].astext
                 == "Organization/" + str(conditions["primary_organization"])
@@ -111,9 +92,7 @@ class OrganizationAffiliationRepository(RepositoryBase):
 
         if "role" in conditions and conditions["role"] is not None:
             filter_conditions.append(
-                OrganizationAffiliation.data["code"].contains(
-                    [{"coding": [{"code": conditions["role"]}]}]
-                )
+                OrganizationAffiliation.data["code"].contains([{"coding": [{"code": conditions["role"]}]}])
             )
 
         if "specialty" in conditions and conditions["specialty"] is not None:
@@ -147,18 +126,14 @@ class OrganizationAffiliationRepository(RepositoryBase):
         stmt = stmt.where(*filter_conditions)
         return self.db_session.session.execute(stmt).scalars().all()
 
-    def create(
-        self, organization_affiliation: OrganizationAffiliation
-    ) -> OrganizationAffiliation:
+    def create(self, organization_affiliation: OrganizationAffiliation) -> OrganizationAffiliation:
         try:
             entry = update_resource_meta(organization_affiliation, method="create")
             self.db_session.add(entry)
             self.db_session.commit()
         except DatabaseError as e:
             self.db_session.rollback()
-            logging.error(
-                f"Failed to add organization_affiliation {organization_affiliation.id}: {e}"
-            )
+            logging.error(f"Failed to add organization_affiliation {organization_affiliation.id}: {e}")
             raise e
         return organization_affiliation
 
@@ -170,16 +145,12 @@ class OrganizationAffiliationRepository(RepositoryBase):
                 data=None,
                 version=organization_affiliation.version,
             )
-            entry = update_resource_meta(
-                updated_organization_affiliation, method="delete"
-            )
+            entry = update_resource_meta(updated_organization_affiliation, method="delete")
             self.db_session.add(entry)
             self.db_session.commit()
         except DatabaseError as e:
             self.db_session.rollback()
-            logging.error(
-                f"Failed to delete organization_affiliation {organization_affiliation.id}: {e}"
-            )
+            logging.error(f"Failed to delete organization_affiliation {organization_affiliation.id}: {e}")
             raise e
 
     def update(
@@ -206,14 +177,10 @@ class OrganizationAffiliationRepository(RepositoryBase):
             return entry
         except DatabaseError as e:
             self.db_session.rollback()
-            logging.error(
-                f"Failed to update organization_affiliation {organization_affiliation.id}: {e}"
-            )
+            logging.error(f"Failed to update organization_affiliation {organization_affiliation.id}: {e}")
             raise e
 
-    def _update_entry_latest(
-        self, organization_affiliation: OrganizationAffiliation
-    ) -> None:
+    def _update_entry_latest(self, organization_affiliation: OrganizationAffiliation) -> None:
         (
             self.db_session.query(OrganizationAffiliation)
             .filter(
