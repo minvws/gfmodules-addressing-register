@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Literal, TypeVar, Tuple
+from typing import Literal, Tuple, TypeVar
 from uuid import UUID
 from zoneinfo import ZoneInfo
 
@@ -41,7 +41,6 @@ def update_resource_meta(res: T, method: Literal["create", "update", "delete"]) 
     }
 
     return res
-
 
 
 def split_reference(reference: str) -> Tuple[str, UUID]:

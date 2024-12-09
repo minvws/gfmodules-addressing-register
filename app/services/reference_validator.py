@@ -3,11 +3,14 @@ from typing import List
 
 from fhir.resources.R4B.fhirtypes import ReferenceType
 from fhir.resources.R4B.reference import Reference
-from sqlalchemy import select, false
+from sqlalchemy import false, select
 
 from app.db.entities.endpoint.endpoint import Endpoint
 from app.db.entities.healthcare_service.healthcare_service import HealthcareService
-from app.db.entities.organization_affiliation.organization_affiliation import OrganizationAffiliation
+from app.db.entities.organization.organization import Organization
+from app.db.entities.organization_affiliation.organization_affiliation import (
+    OrganizationAffiliation,
+)
 from app.db.session import DbSession
 from app.exceptions.service_exceptions import ResourceNotFoundException
 from app.services.utils import split_reference
@@ -27,25 +30,33 @@ class ReferenceValidator:
 
         match reference_type:
             case "HealthcareService":
-                found = session.execute(select(HealthcareService)
+                found = session.execute(
+                    select(HealthcareService)
                     .where(HealthcareService.fhir_id == reference_id)
                     .where(HealthcareService.deleted == false())
-                    .limit(1)).first()
+                    .limit(1)
+                ).first()
             case "OrganizationAffiliation":
-                found = session.execute(select(OrganizationAffiliation)
+                found = session.execute(
+                    select(OrganizationAffiliation)
                     .where(OrganizationAffiliation.fhir_id == reference_id)
                     .where(OrganizationAffiliation.deleted == false())
-                    .limit(1)).first()
+                    .limit(1)
+                ).first()
             case "Organization":
-                found = session.execute(select(Organization)
+                found = session.execute(
+                    select(Organization)
                     .where(Organization.fhir_id == reference_id)
                     .where(Organization.deleted == false())
-                    .limit(1)).first()
+                    .limit(1)
+                ).first()
             case "Endpoint":
-                found = session.execute(select(Endpoint)
+                found = session.execute(
+                    select(Endpoint)
                     .where(Endpoint.fhir_id == reference_id)
                     .where(Endpoint.deleted == false())
-                    .limit(1)).first()
+                    .limit(1)
+                ).first()
             case _:
                 raise ValueError(f"Invalid reference type {reference_type}")
 

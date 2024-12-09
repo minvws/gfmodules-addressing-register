@@ -18,10 +18,10 @@ router = APIRouter(
     tags=["Endpoints"],
 )
 
+
 @router.post("")
 def create(
-    data: Dict[str, Any],
-    service: EndpointService = Depends(get_endpoint_service)
+    data: Dict[str, Any], service: EndpointService = Depends(get_endpoint_service)
 ) -> Dict[str, Any] | None:
     fhir_data = FhirEndpoint(**data)
     if fhir_data.id is not None:

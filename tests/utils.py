@@ -8,11 +8,15 @@ from fhir.resources.R4B.endpoint import Endpoint as FhirEndpoint
 from app.data import EndpointStatus, UraNumber
 from app.db.entities.endpoint.endpoint import Endpoint
 from app.db.entities.organization.organization import Organization
-from app.db.entities.organization_affiliation.organization_affiliation import OrganizationAffiliation
+from app.db.entities.organization_affiliation.organization_affiliation import (
+    OrganizationAffiliation,
+)
 from app.models.supplier.model import SupplierModel
 from app.services.entity_services.endpoint_service import EndpointService
+from app.services.entity_services.organization_affiliation_service import (
+    OrganizationAffiliationService,
+)
 from app.services.entity_services.organization_service import OrganizationService
-from app.services.entity_services.organization_affiliation_service import OrganizationAffiliationService
 from app.services.supplier_service import SupplierService
 from seeds.generate_data import DataGenerator
 
@@ -89,7 +93,9 @@ def add_organization_affiliation(
 ) -> OrganizationAffiliation:
     dg = DataGenerator()
     return organization_affiliation_service.add_one(
-        dg.generate_organization_affiliation(active, organization, participation_organization)
+        dg.generate_organization_affiliation(
+            active, organization, participation_organization
+        )
     )
 
 
