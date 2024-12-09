@@ -4,6 +4,8 @@ from uuid import UUID
 
 from sqlalchemy import Boolean, select
 from sqlalchemy.exc import DatabaseError
+from sqlalchemy.orm import InstrumentedAttribute
+from sqlalchemy.sql.expression import ColumnElement
 
 from app.db.decorator import repository
 from app.db.entities.organization_affiliation.organization_affiliation import (
@@ -56,7 +58,7 @@ class OrganizationAffiliationRepository(RepositoryBase):
     ) -> Sequence[OrganizationAffiliationEntry]:
         stmt = select(OrganizationAffiliationEntry)
 
-        filter_conditions = [
+        filter_conditions: List[ColumnElement[bool] | InstrumentedAttribute[bool]] = [
             # Always use latest version
             OrganizationAffiliationEntry.latest
         ]
@@ -65,7 +67,7 @@ class OrganizationAffiliationRepository(RepositoryBase):
             # Filter on our internal UUID id
             filter_conditions.append(
                 OrganizationAffiliationEntry.id == conditions["id"]
-            )  # type: ignore
+            )
         if "active" in conditions and conditions["active"] is not None:
             filter_conditions.append(
                 OrganizationAffiliationEntry.data["active"].astext.cast(Boolean)
@@ -74,11 +76,11 @@ class OrganizationAffiliationRepository(RepositoryBase):
         if "date" in conditions and conditions["date"] is not None:
             filter_conditions.append(
                 OrganizationAffiliationEntry.created_at >= conditions["date"]
-            )  # type: ignore
+            )
         if "identifier" in conditions and conditions["identifier"] is not None:
             filter_conditions.append(
                 OrganizationAffiliationEntry.fhir_id == conditions["identifier"]
-            )  # type: ignore
+            )
         if (
             "participating_organization" in conditions
             and conditions["participating_organization"] is not None
@@ -101,7 +103,7 @@ class OrganizationAffiliationRepository(RepositoryBase):
             filter_conditions.append(
                 OrganizationAffiliationEntry.data["code"].contains(
                     [{"coding": [{"code": conditions["role"]}]}]
-                )  # type: ignore
+                )
             )
         if "specialty" in conditions and conditions["specialty"] is not None:
             coding = convert_specialty_to_code(str(conditions["specialty"]))
@@ -109,7 +111,7 @@ class OrganizationAffiliationRepository(RepositoryBase):
                 filter_conditions.append(
                     OrganizationAffiliationEntry.data["specialty"].contains(
                         [{"coding": [{"system": coding[0]}, {"code": coding[1]}]}]
-                    )  # type: ignore
+                    )
                 )
 
         stmt = stmt.where(*filter_conditions).limit(100)
