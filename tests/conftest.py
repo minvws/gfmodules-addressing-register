@@ -17,6 +17,7 @@ from app.services.entity_services.organization_affiliation_service import (
     OrganizationAffiliationService,
 )
 from app.services.entity_services.organization_service import OrganizationService
+from app.services.entity_services.practitioner import PractitionerService
 from app.services.matching_care_service import MatchingCareService
 from app.services.supplier_service import SupplierService
 from tests.test_config import (
@@ -115,6 +116,13 @@ def location_service(setup_postgres_database: Database) -> LocationService:
 
 
 @pytest.fixture
+def practitioner_service(
+    setup_postgres_database: Database,
+) -> PractitionerService:
+    return PractitionerService(setup_postgres_database)
+
+
+@pytest.fixture
 def matching_care_service(
     organization_service: OrganizationService, endpoint_service: EndpointService
 ) -> MatchingCareService:
@@ -129,6 +137,11 @@ def org_endpoint() -> str:
 @pytest.fixture
 def org_aff_endpoint() -> str:
     return "/OrganizationAffiliation"
+
+
+@pytest.fixture
+def practitioner_endpoint() -> str:
+    return "/Practitioner"
 
 
 @pytest.fixture

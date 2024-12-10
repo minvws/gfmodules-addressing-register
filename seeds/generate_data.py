@@ -12,6 +12,7 @@ from fhir.resources.R4B.location import Location
 from fhir.resources.R4B.organization import Organization
 from fhir.resources.R4B.organizationaffiliation import OrganizationAffiliation
 from fhir.resources.R4B.organization import OrganizationContact
+from fhir.resources.R4B.practitioner import Practitioner
 from fhir.resources.R4B.reference import Reference
 from fhir.resources.healthcareservice import HealthcareService
 
@@ -99,6 +100,7 @@ class DataGenerator:
             participatingOrganization={"reference": f"Organization/{participation_organization}"} if participation_organization is not None else None,
         )
 
+
     def generate_location(
         self,
         organization: UUID | None = None,
@@ -107,6 +109,30 @@ class DataGenerator:
         return Location(
             managingOrganization={"reference": f"Organization/{organization}"} if organization is not None else None,
             partOf={"reference": f"Location/{part_of}"} if part_of is not None else None,
+        )
+
+
+    def generate_practitioner(
+        self,
+        active: bool | None = None,
+    ) -> Practitioner:
+        return Practitioner(
+            active=active if active is not None else self.fake.boolean(),
+            name=[
+                HumanName(
+                    use=self.fake.random_element(
+                        elements=(
+                            "usual",
+                            "official",
+                            "temp",
+                            "nickname",
+                        )
+                    ),
+                    text=self.fake.name(),
+                    family=self.fake.last_name(),
+                    given=[self.fake.first_name()],
+                )
+            ]
         )
 
     def generate_organization(
