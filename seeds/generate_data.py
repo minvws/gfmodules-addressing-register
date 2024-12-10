@@ -8,6 +8,7 @@ from fhir.resources.R4B.endpoint import Endpoint
 from fhir.resources.R4B.fhirtypes import Id
 from fhir.resources.R4B.humanname import HumanName
 from fhir.resources.R4B.identifier import Identifier
+from fhir.resources.R4B.location import Location
 from fhir.resources.R4B.organization import Organization
 from fhir.resources.R4B.organizationaffiliation import OrganizationAffiliation
 from fhir.resources.R4B.organization import OrganizationContact
@@ -96,6 +97,16 @@ class DataGenerator:
             active=active if active is not None else self.fake.boolean(),
             organization={"reference": f"Organization/{organization}"} if organization is not None else None,
             participatingOrganization={"reference": f"Organization/{participation_organization}"} if participation_organization is not None else None,
+        )
+
+    def generate_location(
+        self,
+        organization: UUID | None = None,
+        part_of: UUID | None = None,
+    ) -> Location:
+        return Location(
+            managingOrganization={"reference": f"Organization/{organization}"} if organization is not None else None,
+            partOf={"reference": f"Location/{part_of}"} if part_of is not None else None,
         )
 
     def generate_organization(

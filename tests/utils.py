@@ -7,12 +7,14 @@ from fhir.resources.R4B.endpoint import Endpoint as FhirEndpoint
 
 from app.data import EndpointStatus, UraNumber
 from app.db.entities.endpoint.endpoint import Endpoint
+from app.db.entities.location.location import Location
 from app.db.entities.organization.organization import Organization
 from app.db.entities.organization_affiliation.organization_affiliation import (
     OrganizationAffiliation,
 )
 from app.models.supplier.model import SupplierModel
 from app.services.entity_services.endpoint_service import EndpointService
+from app.services.entity_services.location_service import LocationService
 from app.services.entity_services.organization_affiliation_service import (
     OrganizationAffiliationService,
 )
@@ -88,6 +90,16 @@ def add_organization_affiliation(
     return organization_affiliation_service.add_one(
         dg.generate_organization_affiliation(active, organization, participation_organization)
     )
+
+
+# Helper function to add a location
+def add_location(
+    location_service: LocationService,
+    organization: Optional[UUID] = None,
+    part_of: Optional[UUID] = None,
+) -> Location:
+    dg = DataGenerator()
+    return location_service.add_one(dg.generate_location(organization, part_of))
 
 
 # Helper function to add an endpoint

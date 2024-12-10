@@ -12,6 +12,7 @@ from app.services.entity_services.endpoint_service import EndpointService
 from app.services.entity_services.healthcare_service_service import (
     HealthcareServiceService,
 )
+from app.services.entity_services.location_service import LocationService
 from app.services.entity_services.organization_affiliation_service import (
     OrganizationAffiliationService,
 )
@@ -109,6 +110,11 @@ def organization_affiliation_service(
 
 
 @pytest.fixture
+def location_service(setup_postgres_database: Database) -> LocationService:
+    return LocationService(setup_postgres_database)
+
+
+@pytest.fixture
 def matching_care_service(
     organization_service: OrganizationService, endpoint_service: EndpointService
 ) -> MatchingCareService:
@@ -133,6 +139,11 @@ def endpoint_endpoint() -> str:
 @pytest.fixture
 def healthcareservice_endpoint() -> str:
     return "/HealthcareService"
+
+
+@pytest.fixture
+def location_endpoint() -> str:
+    return "/Location"
 
 
 @pytest.fixture

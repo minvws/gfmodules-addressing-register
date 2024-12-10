@@ -7,10 +7,9 @@ from sqlalchemy import false, select
 
 from app.db.entities.endpoint.endpoint import Endpoint
 from app.db.entities.healthcare_service.healthcare_service import HealthcareService
+from app.db.entities.location.location import Location
 from app.db.entities.organization.organization import Organization
-from app.db.entities.organization_affiliation.organization_affiliation import (
-    OrganizationAffiliation,
-)
+from app.db.entities.organization_affiliation.organization_affiliation import OrganizationAffiliation
 from app.db.session import DbSession
 from app.exceptions.service_exceptions import ResourceNotFoundException
 from app.services.utils import split_reference
@@ -51,6 +50,10 @@ class ReferenceValidator:
             case "Endpoint":
                 found = session.execute(
                     select(Endpoint).where(Endpoint.fhir_id == reference_id).where(Endpoint.deleted == false()).limit(1)
+                ).first()
+            case "Location":
+                found = session.execute(
+                    select(Location).where(Location.fhir_id == reference_id).where(Location.deleted == false()).limit(1)
                 ).first()
             case _:
                 raise ValueError(f"Invalid reference type {reference_type}")

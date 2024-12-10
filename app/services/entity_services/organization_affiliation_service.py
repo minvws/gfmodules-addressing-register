@@ -38,15 +38,14 @@ class OrganizationAffiliationService:
             repo = session.get_repository(OrganizationAffiliationRepository)
             return repo.find(**params)
 
-    def add_one(self, fhir_entity: FhirOrganizationAffiliation, id: UUID | None = None) -> OrganizationAffiliation:
+    def add_one(self, fhir_entity: FhirOrganizationAffiliation) -> OrganizationAffiliation:
         with self.database.get_db_session() as session:
             repo = session.get_repository(OrganizationAffiliationRepository)
 
             self._check_references(session, fhir_entity)
 
             fhir_entity.meta = None  # type: ignore
-            if id is None:
-                id = uuid4()
+            id = uuid4()
             fhir_entity.id = Id(str(id))
 
             instance = OrganizationAffiliation(

@@ -61,6 +61,7 @@ class Database:
             "organizations",
             "supplier_endpoints",
             "healthcare_services",
+            "locations",
         ]
 
         with self.get_db_session() as session:
