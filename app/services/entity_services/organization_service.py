@@ -178,8 +178,9 @@ class OrganizationService(EntityService):
             if update_organization is None or update_organization.data is None:
                 logging.warning(f"Organization not found for {str(resource_id)}")
                 raise ResourceNotFoundException(f"Organization not found for {str(resource_id)}")
-            update_organization.data.pop("meta")
+            meta_copy = update_organization.data.pop("meta")
             if jsonable_encoder(update_organization.data) == jsonable_encoder(organization_fhir.dict()):
+                update_organization.data["meta"] = meta_copy
                 return update_organization  # The old and the new are the same, no need to create a new version for this
 
             self._check_references(organization_fhir)

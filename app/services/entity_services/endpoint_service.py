@@ -118,9 +118,10 @@ class EndpointService:
                 logging.warning("Endpoint not found for %s", endpoint_id)
                 raise ResourceNotFoundException(f"Endpoint not found for {endpoint_id}")
 
-            update_endpoint.data.pop("meta")
+            meta_copy = update_endpoint.data.pop("meta")
             if jsonable_encoder(update_endpoint.data) == jsonable_encoder(endpoint_fhir.dict()):
                 # They are the same, no need to update
+                update_endpoint.data["meta"]= meta_copy
                 return update_endpoint
 
             self._check_references(endpoint_fhir)
