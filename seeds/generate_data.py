@@ -1,9 +1,9 @@
 from typing import Optional
+from typing import List
 from uuid import UUID, uuid4
 
 from faker import Faker
 from fhir.resources.R4B.address import Address
-from fhir.resources.R4B.backboneelement import BackboneElement
 from fhir.resources.R4B.codeableconcept import CodeableConcept
 from fhir.resources.R4B.coding import Coding
 from fhir.resources.R4B.endpoint import Endpoint
@@ -15,6 +15,7 @@ from fhir.resources.R4B.organization import Organization
 from fhir.resources.R4B.organizationaffiliation import OrganizationAffiliation
 from fhir.resources.R4B.organization import OrganizationContact
 from fhir.resources.R4B.practitioner import Practitioner, PractitionerQualification
+from fhir.resources.R4B.practitionerrole import PractitionerRole
 from fhir.resources.R4B.reference import Reference
 from fhir.resources.healthcareservice import HealthcareService
 
@@ -250,6 +251,21 @@ class DataGenerator:
             comment=comment if comment else None,
         )
 
+    def generate_practitioner_role(
+        self,
+        id: UUID,
+        practitioner: str|None = None,
+        organization: str|None = None,
+        location: List[str]|None = None,
+        healthcare_service: List[str]|None = None,
+    ):
+        return PractitionerRole(
+            id=Id(str(id)),
+            practitioner=Reference.construct(reference=f"Practitioner/{practitioner}") if practitioner else None,
+            organization=Reference.construct(reference=f"Organization/{organization}") if organization else None,
+            location=[Reference.construct(reference=f"Location/{loc}") for loc in location] if location else None,
+            healthcareService=[Reference.construct(reference=f"HealthcareService/{hs}") for hs in healthcare_service] if healthcare_service else None,
+        )
 
     def generate_endpoint(
         self,

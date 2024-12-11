@@ -22,6 +22,7 @@ from app.routers.organization_affiliations import (
     router as organization_affiliations_router,
 )
 from app.routers.organizations import router as organizations_router
+from app.routers.practitioner_roles import router as practitioner_roles_router
 from app.routers.practitioners import router as practitioners_router
 from app.routers.suppliers import router as supplier_router
 from app.stats import StatsdMiddleware, setup_stats
@@ -101,6 +102,7 @@ def setup_fastapi() -> FastAPI:
         healthcare_service_router,
         locations_router,
         practitioners_router,
+        practitioner_roles_router,
     ]
     for router in routers:
         fastapi.include_router(router)
