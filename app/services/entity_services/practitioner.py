@@ -8,16 +8,18 @@ from fhir.resources.R4B.fhirtypes import Id
 from fhir.resources.R4B.practitioner import (
     Practitioner as FhirPractitioner,
 )
+from fhir.resources.R4B.practitioner import (
+    PractitionerQualification,
+)
 
 from app.db.db import Database
-from app.db.entities.practitioner.practitioner import (
-    Practitioner,
-)
+from app.db.entities.practitioner.practitioner import Practitioner
 from app.db.repositories.practitioners_repository import (
     PractitionerRepository,
 )
 from app.db.session import DbSession
 from app.exceptions.service_exceptions import ResourceNotFoundException
+from app.services.reference_validator import ReferenceValidator
 
 
 class PractitionerService:
@@ -121,5 +123,11 @@ class PractitionerService:
 
     @staticmethod
     def _check_references(session: DbSession, fhir_entity: FhirPractitioner) -> None:
-        # Nothing to check
-        pass
+        reference_validator = ReferenceValidator()
+
+        if fhir_entity.qualification is not None:
+            for qualification in fhir_entity.qualification:
+                if not isinstance(qualification, PractitionerQualification):
+                    raise TypeError(f"Expected `PractitionerQualification` but received {type(qualification)}")
+                if qualification.issuer is not None:
+                    reference_validator.validate_reference(session, qualification.issuer, match_on="Organization")

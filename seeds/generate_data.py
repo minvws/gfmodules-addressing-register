@@ -1,7 +1,9 @@
+from typing import Optional
 from uuid import UUID, uuid4
 
 from faker import Faker
 from fhir.resources.R4B.address import Address
+from fhir.resources.R4B.backboneelement import BackboneElement
 from fhir.resources.R4B.codeableconcept import CodeableConcept
 from fhir.resources.R4B.coding import Coding
 from fhir.resources.R4B.endpoint import Endpoint
@@ -12,7 +14,7 @@ from fhir.resources.R4B.location import Location
 from fhir.resources.R4B.organization import Organization
 from fhir.resources.R4B.organizationaffiliation import OrganizationAffiliation
 from fhir.resources.R4B.organization import OrganizationContact
-from fhir.resources.R4B.practitioner import Practitioner
+from fhir.resources.R4B.practitioner import Practitioner, PractitionerQualification
 from fhir.resources.R4B.reference import Reference
 from fhir.resources.healthcareservice import HealthcareService
 
@@ -115,7 +117,25 @@ class DataGenerator:
     def generate_practitioner(
         self,
         active: bool | None = None,
+        qualifications: Optional[list[UUID]] = None,
     ) -> Practitioner:
+        q = []
+        for qual in qualifications or []:
+            q.append(
+                PractitionerQualification(
+                    code=CodeableConcept(
+                        coding=[
+                            Coding(
+                                system="http://example.org/qualification",
+                                code="qualification",
+                                display="Qualification",
+                            )
+                        ]
+                    ),
+                    issuer={"reference": f"Organization/{str(qual)}"},
+                )
+            )
+
         return Practitioner(
             active=active if active is not None else self.fake.boolean(),
             name=[
@@ -132,7 +152,8 @@ class DataGenerator:
                     family=self.fake.last_name(),
                     given=[self.fake.first_name()],
                 )
-            ]
+            ],
+            qualification=q if q is not None else None,
         )
 
     def generate_organization(

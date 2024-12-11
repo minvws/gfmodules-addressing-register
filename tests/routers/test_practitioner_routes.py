@@ -1,3 +1,5 @@
+import uuid
+
 import pytest
 from fastapi.encoders import jsonable_encoder
 from fastapi.testclient import TestClient
@@ -9,7 +11,7 @@ from app.services.entity_services.practitioner import (
     PractitionerService,
 )
 from seeds.generate_data import DataGenerator
-from tests.utils import add_practitioner, check_key_value
+from tests.utils import add_organization, add_practitioner, check_key_value
 
 
 @pytest.mark.parametrize(
@@ -138,3 +140,31 @@ def test_practitioner_version(
     assert practitioner.data == data
     assert data["meta"]["versionId"] == practitioner.version
     assert response.headers["etag"] == 'W/"1"'
+
+
+def test_qualifation_checks(
+    api_client: TestClient,
+    practitioner_endpoint: str,
+    practitioner_service: PractitionerService,
+    organization_service: OrganizationService,
+) -> None:
+    # Create practitioner with existing qualification organization
+    org = add_organization(organization_service)
+
+    dg = DataGenerator()
+    practitioner = dg.generate_practitioner(qualifications=[org.fhir_id])
+
+    response = api_client.post(
+        f"{practitioner_endpoint}",
+        json=dict(jsonable_encoder(practitioner.dict())),
+    )
+    assert response.status_code == 201
+
+    # Create practitioner without existing qualification organization
+    practitioner = dg.generate_practitioner(qualifications=[uuid.UUID("11111111-2222-3333-4444-555555555555")])
+    response = api_client.post(
+        f"{practitioner_endpoint}",
+        json=dict(jsonable_encoder(practitioner.dict())),
+    )
+    assert response.status_code == 404
+    assert response.json()["detail"]["issue"][0]["code"] == "resource-not-found"

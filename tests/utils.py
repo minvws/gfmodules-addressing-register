@@ -98,9 +98,10 @@ def add_organization_affiliation(
 def add_practitioner(
     practitioner_service: PractitionerService,
     active: Optional[bool] = None,
+    qualifications: Optional[list[UUID]] = None,
 ) -> Practitioner:
     dg = DataGenerator()
-    return practitioner_service.add_one(dg.generate_practitioner(active))
+    return practitioner_service.add_one(dg.generate_practitioner(active, qualifications))
 
 
 # Helper function to add a location
