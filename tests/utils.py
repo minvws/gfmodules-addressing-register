@@ -5,7 +5,7 @@ from uuid import UUID
 from faker import Faker
 from fhir.resources.R4B.endpoint import Endpoint as FhirEndpoint
 
-from app.data import EndpointStatus, UraNumber
+from app.data import EndpointStatus
 from app.db.entities.endpoint.endpoint import Endpoint
 from app.db.entities.location.location import Location
 from app.db.entities.organization.organization import Organization
@@ -14,7 +14,6 @@ from app.db.entities.organization_affiliation.organization_affiliation import (
 )
 from app.db.entities.practitioner.practitioner import Practitioner
 from app.db.entities.practitioner_role.practitioner_role import PractitionerRole
-from app.models.supplier.model import SupplierModel
 from app.services.entity_services.endpoint_service import EndpointService
 from app.services.entity_services.location_service import LocationService
 from app.services.entity_services.organization_affiliation_service import (
@@ -23,7 +22,6 @@ from app.services.entity_services.organization_affiliation_service import (
 from app.services.entity_services.organization_service import OrganizationService
 from app.services.entity_services.practitioner import PractitionerService
 from app.services.entity_services.practitioner_role_service import PractitionerRoleService
-from app.services.supplier_service import SupplierService
 from seeds.generate_data import DataGenerator
 
 fake = Faker("nl_nl")
@@ -50,23 +48,6 @@ def check_key_value(data: dict[Any, Any] | list[Any], key_to_check: Any, value_t
         )
     if isinstance(data, list):
         return any(check_key_value(item, key_to_check, value_to_check) for item in data)
-
-
-def create_supplier(
-    ura_number: str = "12345678",
-    care_provider_name: str = "test",
-    update_supplier_endpoint: str = "test",
-) -> SupplierModel:
-    return SupplierModel(
-        ura_number=UraNumber(ura_number),
-        care_provider_name=care_provider_name,
-        update_supplier_endpoint=update_supplier_endpoint,
-    )
-
-
-# Helper function to add a supplier
-def add_supplier(supplier_service: SupplierService) -> SupplierModel:
-    return supplier_service.add_one(create_supplier())
 
 
 # Helper function to add an organization

@@ -20,7 +20,6 @@ from app.services.entity_services.organization_service import OrganizationServic
 from app.services.entity_services.practitioner import PractitionerService
 from app.services.entity_services.practitioner_role_service import PractitionerRoleService
 from app.services.matching_care_service import MatchingCareService
-from app.services.supplier_service import SupplierService
 from tests.test_config import (
     get_postgres_database,
     get_test_config,
@@ -80,11 +79,6 @@ def api_client(postgres_app: FastAPI) -> TestClient:
 @pytest.fixture
 def sqlite_client(sqlite_app: FastAPI) -> TestClient:
     return TestClient(sqlite_app)
-
-
-@pytest.fixture
-def supplier_service(setup_sqlite_database: Database) -> SupplierService:
-    return SupplierService(setup_sqlite_database)
 
 
 @pytest.fixture
@@ -170,11 +164,6 @@ def healthcareservice_endpoint() -> str:
 @pytest.fixture
 def location_endpoint() -> str:
     return "/Location"
-
-
-@pytest.fixture
-def supplier_endpoint() -> str:
-    return "/supplier"
 
 
 @pytest.fixture
