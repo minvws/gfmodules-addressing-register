@@ -10,6 +10,7 @@ from app.db.entities.healthcare_service.healthcare_service import HealthcareServ
 from app.db.entities.location.location import Location
 from app.db.entities.organization.organization import Organization
 from app.db.entities.organization_affiliation.organization_affiliation import OrganizationAffiliation
+from app.db.entities.practitioner.practitioner import Practitioner
 from app.db.session import DbSession
 from app.exceptions.service_exceptions import ResourceNotFoundException
 from app.services.utils import split_reference
@@ -54,6 +55,13 @@ class ReferenceValidator:
             case "Location":
                 found = session.execute(
                     select(Location).where(Location.fhir_id == reference_id).where(Location.deleted == false()).limit(1)
+                ).first()
+            case "Practitioner":
+                found = session.execute(
+                    select(Practitioner)
+                    .where(Practitioner.fhir_id == reference_id)
+                    .where(Practitioner.deleted == false())
+                    .limit(1)
                 ).first()
             case _:
                 raise ValueError(f"Invalid reference type {reference_type}")
