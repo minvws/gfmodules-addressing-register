@@ -8,6 +8,7 @@ from app.services.entity_services.location_service import LocationService
 from app.services.entity_services.organization_affiliation_service import OrganizationAffiliationService
 from app.services.entity_services.organization_service import OrganizationService
 from app.services.entity_services.practitioner import PractitionerService
+from app.services.entity_services.practitioner_role_service import PractitionerRoleService
 from app.services.matching_care_service import MatchingCareService
 from app.services.supplier_service import SupplierService
 
@@ -29,6 +30,9 @@ def container_config(binder: inject.Binder) -> None:
 
     practitioner_service = PractitionerService(db)
     binder.bind(PractitionerService, practitioner_service)
+
+    practitioner_role_service = PractitionerRoleService(db)
+    binder.bind(PractitionerRoleService, practitioner_role_service)
 
     healthcare_service_service = HealthcareServiceService(db)
     binder.bind(HealthcareServiceService, healthcare_service_service)
@@ -65,6 +69,10 @@ def get_endpoint_service() -> EndpointService:
 
 def get_organization_affiliation_service() -> OrganizationAffiliationService:
     return inject.instance(OrganizationAffiliationService)
+
+
+def get_practitioner_role_service() -> PractitionerRoleService:
+    return inject.instance(PractitionerRoleService)
 
 
 def get_healthcare_service_service() -> HealthcareServiceService:

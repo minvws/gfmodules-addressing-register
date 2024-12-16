@@ -63,6 +63,7 @@ class Database:
             "healthcare_services",
             "locations",
             "practitioners",
+            "practitioner_roles",
         ]
 
         with self.get_db_session() as session:

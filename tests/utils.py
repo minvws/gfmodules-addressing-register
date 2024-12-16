@@ -13,6 +13,7 @@ from app.db.entities.organization_affiliation.organization_affiliation import (
     OrganizationAffiliation,
 )
 from app.db.entities.practitioner.practitioner import Practitioner
+from app.db.entities.practitioner_role.practitioner_role import PractitionerRole
 from app.models.supplier.model import SupplierModel
 from app.services.entity_services.endpoint_service import EndpointService
 from app.services.entity_services.location_service import LocationService
@@ -21,6 +22,7 @@ from app.services.entity_services.organization_affiliation_service import (
 )
 from app.services.entity_services.organization_service import OrganizationService
 from app.services.entity_services.practitioner import PractitionerService
+from app.services.entity_services.practitioner_role_service import PractitionerRoleService
 from app.services.supplier_service import SupplierService
 from seeds.generate_data import DataGenerator
 
@@ -102,6 +104,20 @@ def add_practitioner(
 ) -> Practitioner:
     dg = DataGenerator()
     return practitioner_service.add_one(dg.generate_practitioner(active, qualifications))
+
+
+# Helper function to add a practitioner role
+def add_practitioner_role(
+    practitioner_role_service: PractitionerRoleService,
+    organization: Optional[UUID] = None,
+) -> PractitionerRole:
+    dg = DataGenerator()
+    return practitioner_role_service.add_one(
+        dg.generate_practitioner_role(
+            id=fake.uuid4(),
+            organization=organization,
+        )
+    )
 
 
 # Helper function to add a location
