@@ -1,12 +1,10 @@
 import logging
 import subprocess
 
-from sqlalchemy import StaticPool, Table, create_engine, text
+from sqlalchemy import StaticPool, create_engine, text
 from sqlalchemy.orm import Session
 
 from app.config import ConfigDatabase
-from app.db.entities.base import Base
-from app.db.entities.supplier_endpoint import SupplierEndpoint
 from app.db.session import DbSession
 
 logger = logging.getLogger(__name__)
@@ -38,13 +36,7 @@ class Database:
             raise e
 
         if config.create_tables:
-            if self._SQLITE_PREFIX in config.dsn:
-                Base.metadata.create_all(
-                    self.engine,
-                    tables=[Table("supplier_endpoints", SupplierEndpoint.metadata)],
-                )
-            else:
-                self.generate_tables()
+            self.generate_tables()
 
     @staticmethod
     def generate_tables() -> None:
@@ -59,7 +51,6 @@ class Database:
             "organization_affiliations",
             "endpoints",
             "organizations",
-            "supplier_endpoints",
             "healthcare_services",
             "locations",
             "practitioners",

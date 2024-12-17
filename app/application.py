@@ -24,7 +24,6 @@ from app.routers.organization_affiliations import (
 from app.routers.organizations import router as organizations_router
 from app.routers.practitioner_roles import router as practitioner_roles_router
 from app.routers.practitioners import router as practitioners_router
-from app.routers.suppliers import router as supplier_router
 from app.stats import StatsdMiddleware, setup_stats
 from app.telemetry import setup_telemetry
 
@@ -97,7 +96,6 @@ def setup_fastapi() -> FastAPI:
         health_router,
         organizations_router,
         endpoints_router,
-        supplier_router,
         organization_affiliations_router,
         healthcare_service_router,
         locations_router,

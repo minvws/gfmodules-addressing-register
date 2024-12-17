@@ -10,7 +10,6 @@ from app.services.entity_services.organization_service import OrganizationServic
 from app.services.entity_services.practitioner import PractitionerService
 from app.services.entity_services.practitioner_role_service import PractitionerRoleService
 from app.services.matching_care_service import MatchingCareService
-from app.services.supplier_service import SupplierService
 
 
 def container_config(binder: inject.Binder) -> None:
@@ -18,9 +17,6 @@ def container_config(binder: inject.Binder) -> None:
 
     db = Database(config=config.database)
     binder.bind(Database, db)
-
-    supplying_service = SupplierService(db)
-    binder.bind(SupplierService, supplying_service)
 
     endpoint_service = EndpointService(db)
     binder.bind(EndpointService, endpoint_service)
@@ -49,10 +45,6 @@ def container_config(binder: inject.Binder) -> None:
 
 def get_database() -> Database:
     return inject.instance(Database)
-
-
-def get_supplying_service() -> SupplierService:
-    return inject.instance(SupplierService)
 
 
 def get_organization_service() -> OrganizationService:

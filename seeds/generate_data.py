@@ -21,10 +21,8 @@ from fhir.resources.healthcareservice import HealthcareService
 
 from app.config import get_config
 from app.db.db import Database
-from app.models.supplier.model import SupplierModel
 from app.services.entity_services.endpoint_service import EndpointService
 from app.services.entity_services.organization_service import OrganizationService
-from app.services.supplier_service import SupplierService
 
 
 class DataGenerator:
@@ -32,7 +30,6 @@ class DataGenerator:
     db: Database
     organization_service: OrganizationService
     endpoint_service: EndpointService
-    supplier_service: SupplierService
     default_uras: list[str]
     default_metadata_urls: list[str]
 
@@ -43,7 +40,6 @@ class DataGenerator:
         self.db = Database(config=config.database)
         self.organization_service = OrganizationService(self.db)
         self.endpoint_service = EndpointService(self.db)
-        self.supplier_service = SupplierService(self.db)
 
         self.default_uras = ["23665292", "13873620"]
         self.default_metadata_urls = [
@@ -58,10 +54,6 @@ class DataGenerator:
         parent_org_id = None
 
         for ura_number in organization_uras:
-            supplier_endpoint = self.generate_care_provider_endpoint_supplier(
-                ura_number=ura_number
-            )
-            self.supplier_service.add_one(supplier_endpoint)
             endpoint = self.generate_endpoint()
             endpoint_entity = self.endpoint_service.add_one(endpoint)
             org = self.generate_organization(
@@ -72,24 +64,6 @@ class DataGenerator:
             self.organization_service.add_one(org)
 
             parent_org_id = org.id
-
-    def generate_care_provider_endpoint_supplier(
-        self,
-        ura_number: str | None = None,
-        care_provider_name: str | None = None,
-        update_supplier_endpoint: str | None = None,
-    ) -> SupplierModel:
-        return SupplierModel(
-            ura_number=ura_number
-            if ura_number
-            else str(self.fake.random_number(8, True)),
-            care_provider_name=care_provider_name
-            if care_provider_name
-            else self.fake.company(),
-            update_supplier_endpoint=update_supplier_endpoint
-            if update_supplier_endpoint
-            else self.fake.url(),
-        )
 
     def generate_organization_affiliation(
         self,
