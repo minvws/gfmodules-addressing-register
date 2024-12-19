@@ -54,7 +54,9 @@ class DataGenerator:
         parent_org_id = None
 
         for ura_number in organization_uras:
-            endpoint = self.generate_endpoint()
+            endpoint = self.generate_endpoint(
+                endpoint_url=self.default_metadata_urls.pop(0) if len(self.default_metadata_urls) > 0 else None
+            )
             endpoint_entity = self.endpoint_service.add_one(endpoint)
             org = self.generate_organization(
                 ura_number=ura_number,
