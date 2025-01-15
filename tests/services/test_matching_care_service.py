@@ -15,7 +15,7 @@ from tests.utils import add_endpoint, add_organization, check_key_value
     "ura, active, name, parent_organization, include, rev_include",
     [
         (True, True, "Org A", False, None, None),
-        (True, False, "Org B", True, "Organization.endpoint", None),
+        (True, False, "Org B", True, "Organization:endpoint", None),
         (True, False, None, False, None, "Location:organization"),
         (
             True,
@@ -30,7 +30,7 @@ from tests.utils import add_endpoint, add_organization, check_key_value
             True,
             "Org D",
             False,
-            "Organization.endpoint",
+            "Organization:endpoint",
             "OrganizationAffiliation:participating-organization",
         ),
         (
@@ -59,7 +59,7 @@ from tests.utils import add_endpoint, add_organization, check_key_value
             "OrganizationAffiliation:participating-organization",
         ),
         (True, True, None, True, None, "Location:organization"),
-        (True, None, "Org H", True, "Organization.endpoint", None),
+        (True, None, "Org H", True, "Organization:endpoint", None),
         (
             True,
             False,
@@ -88,7 +88,7 @@ def test_find_correct_organizations(
     active: bool,
     name: str,
     parent_organization: bool,
-    include: Literal["Organization.endpoint"] | None,
+    include: Literal["Organization:endpoint"] | None,
     rev_include: Union[
         Literal[
             "Location:organization",

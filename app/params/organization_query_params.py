@@ -33,7 +33,7 @@ class OrganizationQueryParams(CommonQueryParams):
         "other",
         None,
     ] = None
-    include: Literal["Organization.endpoint", None] = Field(
+    include: Literal["Organization:endpoint", None] = Field(
         alias="_include",
         validation_alias=AliasChoices("include", "_include"),
         default=None,
