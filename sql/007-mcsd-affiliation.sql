@@ -27,4 +27,4 @@ CREATE TABLE healthcare_services
   modified_at timestamp            DEFAULT now(),
 
   PRIMARY KEY (id)
-)
+);
