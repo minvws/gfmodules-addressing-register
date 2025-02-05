@@ -11,7 +11,7 @@ packages = [{ include = "app" }]
 [tool.poetry.dependencies]
 python = "^3.11"
 uvicorn = "^0.34.0"
-fastapi = "^0.115.1"
+fastapi = "^0.115.8"
 mypy = "^1.14.1"
 pydantic-settings = "^2.7.1"
 inject = "^5.2.0"
