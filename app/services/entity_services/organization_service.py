@@ -4,7 +4,6 @@ from typing import Sequence
 from uuid import UUID, uuid4
 
 from fastapi.encoders import jsonable_encoder
-from fhir.resources.R4B.fhirtypes import Id
 from fhir.resources.R4B.identifier import Identifier
 from fhir.resources.R4B.organization import Organization as FhirOrganization
 
@@ -120,7 +119,7 @@ class OrganizationService(EntityService):
         with self.database.get_db_session() as session:
             org_repo = session.get_repository(OrganizationsRepository)
 
-            organization_fhir.meta = None  # type: ignore
+            organization_fhir.meta = None
 
             ura_number = self.validate_ura_number_in_fhir_resource(organization_fhir, False, org_repo)
             org = org_repo.get_one(ura_number=str(ura_number))
@@ -128,7 +127,7 @@ class OrganizationService(EntityService):
                 raise InvalidResourceException("Ura number already exists")
 
             organization_id = uuid4()
-            organization_fhir.id = Id(str(organization_id))
+            organization_fhir.id = str(organization_id)
 
             self._check_references(organization_fhir)
 
@@ -170,7 +169,7 @@ class OrganizationService(EntityService):
         with self.database.get_db_session() as session:
             org_repo = session.get_repository(OrganizationsRepository)
 
-            organization_fhir.meta = None  # type: ignore
+            organization_fhir.meta = None
 
             self.validate_ura_number_in_fhir_resource(organization_fhir, True, org_repo)
 

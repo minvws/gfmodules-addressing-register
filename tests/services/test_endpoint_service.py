@@ -30,7 +30,7 @@ def test_add_one_correctly_adds_endpoint(endpoint_service: EndpointService) -> N
     dg = DataGenerator()
     expected = dg.generate_endpoint()
     actual = endpoint_service.add_one(expected)
-    assert actual.data.get("address") == expected.address  # type: ignore
+    assert str(actual.data.get("address")) == str(expected.address)  # type: ignore
 
 
 def test_add_one_correctly_adds_endpoint_with_managing_org(
@@ -43,7 +43,7 @@ def test_add_one_correctly_adds_endpoint_with_managing_org(
     org = add_organization(organization_service)
     expected = dg.generate_endpoint(org_fhir_id=org.fhir_id)
     actual = endpoint_service.add_one(expected)
-    assert actual.data.get("address") == expected.address  # type: ignore
+    assert str(actual.data.get("address")) == str(expected.address)  # type: ignore
     assert actual.data.get("managingOrganization") == {"reference": f"Organization/{org.fhir_id}"}  # type: ignore
 
 

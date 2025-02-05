@@ -122,4 +122,4 @@ def test_endpoint_version(
     assert response.status_code == 200
     data = response.json()
     assert endpoint.data == data
-    assert data["meta"]["versionId"] == endpoint.version
+    assert data["meta"]["versionId"] == str(endpoint.version)

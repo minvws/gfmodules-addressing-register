@@ -2,7 +2,6 @@ from enum import Enum
 from typing import Sequence
 
 from fhir.resources.R4B.bundle import Bundle, BundleEntry
-from fhir.resources.R4B.fhirtypes import Uri
 
 from app.db.entities.mixin.common_mixin import CommonMixin
 from app.exceptions.service_exceptions import ResourceNotFoundException
@@ -27,12 +26,12 @@ def create_bundle_entries(
             raise ResourceNotFoundException(f"Entry {entry.fhir_id} bundle meta not found")
 
         params = {
-            "fullUrl": Uri(f"{entry.fhir_id}/_history/{entry.version}"),
+            "fullUrl": f"{entry.fhir_id}/_history/{entry.version}",
             "resource": entry.data,
         }
         if with_req_resp:
             params["request"] = entry.bundle_meta.get("request")
             params["response"] = entry.bundle_meta.get("response")
 
-        listing.append(BundleEntry.construct(**params))  # type: ignore
+        listing.append(BundleEntry.construct(**params))
     return listing

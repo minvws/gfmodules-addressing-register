@@ -1,7 +1,6 @@
 from uuid import uuid4
 
 from _pytest.python_api import raises
-from fhir.resources.R4B.fhirtypes import String
 from fhir.resources.R4B.identifier import Identifier
 from fhir.resources.R4B.organization import Organization as FhirOrganization
 
@@ -134,7 +133,7 @@ def test_update_one_correctly_updates_organization(
     setup_postgres_database.truncate_tables()
     old_org = add_organization(organization_service, name="old_name")
     fhir_new_org = FhirOrganization(**old_org.data)  # type: ignore
-    fhir_new_org.name = String("updated_name")
+    fhir_new_org.name = "updated_name"
     updated_org = organization_service.update_one(old_org.fhir_id, fhir_new_org)
     assert old_org.fhir_id == updated_org.fhir_id
     assert old_org.data.get("name") == "old_name"  # type: ignore

@@ -120,4 +120,4 @@ def test_organization_version(
     assert response.status_code == 200
     data = response.json()
     assert org.data == data
-    assert data["meta"]["versionId"] == org.version
+    assert data["meta"]["versionId"] == str(org.version)

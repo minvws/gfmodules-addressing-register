@@ -138,7 +138,7 @@ def test_location_version(
     assert response.status_code == 200
     data = response.json()
     assert location.data == data
-    assert data["meta"]["versionId"] == location.version
+    assert data["meta"]["versionId"] == str(location.version)
     assert response.headers["etag"] == 'W/"1"'
 
 
