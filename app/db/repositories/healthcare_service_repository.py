@@ -76,7 +76,7 @@ class HealthcareServiceRepository(RepositoryBase):
             filter_conditions.append(func.jsonb_path_exists(HealthcareService.data, json_path, vars))
 
         if "name" in conditions:
-            filter_conditions.append(HealthcareService.data["name"].astext.like(f'%{conditions["name"]}%'))
+            filter_conditions.append(HealthcareService.data["name"].astext.like(f"%{conditions['name']}%"))
 
         if "sort_history" in conditions and conditions["sort_history"] is True:
             # sorted with oldest versions last

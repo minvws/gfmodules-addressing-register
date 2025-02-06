@@ -60,7 +60,7 @@ class EndpointsRepository(RepositoryBase):
             ).where(literal_column("identifier->>'value'") == conditions["identifier"])
 
         if "name" in conditions:
-            filter_conditions.append(Endpoint.data["name"].astext.like(f'%{conditions["name"]}%'))
+            filter_conditions.append(Endpoint.data["name"].astext.like(f"%{conditions['name']}%"))
 
         if "managingOrganization" in conditions:
             ref_id = str(conditions["managingOrganization"])

@@ -65,7 +65,7 @@ class OrganizationsRepository(RepositoryBase):
             ).where(literal_column("identifier->>'value'") == conditions["identifier"])
 
         if "name" in conditions:
-            filter_conditions.append(Organization.data["name"].astext.like(f'%{conditions["name"]}%'))
+            filter_conditions.append(Organization.data["name"].astext.like(f"%{conditions['name']}%"))
 
         if "part_of" in conditions:
             ref_id = str(conditions["part_of"])
