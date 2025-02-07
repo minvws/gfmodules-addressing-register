@@ -5,7 +5,6 @@ from uuid import UUID, uuid4
 
 from fastapi.encoders import jsonable_encoder
 from fhir.resources.R4B.endpoint import Endpoint as FhirEndpoint
-from fhir.resources.R4B.fhirtypes import Id
 
 from app.db.db import Database
 from app.db.entities.endpoint.endpoint import Endpoint
@@ -73,10 +72,10 @@ class EndpointService:
         with self.database.get_db_session() as session:
             endpoint_repo = session.get_repository(EndpointsRepository)
 
-            endpoint_fhir.meta = None  # type: ignore
+            endpoint_fhir.meta = None
 
             resource_id = uuid4()
-            endpoint_fhir.id = Id(str(resource_id))
+            endpoint_fhir.id = str(resource_id)
 
             self._check_references(endpoint_fhir)
 
@@ -111,7 +110,7 @@ class EndpointService:
         with self.database.get_db_session() as session:
             endpoint_repo = session.get_repository(EndpointsRepository)
 
-            endpoint_fhir.meta = None  # type: ignore
+            endpoint_fhir.meta = None
 
             update_endpoint = endpoint_repo.get_one(fhir_id=endpoint_id)
             if update_endpoint is None or update_endpoint.data is None:

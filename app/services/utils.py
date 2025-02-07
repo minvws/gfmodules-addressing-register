@@ -14,7 +14,7 @@ def update_resource_meta(res: T, method: Literal["create", "update", "delete"]) 
         res.data.update(
             {
                 "meta": {
-                    "versionId": res.version,
+                    "versionId": str(res.version),
                     "lastUpdated": datetime.now(ZoneInfo("UTC")).isoformat(),
                     "source": f"{res.__class__.__name__}/{res.fhir_id}",
                 }

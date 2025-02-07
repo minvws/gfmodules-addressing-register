@@ -24,7 +24,7 @@ opentelemetry-instrumentation-fastapi = "^0.45b0"
 opentelemetry-instrumentation-requests = "^0.45b0"
 requests = "^2.32.0"
 statsd = "^4.0.1"
-fhir-resources = "^7.1.0"
+fhir-resources = "^8.0.0"
 puzi = {git = "https://github.com/minvws/puzi-python" }
 faker = "^35.2.0"
 

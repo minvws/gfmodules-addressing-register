@@ -7,7 +7,6 @@ from fhir.resources.R4B.address import Address
 from fhir.resources.R4B.codeableconcept import CodeableConcept
 from fhir.resources.R4B.coding import Coding
 from fhir.resources.R4B.endpoint import Endpoint
-from fhir.resources.R4B.fhirtypes import Id
 from fhir.resources.R4B.humanname import HumanName
 from fhir.resources.R4B.identifier import Identifier
 from fhir.resources.R4B.location import Location
@@ -223,7 +222,7 @@ class DataGenerator:
 
     def generate_healthcare_service(self, id: UUID, comment = None):
         return HealthcareService(
-            id=Id(str(id)),
+            id=str(id),
             comment=comment if comment else None,
         )
 
@@ -236,7 +235,7 @@ class DataGenerator:
         healthcare_service: List[str]|None = None,
     ):
         return PractitionerRole(
-            id=Id(str(id)),
+            id=str(id),
             practitioner=Reference.construct(reference=f"Practitioner/{practitioner}") if practitioner else None,
             organization=Reference.construct(reference=f"Organization/{organization}") if organization else None,
             location=[Reference.construct(reference=f"Location/{loc}") for loc in location] if location else None,

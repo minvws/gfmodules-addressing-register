@@ -138,7 +138,7 @@ def test_practitioner_version(
     assert response.status_code == 200
     data = response.json()
     assert practitioner.data == data
-    assert data["meta"]["versionId"] == practitioner.version
+    assert data["meta"]["versionId"] == str(practitioner.version)
     assert response.headers["etag"] == 'W/"1"'
 
 

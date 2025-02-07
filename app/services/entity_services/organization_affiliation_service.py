@@ -4,7 +4,6 @@ from typing import Any, Sequence
 from uuid import UUID, uuid4
 
 from fastapi.encoders import jsonable_encoder
-from fhir.resources.R4B.fhirtypes import Id
 from fhir.resources.R4B.organizationaffiliation import (
     OrganizationAffiliation as FhirOrganizationAffiliation,
 )
@@ -44,9 +43,9 @@ class OrganizationAffiliationService:
 
             self._check_references(session, fhir_entity)
 
-            fhir_entity.meta = None  # type: ignore
+            fhir_entity.meta = None
             id = uuid4()
-            fhir_entity.id = Id(str(id))
+            fhir_entity.id = str(id)
 
             instance = OrganizationAffiliation(
                 version=1,
@@ -91,7 +90,7 @@ class OrganizationAffiliationService:
     def update_one(self, resource_id: UUID, fhir_entity: FhirOrganizationAffiliation) -> OrganizationAffiliation:
         with self.database.get_db_session() as session:
             # Remove metadata, as it will be added by the repository
-            fhir_entity.meta = None  # type: ignore
+            fhir_entity.meta = None
 
             repo = session.get_repository(OrganizationAffiliationRepository)
             entity = repo.get_one(fhir_id=resource_id)

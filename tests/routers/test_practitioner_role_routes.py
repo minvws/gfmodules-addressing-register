@@ -140,5 +140,5 @@ def test_practitioner_role_version(
     assert response.status_code == 200
     data = response.json()
     assert org_aff.data == data
-    assert data["meta"]["versionId"] == org_aff.version
+    assert data["meta"]["versionId"] == str(org_aff.version)
     assert response.headers["etag"] == 'W/"1"'

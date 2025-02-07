@@ -4,7 +4,6 @@ from typing import Any, Sequence
 from uuid import UUID, uuid4
 
 from fastapi.encoders import jsonable_encoder
-from fhir.resources.R4B.fhirtypes import Id
 from fhir.resources.R4B.practitioner import (
     Practitioner as FhirPractitioner,
 )
@@ -42,10 +41,10 @@ class PractitionerService:
 
             self._check_references(session, fhir_entity)
 
-            fhir_entity.meta = None  # type: ignore
+            fhir_entity.meta = None
             if id is None:
                 id = uuid4()
-            fhir_entity.id = Id(str(id))
+            fhir_entity.id = str(id)
 
             instance = Practitioner(
                 version=1,
@@ -90,7 +89,7 @@ class PractitionerService:
     def update_one(self, resource_id: UUID, fhir_entity: FhirPractitioner) -> Practitioner:
         with self.database.get_db_session() as session:
             # Remove metadata, as it will be added by the repository
-            fhir_entity.meta = None  # type: ignore
+            fhir_entity.meta = None
 
             repo = session.get_repository(PractitionerRepository)
             entity = repo.get_one(fhir_id=resource_id)
