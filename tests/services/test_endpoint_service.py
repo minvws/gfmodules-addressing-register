@@ -53,7 +53,7 @@ def test_add_one_fails_correctly_when_managing_org_does_not_exist(
     dg = DataGenerator()
     random_id = uuid4()
     expected = dg.generate_endpoint()
-    expected.managingOrganization = {"reference": f"Organization/{random_id}"}  # type: ignore
+    expected.managingOrganization = {"reference": f"Organization/{random_id}"}
     with raises(FHIRException):
         endpoint_service.add_one(expected)
 
@@ -108,7 +108,7 @@ def test_update_one_fails_correctly_managing_org_is_not_found(
     old_endpoint = add_endpoint(endpoint_service, complete_endpoint=broken_resource.copy())
     random_id = uuid4()
     with raises(ResourceNotFoundException):
-        broken_resource.managingOrganization = {"reference": f"Organization/{random_id}"}  # type: ignore
+        broken_resource.managingOrganization = {"reference": f"Organization/{random_id}"}
         endpoint_service.update_one(endpoint_id=old_endpoint.fhir_id, endpoint_fhir=broken_resource)
 
 

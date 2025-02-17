@@ -75,7 +75,7 @@ def test_update_location(
 
     dg = DataGenerator()
     new_location_endpoint = dg.generate_location(organization=org2.fhir_id)
-    new_location_endpoint.id = str(old_location_endpoint.fhir_id)  # type: ignore
+    new_location_endpoint.id = str(old_location_endpoint.fhir_id)
     response = api_client.put(
         f"{location_endpoint}/{old_location_endpoint.fhir_id}",
         json=dict(jsonable_encoder(new_location_endpoint.dict())),
@@ -105,27 +105,27 @@ def test_location_history(
     response = api_client.request(
         "GET",
         f"{location_endpoint}/_history",  # Since creation of 2nd org
-        params={"_since": location2.data.get("meta").get("lastUpdated")},
-    )  # type: ignore
+        params={"_since": location2.data.get("meta").get("lastUpdated")},  # type: ignore
+    )
     assert response.status_code == 200
     bundle = Bundle(**response.json())
     assert isinstance(bundle, Bundle)
     assert bundle.type == "history"
     assert bundle.total == 1  # Only location2 as it was created later than location
-    assert bundle.entry[0].resource.id == location2.fhir_id.__str__()  # type: ignore
+    assert bundle.entry[0].resource.id == location2.fhir_id.__str__()
 
     response = api_client.request(
         "GET",
         f"{location_endpoint}/_history",  # Since creation of 1st org
-        params={"_since": location.data.get("meta").get("lastUpdated")},
-    )  # type: ignore
+        params={"_since": location.data.get("meta").get("lastUpdated")},  # type: ignore
+    )
     assert response.status_code == 200
     bundle = Bundle(**response.json())
     assert isinstance(bundle, Bundle)
     assert bundle.type == "history"
     assert bundle.total == 2  # Both, because since is time of creation of first location_endpoint
-    assert bundle.entry[0].resource.id == location2.fhir_id.__str__()  # type: ignore
-    assert bundle.entry[1].resource.id == location.fhir_id.__str__()  # type: ignore
+    assert bundle.entry[0].resource.id == location2.fhir_id.__str__()
+    assert bundle.entry[1].resource.id == location.fhir_id.__str__()
 
 
 def test_location_version(

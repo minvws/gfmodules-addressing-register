@@ -59,7 +59,7 @@ def test_update_endpoint(
     old = add_endpoint(endpoint_service)
     dg = DataGenerator()
     new_endpoint = dg.generate_endpoint()
-    new_endpoint.id = str(old.fhir_id)  # type: ignore
+    new_endpoint.id = str(old.fhir_id)
     response = api_client.put(
         f"{endpoint_endpoint}/{old.fhir_id}",
         json=dict(jsonable_encoder(new_endpoint.dict())),
@@ -96,20 +96,20 @@ def test_history_endpoint(
     assert isinstance(bundle, Bundle)
     assert bundle.type == "history"
     assert bundle.total == 1  # Only endpoint_2 as it was created later than endpoint 1
-    assert bundle.entry[0].resource.id == endpoint_2.fhir_id.__str__()  # type: ignore
+    assert bundle.entry[0].resource.id == endpoint_2.fhir_id.__str__()
 
     response = api_client.request(
         "GET",
         f"{endpoint_endpoint}/_history",  # Since creation of 1st endpoint
-        params={"_since": endpoint.data.get("meta").get("lastUpdated")},
-    )  # type: ignore
+        params={"_since": endpoint.data.get("meta").get("lastUpdated")},  # type: ignore
+    )
     assert response.status_code == 200
     bundle = Bundle(**response.json())
     assert isinstance(bundle, Bundle)
     assert bundle.type == "history"
     assert bundle.total == 2  # Both, because since is time of creation of first endpoint
-    assert bundle.entry[0].resource.id == endpoint_2.fhir_id.__str__()  # type: ignore
-    assert bundle.entry[1].resource.id == endpoint.fhir_id.__str__()  # type: ignore
+    assert bundle.entry[0].resource.id == endpoint_2.fhir_id.__str__()
+    assert bundle.entry[1].resource.id == endpoint.fhir_id.__str__()
 
 
 def test_endpoint_version(
