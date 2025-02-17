@@ -61,7 +61,7 @@ def test_update_organization(
     old = add_organization(organization_service)
     dg = DataGenerator()
     new_org = dg.generate_organization(ura_number=old.ura_number)
-    new_org.id = str(old.fhir_id)  # type: ignore
+    new_org.id = str(old.fhir_id)
     response = api_client.put(f"{org_endpoint}/{old.fhir_id}", json=dict(jsonable_encoder(new_org.dict())))
     assert response.status_code == 200
     updated_data = response.json()
@@ -87,27 +87,27 @@ def test_organization_history(
     response = api_client.request(
         "GET",
         f"{org_endpoint}/_history",  # Since creation of 2nd org
-        params={"_since": org_2.data.get("meta").get("lastUpdated")},
-    )  # type: ignore
+        params={"_since": org_2.data.get("meta").get("lastUpdated")},  # type: ignore
+    )
     assert response.status_code == 200
     bundle = Bundle(**response.json())
     assert isinstance(bundle, Bundle)
     assert bundle.type == "history"
     assert bundle.total == 1  # Only org_2 as it was created later than org 1
-    assert bundle.entry[0].resource.id == org_2.fhir_id.__str__()  # type: ignore
+    assert bundle.entry[0].resource.id == org_2.fhir_id.__str__()
 
     response = api_client.request(
         "GET",
         f"{org_endpoint}/_history",  # Since creation of 1st org
-        params={"_since": org.data.get("meta").get("lastUpdated")},
-    )  # type: ignore
+        params={"_since": org.data.get("meta").get("lastUpdated")},  # type: ignore
+    )
     assert response.status_code == 200
     bundle = Bundle(**response.json())
     assert isinstance(bundle, Bundle)
     assert bundle.type == "history"
     assert bundle.total == 2  # Both, because since is time of creation of first org
-    assert bundle.entry[0].resource.id == org_2.fhir_id.__str__()  # type: ignore
-    assert bundle.entry[1].resource.id == org.fhir_id.__str__()  # type: ignore
+    assert bundle.entry[0].resource.id == org_2.fhir_id.__str__()
+    assert bundle.entry[1].resource.id == org.fhir_id.__str__()
 
 
 def test_organization_version(

@@ -73,7 +73,7 @@ def test_update_organization_affiliation(
 
     dg = DataGenerator()
     new_practitioner = dg.generate_practitioner()
-    new_practitioner.id = str(old_practitioner.fhir_id)  # type: ignore
+    new_practitioner.id = str(old_practitioner.fhir_id)
     response = api_client.put(
         f"{practitioner_endpoint}/{old_practitioner.fhir_id}",
         json=dict(jsonable_encoder(new_practitioner.dict())),
@@ -103,27 +103,27 @@ def test_practitioner_history(
     response = api_client.request(
         "GET",
         f"{practitioner_endpoint}/_history",  # Since creation of 2nd org
-        params={"_since": practitioner_2.data.get("meta").get("lastUpdated")},
-    )  # type: ignore
+        params={"_since": practitioner_2.data.get("meta").get("lastUpdated")},  # type: ignore
+    )
     assert response.status_code == 200
     bundle = Bundle(**response.json())
     assert isinstance(bundle, Bundle)
     assert bundle.type == "history"
     assert bundle.total == 1  # Only practitioner_2 as it was created later than practitioner
-    assert bundle.entry[0].resource.id == practitioner_2.fhir_id.__str__()  # type: ignore
+    assert bundle.entry[0].resource.id == practitioner_2.fhir_id.__str__()
 
     response = api_client.request(
         "GET",
         f"{practitioner_endpoint}/_history",  # Since creation of 1st org
-        params={"_since": practitioner.data.get("meta").get("lastUpdated")},
-    )  # type: ignore
+        params={"_since": practitioner.data.get("meta").get("lastUpdated")},  # type: ignore
+    )
     assert response.status_code == 200
     bundle = Bundle(**response.json())
     assert isinstance(bundle, Bundle)
     assert bundle.type == "history"
     assert bundle.total == 2  # Both, because since is time of creation of first practitioner
-    assert bundle.entry[0].resource.id == practitioner_2.fhir_id.__str__()  # type: ignore
-    assert bundle.entry[1].resource.id == practitioner.fhir_id.__str__()  # type: ignore
+    assert bundle.entry[0].resource.id == practitioner_2.fhir_id.__str__()
+    assert bundle.entry[1].resource.id == practitioner.fhir_id.__str__()
 
 
 def test_practitioner_version(

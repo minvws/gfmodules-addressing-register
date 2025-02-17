@@ -77,7 +77,7 @@ def test_update_organization_affiliation(
     new_org_aff = dg.generate_organization_affiliation(
         organization=org1.fhir_id, participation_organization=org2.fhir_id, active=True
     )
-    new_org_aff.id = str(old_org_aff.fhir_id)  # type: ignore
+    new_org_aff.id = str(old_org_aff.fhir_id)
     response = api_client.put(
         f"{org_aff_endpoint}/{old_org_aff.fhir_id}",
         json=dict(jsonable_encoder(new_org_aff.dict())),
@@ -107,27 +107,27 @@ def test_organization_affiliation_history(
     response = api_client.request(
         "GET",
         f"{org_aff_endpoint}/_history",  # Since creation of 2nd org
-        params={"_since": org_aff_2.data.get("meta").get("lastUpdated")},
-    )  # type: ignore
+        params={"_since": org_aff_2.data.get("meta").get("lastUpdated")},  # type: ignore
+    )
     assert response.status_code == 200
     bundle = Bundle(**response.json())
     assert isinstance(bundle, Bundle)
     assert bundle.type == "history"
     assert bundle.total == 1  # Only org_aff_2 as it was created later than org_aff
-    assert bundle.entry[0].resource.id == org_aff_2.fhir_id.__str__()  # type: ignore
+    assert bundle.entry[0].resource.id == org_aff_2.fhir_id.__str__()
 
     response = api_client.request(
         "GET",
         f"{org_aff_endpoint}/_history",  # Since creation of 1st org
-        params={"_since": org_aff.data.get("meta").get("lastUpdated")},
-    )  # type: ignore
+        params={"_since": org_aff.data.get("meta").get("lastUpdated")},  # type: ignore
+    )
     assert response.status_code == 200
     bundle = Bundle(**response.json())
     assert isinstance(bundle, Bundle)
     assert bundle.type == "history"
     assert bundle.total == 2  # Both, because since is time of creation of first org_aff
-    assert bundle.entry[0].resource.id == org_aff_2.fhir_id.__str__()  # type: ignore
-    assert bundle.entry[1].resource.id == org_aff.fhir_id.__str__()  # type: ignore
+    assert bundle.entry[0].resource.id == org_aff_2.fhir_id.__str__()
+    assert bundle.entry[1].resource.id == org_aff.fhir_id.__str__()
 
 
 def test_organization_affiliation_version(

@@ -76,12 +76,12 @@ def test_add_one_fails_correctly_with_invalid_resource(
     fake_endpoint_id = uuid4().__str__()
     dg = DataGenerator()
     test_org = dg.generate_organization()
-    test_org.id = fake_endpoint_id  # type: ignore
+    test_org.id = fake_endpoint_id
     if not isinstance(test_org.identifier, list) or len(test_org.identifier) != 2:
         raise AssertionError
     test_org.identifier = [
         Identifier.construct(
-            system="http://fhir.nl/fhir/NamingSystem/ura",  # type: ignore
+            system="http://fhir.nl/fhir/NamingSystem/ura",
             value="abc",
         )
     ]
@@ -132,7 +132,7 @@ def test_update_one_correctly_updates_organization(
 ) -> None:
     setup_postgres_database.truncate_tables()
     old_org = add_organization(organization_service, name="old_name")
-    fhir_new_org = FhirOrganization(**old_org.data)  # type: ignore
+    fhir_new_org = FhirOrganization(**old_org.data)
     fhir_new_org.name = "updated_name"
     updated_org = organization_service.update_one(old_org.fhir_id, fhir_new_org)
     assert old_org.fhir_id == updated_org.fhir_id
@@ -147,9 +147,9 @@ def test_update_one_correctly_adds_endpoint_to_organization(
 ) -> None:
     setup_postgres_database.truncate_tables()
     old_org = add_organization(organization_service)
-    fhir_new_org = FhirOrganization(**old_org.data)  # type: ignore
+    fhir_new_org = FhirOrganization(**old_org.data)
     test_endpoint = add_endpoint(endpoint_service)
-    fhir_new_org.endpoint = [{"reference": f"Endpoint/{test_endpoint.fhir_id}"}]  # type: ignore
+    fhir_new_org.endpoint = [{"reference": f"Endpoint/{test_endpoint.fhir_id}"}]
     updated_org = organization_service.update_one(old_org.fhir_id, fhir_new_org)
     assert old_org.fhir_id == updated_org.fhir_id
     endpoints = updated_org.data.get("endpoint", [])  # type: ignore
@@ -157,7 +157,7 @@ def test_update_one_correctly_adds_endpoint_to_organization(
 
     fhir_new_org.identifier = [
         Identifier.construct(
-            system="http://fhir.nl/fhir/NamingSystem/ura",  # type: ignore
+            system="http://fhir.nl/fhir/NamingSystem/ura",
             value="abc",
         )
     ]
@@ -175,8 +175,8 @@ def test_update_one_correctly_fails_when_endpoint_is_not_found(
 ) -> None:
     setup_postgres_database.truncate_tables()
     old_org = add_organization(organization_service)
-    fhir_new_org = FhirOrganization(**old_org.data)  # type: ignore
+    fhir_new_org = FhirOrganization(**old_org.data)
     random_endpoint_id = uuid4().__str__()
-    fhir_new_org.endpoint = [{"reference": f"Endpoint/{random_endpoint_id}"}]  # type: ignore
+    fhir_new_org.endpoint = [{"reference": f"Endpoint/{random_endpoint_id}"}]
     with raises(ResourceNotFoundException):
         organization_service.update_one(old_org.fhir_id, fhir_new_org)

@@ -1,4 +1,5 @@
 # Helper function to check whether Bundle result contains the correct key and value
+import uuid
 from typing import Any, Optional
 from uuid import UUID
 
@@ -95,8 +96,8 @@ def add_practitioner_role(
     dg = DataGenerator()
     return practitioner_role_service.add_one(
         dg.generate_practitioner_role(
-            id=fake.uuid4(),
-            organization=organization,
+            id=uuid.UUID(fake.uuid4()),
+            organization=str(organization) if organization is not None else None,
         )
     )
 

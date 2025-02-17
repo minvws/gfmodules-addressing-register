@@ -76,7 +76,7 @@ def test_update_practitioner_role(
     dg = DataGenerator()
     new_role = dg.generate_practitioner_role(
         id=old_role.fhir_id,
-        organization=org2.fhir_id,
+        organization=str(org2.fhir_id),
     )
     response = api_client.put(
         f"{practitioner_role_endpoint}/{old_role.fhir_id}",
@@ -107,27 +107,27 @@ def test_practitioner_role_history(
     response = api_client.request(
         "GET",
         f"{practitioner_role_endpoint}/_history",  # Since creation of 2nd org
-        params={"_since": org_aff_2.data.get("meta").get("lastUpdated")},
-    )  # type: ignore
+        params={"_since": org_aff_2.data.get("meta").get("lastUpdated")},  # type: ignore
+    )
     assert response.status_code == 200
     bundle = Bundle(**response.json())
     assert isinstance(bundle, Bundle)
     assert bundle.type == "history"
     assert bundle.total == 1  # Only org_aff_2 as it was created later than org_aff
-    assert bundle.entry[0].resource.id == org_aff_2.fhir_id.__str__()  # type: ignore
+    assert bundle.entry[0].resource.id == org_aff_2.fhir_id.__str__()
 
     response = api_client.request(
         "GET",
         f"{practitioner_role_endpoint}/_history",  # Since creation of 1st org
-        params={"_since": org_aff.data.get("meta").get("lastUpdated")},
-    )  # type: ignore
+        params={"_since": org_aff.data.get("meta").get("lastUpdated")},  # type: ignore
+    )
     assert response.status_code == 200
     bundle = Bundle(**response.json())
     assert isinstance(bundle, Bundle)
     assert bundle.type == "history"
     assert bundle.total == 2  # Both, because since is time of creation of first org_aff
-    assert bundle.entry[0].resource.id == org_aff_2.fhir_id.__str__()  # type: ignore
-    assert bundle.entry[1].resource.id == org_aff.fhir_id.__str__()  # type: ignore
+    assert bundle.entry[0].resource.id == org_aff_2.fhir_id.__str__()
+    assert bundle.entry[1].resource.id == org_aff.fhir_id.__str__()
 
 
 def test_practitioner_role_version(
