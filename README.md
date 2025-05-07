@@ -89,3 +89,23 @@ erDiagram
     }
     
 ```
+
+# Docker container builds
+
+There are two ways to build a docker container from this application. The first is the default mode created with:
+
+    make container-build
+
+This will build a docker container that will run its migrations to the database specified in app.conf.
+
+The second mode is a "standalone" mode, where it will not run migrations, and where you must explicitly specify
+an app.conf mount.
+
+    make container-build-sa
+
+Both containers only differ in their init script and the default version usually will mount its own local src directory
+into the container's /src dir.
+
+    docker run -ti --rm -p 8502:8502 \
+      --mount type=bind,source=./app.conf.autopilot,target=/src/app.conf \
+      gfmodules-addressing-register-app
