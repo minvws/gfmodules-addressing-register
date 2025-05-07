@@ -48,9 +48,19 @@ RUN --mount=type=cache,target=${POETRY_CACHE_DIR} poetry install --no-root --no-
 FROM base AS final
 
 COPY --chown=${APP_USER}:${APP_GROUP} --from=builder /usr/local /usr/local
-
-# Somehow packages in this dir are not owned by the app user
 RUN chown -R ${APP_USER}:${APP_GROUP} /usr/local/lib/python3.11/site-packages
+ADD . /src
+
+COPY ./docker/init-standalone.sh /usr/local/bin
+COPY ./docker/init.sh /usr/local/bin
+
+ARG standalone=false
+
+RUN if [ "$standalone" = "true" ] ; then \
+    ln -sf /usr/local/bin/init-standalone.sh /docker-entrypoint.sh; \
+  else \
+    ln -sf /usr/local/bin/init.sh /docker-entrypoint.sh ; \
+  fi
 
 USER ${APP_USER}
 
@@ -59,4 +69,4 @@ WORKDIR ${PROJECT_DIR}
 
 ENV PYTHONPATH=${PROJECT_DIR}
 
-CMD docker/./init.sh addressing_db
+CMD ["/docker-entrypoint.sh", "addressing_db"]

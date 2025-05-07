@@ -12,13 +12,13 @@ pool_pre_ping=False
 pool_recycle=1800
 
 [telemetry]
-enabled = True
+enabled = False
 endpoint = http://tracing:4317
 service_name = Adressering Register
 tracer_name = zmodules.service.addressing_register
 
 [stats]
-enabled = True
+enabled = False
 host = graphite
 port = 8125
 module_name = addressing
