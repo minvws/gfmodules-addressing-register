@@ -31,9 +31,9 @@ faker = "^37.3.0"
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.5"
 pytest-cov = "^6.1.1"
-pytest-mock = "^3.14.0"
+pytest-mock = "^3.14.1"
 httpx = "^0.28.1"
-ruff = "0.11.10"
+ruff = "0.11.11"
 safety = "^3.2.14"
 codespell = "^2.4.1"
 
