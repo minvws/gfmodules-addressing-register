@@ -1,8 +1,8 @@
 from uuid import uuid4
 
-from _pytest.python_api import raises
 from fhir.resources.R4B.identifier import Identifier
 from fhir.resources.R4B.organization import Organization as FhirOrganization
+from pytest import raises
 
 from app.db.db import Database
 from app.exceptions.service_exceptions import (
