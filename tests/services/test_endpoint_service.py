@@ -1,6 +1,6 @@
 from uuid import uuid4
 
-from _pytest.python_api import raises
+from pytest import raises
 
 from app.db.db import Database
 from app.exceptions.fhir_exception import FHIRException

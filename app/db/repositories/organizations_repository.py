@@ -97,7 +97,7 @@ class OrganizationsRepository(RepositoryBase):
             )
 
         stmt = stmt.where(*filter_conditions)
-        return self.db_session.session.execute(stmt).scalars().all()
+        return self.db_session.session.execute(stmt).scalars().all()  # type: ignore
 
     @staticmethod
     def _add_address_filter_conditions(

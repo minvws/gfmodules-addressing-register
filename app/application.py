@@ -108,7 +108,7 @@ def setup_fastapi() -> FastAPI:
     fastapi.add_exception_handler(Exception, default_fhir_exception_handler)
 
     if get_config().stats.enabled:
-        fastapi.add_middleware(StatsdMiddleware, module_name=get_config().stats.module_name)
+        fastapi.add_middleware(StatsdMiddleware, module_name=get_config().stats.module_name or "default")
 
     return fastapi
 
